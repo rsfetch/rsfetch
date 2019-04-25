@@ -7,4 +7,4 @@ My info fetch script. Minimalistic (for the most part).
 3. `checkupdate` for the pending updates section.
 
 **Screenshot**
-![Overview](scrot.png?raw=true "Overview")
+![Scrot](scrot.png?raw=true "Scrot")
