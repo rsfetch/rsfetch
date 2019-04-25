@@ -15,6 +15,7 @@ cpu="$(grep "model name" /proc/cpuinfo | head -n1 | sed 's/.*://' | sed '1s/^.//
 cores="$(grep "model name" /proc/cpuinfo | wc -l)"
 gpu="$(lshw -quiet -numeric -C display 2> /dev/null | grep product | awk -F'[][]' '{print $2}')"
 ram="$(free -g | grep Mem | awk '{print $2 " GiB"}')"
+ip="$(curl --silent http://ipecho.net/plain)"
 
 ## Variables for wm/de. ##
 wm="$(tail -n 1 "${HOME}/.xinitrc" | cut -d ' ' -f 2)"
@@ -32,15 +33,6 @@ if [ "$de" = "" ]; then
 	de="N/A"
 else
 	de="$de"
-fi
-
-# Variables for IP Address.
-ip="$(curl --silent http://ipecho.net/plain)"
-
-if [ "$ip" = "47.26.85.3" ]; then
-	ip="47.26.85.3 | You are using Charter."
-else
-	ip="$ip | You are using ProtonVPN."
 fi
 
 ## Variables for pkgs. (Arch only.)
