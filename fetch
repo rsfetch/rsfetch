@@ -16,6 +16,7 @@ cores="$(grep "model name" /proc/cpuinfo | wc -l)"
 gpu="$(lshw -quiet -numeric -C display 2> /dev/null | grep product | awk -F'[][]' '{print $2}')"
 ram="$(free -g | grep Mem | awk '{print $2 " GiB"}')"
 ip="$(curl --silent http://ipecho.net/plain)"
+tad="$(date +"%I:%M %p | %A %d, %B of %Y")"
 
 ## Variables for wm/de. ##
 wm="$(tail -n 1 "${HOME}/.xinitrc" | cut -d ' ' -f 2)"
@@ -98,6 +99,7 @@ echo "IP                    =   $ip"
 echo "MUSIC                 =   $mus"
 echo "UPTIME                =   $uptime"
 echo "STORAGE               =   You are using $used of $tota1 on $dev."
+echo "TIME AND DATE         =   $tad"
 echo "PENDING UPDATES       =   You have $up pending updates."
 }
 
