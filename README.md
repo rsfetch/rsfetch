@@ -3,7 +3,10 @@ My info fetch script. Minimalistic (for the most part).
 
 Note: There are 2 version.
 fetch - BASH version. Has 3 layouts (minimal, normal, and extra).
+
 main.rs - Source for the rust version. You'll need to compile yourself.
+
+Note 2: Wow, the rust version is at least 3 times faster than the BASH version.
 
 ### Requirements
 1. `lshw` for the GPU info.
