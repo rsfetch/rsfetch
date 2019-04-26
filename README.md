@@ -3,11 +3,9 @@ My info fetch script. Minimalistic (for the most part).
 
 Note: There are 2 versions.
 
-fetch - BASH version. Has 3 layouts (minimal, normal, and extra).
+fetch-bash - BASH version. Has 3 layouts (minimal, normal, and extra).
 
-main.rs - Source for the rust version. You'll need to compile yourself.
-
-	- The source code may or may not make you want to bleach your eyes. I'm still new to rust.
+fetch - Rust version. Yes, it's precompiled. But I'm sure no one wants to download extra dependencies and stuff just to compile this one program.
 
 Note 2: Wow, the rust version is at least 3 times faster than the BASH version.
 
