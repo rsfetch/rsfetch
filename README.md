@@ -5,7 +5,7 @@ Note: There are 2 versions.
 
 fetch-bash - BASH version. Has 3 layouts (minimal, normal, and extra).
 
-fetch - Rust version. If you want the source, it's ![main.rs](main.rs).
+fetch - Rust version. It is already compiled, but if you want the source, it's ![fetch-rust/src/main.rs](main.rs).
 
 Note 2: Wow, the rust version is at least 3 times faster than the BASH version.
 

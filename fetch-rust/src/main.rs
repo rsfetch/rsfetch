@@ -1,7 +1,9 @@
+// Crates
+#[macro_use] extern crate prettytable;
+
+// Use commands
 use std::process::Command;
 use prettytable::format;
-
-#[macro_use] extern crate prettytable;
 use prettytable::{Table};
 
 // Main function
