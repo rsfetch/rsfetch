@@ -47,6 +47,12 @@ fn main() {
 					.arg("curl --silent http://ipecho.net/plain")
 					.output()
 					.expect("failed to execute process");
+	let check = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("pacman -Q | grep -w mpc | wc -l")
+					.output()
+					.expect("failed to execute process");
+	let check2: String = String::from_utf8_lossy(&check.stdout).to_string();
 	// Output
 	println!("");
 	println!(" \\    / /\\   |    |    |--- \\   /");
@@ -61,6 +67,16 @@ fn main() {
 	table.add_row(row!["KERNEL", "=", String::from_utf8_lossy(&kernel.stdout)]);
 	table.add_row(row!["UPTIME", "=", String::from_utf8_lossy(&uptime.stdout)]);
 	table.add_row(row!["PACKAGES", "=", String::from_utf8_lossy(&pkgs.stdout)]);
-	table.printstd();;
+	if check2 == "1\n" {
+		let mus = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
+					.output()
+					.expect("failed to execute process");
+		table.add_row(row!["MUSIC (MPD)", "=", String::from_utf8_lossy(&mus.stdout)]);
+		table.printstd();;
+	} else {
+		table.printstd();;
+	}
 	println!("");
 }
