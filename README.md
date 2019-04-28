@@ -1,21 +1,13 @@
 # fetch
-My info fetch script. Minimalistic (for the most part).
+My info fetch program, written in Rust. Minimalistic (for the most part).
 
-Note: There are 2 versions.
-
-fetch-bash - BASH version. Has 3 layouts (minimal, normal, and extra).
-
-fetch - Rust version. It is already compiled, but if you want the source, it's ![main.rs](fetch-rust/src/main.rs).
-
-Note 2: Wow, the rust version is at least 3 times faster than the BASH version.
+Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman` and `paclist`.
 
 ### Requirements
 1. `lshw` for the GPU info.
-2. ![tewisay](https://github.com/lucy/tewisay) and my ![blank cow file](https://github.com/Phate6660/dotfiles/blob/master/Cow%20Files/blank.cow) for the nice looking borders.
-3. `checkupdate` for the pending updates section.
 
-**BASH Version**
-![BASH](scrot.png?raw=true "BASH")
+**Default Fetch**
+![Default](Screenshots/default.png?raw=true "Default")
 
-**Rust Version**
-![Rust](rust.png?raw=true "Rust")
+**Help**
+![Help](Screenshots/help.png?raw=true "Help")
