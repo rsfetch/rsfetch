@@ -34,6 +34,8 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 
 Then is should be installed into "$HOME/.cargo/bin", so make sure that's added to your $PATH.
 
+### Screenshots
+
 **Help**
 ![Help](Screenshots/help.png?raw=true "Help")
 
