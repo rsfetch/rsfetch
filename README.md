@@ -34,6 +34,9 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 
 Then is should be installed into "$HOME/.cargo/bin", so make sure that's added to your $PATH.
 
+5. Copy ![term](term) from the repo directory to "$HOME/.cargo/bin".
+6. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip steps 5 and 6.)
+
 ### Screenshots
 
 **Help**
