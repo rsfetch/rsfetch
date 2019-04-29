@@ -11,8 +11,18 @@ use clap::{Arg, App};
 // Main function
 fn main() {
 	// Variables
+	let mut table = Table::new();
+	let format = format::FormatBuilder::new()
+						.column_separator(' ')
+						.borders('│')
+						.separators(&[format::LinePosition::Top,
+							format::LinePosition::Bottom],
+							format::LineSeparator::new('─', '─', '0', '0'))
+						.padding(1, 1)
+						.build();
+	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("0.9.1")
+					.version("0.9.3")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\", and \"SOURCE\" defaults to mpd.")
 					.arg(Arg::with_name("user")
 						.short("U")
@@ -31,6 +41,12 @@ fn main() {
 						.long("shell")
 						.value_name("BOOL")
 						.help("Turn default shell name on or off. Supported options are \"true\" and \"false\".")
+						.takes_value(true))
+					.arg(Arg::with_name("terminal")
+						.short("t")
+						.long("terminal")
+						.value_name("BOOL")
+						.help("Turn terminal display on or off. Supported options are \"true\" and \"false\".")
 						.takes_value(true))
 					.arg(Arg::with_name("window_manager")
 						.short("w")
@@ -78,6 +94,7 @@ fn main() {
 	let user = matches.value_of("user").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
 	let shell = matches.value_of("shell").unwrap_or("true");
+	let terminal = matches.value_of("terminal").unwrap_or("true");
 	let window_manager = matches.value_of("window_manager").unwrap_or("true");
 	let distro = matches.value_of("distro").unwrap_or("true");
 	let kernel = matches.value_of("kernel").unwrap_or("true");
@@ -85,7 +102,6 @@ fn main() {
 	let packages = matches.value_of("packages").unwrap_or("true");
 	let music = matches.value_of("music").unwrap_or("mpd");
 	let logo = matches.value_of("logo").unwrap_or("true");
-    let mut table = Table::new();
 	let you = Command::new("/usr/bin/whoami")
 					.output()
 					.expect("failed to execute process");
@@ -123,6 +139,11 @@ fn main() {
 					.arg("curl --silent http://ipecho.net/plain")
 					.output()
 					.expect("failed to execute process");
+	let term = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
+					.output()
+					.expect("failed to execute process");
 	// Output
 	println!("");
 	if logo == "true" {
@@ -130,7 +151,6 @@ fn main() {
 		println!("  \\  / /__\\  |    |    |---  \\ /");
 		println!("   \\/ /----\\ |___ |___ |---   |");
 	}
-	table.set_format(*format::consts::FORMAT_BORDERS_ONLY);
 	if user == "true" {
 		table.add_row(row!["USER", "=", String::from_utf8_lossy(&you.stdout)]);
 	}
@@ -139,6 +159,9 @@ fn main() {
 	}
 	if shell == "true" {
 		table.add_row(row!["SHELL", "=", String::from_utf8_lossy(&sh.stdout)]);
+	}
+	if terminal == "true" {
+		table.add_row(row!["TERMINAL", "=", String::from_utf8_lossy(&term.stdout)]);
 	}
 	if window_manager == "true" {
 		table.add_row(row!["WINDOW MANAGER", "=", String::from_utf8_lossy(&wm.stdout)]);
