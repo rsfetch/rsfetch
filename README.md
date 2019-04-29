@@ -20,10 +20,13 @@ Note 3: I will attempt to add support for the set terminal font, but it looks li
 
 ### Requirements
 1. `lshw` for the GPU info.
-2. `pacman-contrib` for the separate package counts. Will add an option soon to turn those off if you don't want to install it.
+2. `pacman-contrib` for the separate package counts. ~~Will add an option soon to turn those off if you don't want to install it.~~ Option has been added.
 
 **Help**
 ![Help](Screenshots/help.png?raw=true "Help")
 
 **Default Fetch**
 ![Default](Screenshots/default.png?raw=true "Default")
+
+**Default Fetch - No Caps**
+![Default](Screenshots/default-nocaps.png?raw=true "Default")
