@@ -11,7 +11,7 @@ Note 2.5: So I just noticed an odd bug with the terminal detection. You have to 
 fetch () {
 	pwd="$(pwd)"
 	cd $HOME/.cargo/bin
-	./fetch $1 $2 $3 $4 $5 
+	./fetch $1 $2 $3 $4 $5 $6 $7 $8
 	cd "$pwd"
 }
 ```
