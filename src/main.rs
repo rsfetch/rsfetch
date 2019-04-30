@@ -12,8 +12,26 @@ use clap::{Arg, App};
 // escape character (U+001B)
 const E: char = 0x1B as char;
 
-fn bold(text: &str) -> String {
+fn makebold(text: &str) -> String {
 	format!("{}[1m{}{}[0m", E, text, E)
+}
+
+fn addrow(
+		mut table: Table, 
+		abold: &str, 
+		caps: &str, 
+		title: &str, 
+		value: &str
+	) -> Table {
+	let mut title_str: String = title.to_string();
+	if caps == "false" {
+		title_str = title_str.to_lowercase();
+	}
+	if abold == "true" {
+		title_str = makebold(&title_str);
+	}
+	table.add_row(row![title_str, "=", value]);
+	return table
 }
 
 // Main function
@@ -30,61 +48,97 @@ fn main() {
 						.build();
 	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("0.9.3")
-					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\", and \"SOURCE\" defaults to mpd.")
+					.version("0.9.8")
+					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
+					.arg(Arg::with_name("bold")
+						.short("b")
+						.long("bold")
+						.value_name("BOOL")
+						.help("Turn bold for field titles on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("caps")
+						.short("c")
+						.long("caps")
+						.value_name("BOOL")
+						.help("Turn all caps on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("operating_system")
+						.short("o")
+						.long("operating_system")
+						.value_name("BOOL")
+						.help("Turn name of operating system on or off.")
+						.takes_value(true))
 					.arg(Arg::with_name("user")
 						.short("U")
 						.long("user")
 						.value_name("BOOL")
-						.help("Turn user name on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn user name on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("host")
+						.short("h")
+						.long("host")
+						.value_name("BOOL")
+						.help("Turn device name on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("ip_address")
 						.short("i")
 						.long("ip_address")
 						.value_name("BOOL")
-						.help("Turn ip address display on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn ip address display on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("editor")
+						.short("e")
+						.long("editor")
+						.value_name("BOOL")
+						.help("Turn default editor name on or off. (Must have $EDITOR variable set.).")
 						.takes_value(true))
 					.arg(Arg::with_name("shell")
 						.short("s")
 						.long("shell")
 						.value_name("BOOL")
-						.help("Turn default shell name on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn default shell name on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("terminal")
 						.short("t")
 						.long("terminal")
 						.value_name("BOOL")
-						.help("Turn terminal display on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn terminal display on or off. Requires \"term\", and you must be in the same directory as both fetch and term.")
 						.takes_value(true))
 					.arg(Arg::with_name("window_manager")
 						.short("w")
 						.long("window_manager")
 						.value_name("BOOL")
-						.help("Turn window manager name on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn window manager name on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("distro")
 						.short("d")
 						.long("distro")
 						.value_name("BOOL")
-						.help("Turn distro name on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn distro name on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("kernel")
 						.short("k")
 						.long("kernel")
 						.value_name("BOOL")
-						.help("Turn kernel info on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn kernel info on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("uptime")
 						.short("u")
 						.long("uptime")
 						.value_name("BOOL")
-						.help("Turn uptime info on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn uptime info on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("packages")
 						.short("p")
 						.long("packages")
 						.value_name("BOOL")
-						.help("Turn package counts on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn total package count on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("package_counts")
+						.short("P")
+						.long("package_counts")
+						.value_name("BOOL")
+						.help("Turn separate package counts on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("music")
 						.short("m")
@@ -96,11 +150,16 @@ fn main() {
 						.short("l")
 						.long("logo")
 						.value_name("BOOL")
-						.help("Turn the logo (VALLEY) on or off. Supported options are \"true\" and \"false\".")
+						.help("Turn the logo (VALLEY) on or off.")
 						.takes_value(true))
 					.get_matches();
+	let caps = matches.value_of("caps").unwrap_or("true");
+	let abold = matches.value_of("bold").unwrap_or("true");
+	let operating_system = matches.value_of("operating_system").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
+	let host = matches.value_of("host").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
+	let editor = matches.value_of("editor").unwrap_or("false");
 	let shell = matches.value_of("shell").unwrap_or("true");
 	let terminal = matches.value_of("terminal").unwrap_or("true");
 	let window_manager = matches.value_of("window_manager").unwrap_or("true");
@@ -108,9 +167,20 @@ fn main() {
 	let kernel = matches.value_of("kernel").unwrap_or("true");
 	let uptime = matches.value_of("uptime").unwrap_or("true");
 	let packages = matches.value_of("packages").unwrap_or("true");
-	let music = matches.value_of("music").unwrap_or("mpd");
+	let package_counts = matches.value_of("package_counts").unwrap_or("false");
+	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
 	let you = Command::new("/usr/bin/whoami")
+					.output()
+					.expect("failed to execute process");
+	let dev = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo $(< /sys/devices/virtual/dmi/id/product_name)")
+					.output()
+					.expect("failed to execute process");
+	let ed = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo $EDITOR")
 					.output()
 					.expect("failed to execute process");
 	let sh = Command::new("/usr/bin/bash")
@@ -137,63 +207,84 @@ fn main() {
 					.arg("tail -n 1 \"${HOME}/.xinitrc\" | cut -d ' ' -f 2")
 					.output()
 					.expect("failed to execute process");
-	let pkgs = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
-					.output()
-					.expect("failed to execute process");
 	let ip = Command::new("/usr/bin/bash")
 					.arg("-c")
 					.arg("curl --silent http://ipecho.net/plain")
 					.output()
 					.expect("failed to execute process");
-	let term = Command::new("/usr/bin/bash")
+	let os = if cfg!(windows) {
+				"Windows"
+			} else {
+				"*nix"
+			};
+	// Output
+	println!("");
+	if logo == "true" {
+		println!("{}", makebold(" \\    / /\\   |    |    |--- \\   /"));
+		println!("{}", makebold("  \\  / /__\\  |    |    |---  \\ /"));
+		println!("{}", makebold("   \\/ /----\\ |___ |___ |---   |"));
+	}
+		if user == "true" {
+			table = addrow(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
+		}
+		if host == "true" {
+			table = addrow(table, abold, caps, "HOST", &String::from_utf8_lossy(&dev.stdout));
+		}
+		if uptime == "true" {
+			table = addrow(table, abold, caps, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
+		}
+		if operating_system == "true" {
+			table = addrow(table, abold, caps, "OPERATING SYSTEM", os);
+		}
+		if os == "*nix" && distro == "true" {
+			table = addrow(table, abold, caps, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
+		}
+		if kernel == "true" {
+			table = addrow(table, abold, caps, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
+		}
+		if window_manager == "true" {
+			table = addrow(table, abold, caps, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
+		}
+		if editor == "true" {
+			table = addrow(table, abold, caps, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
+		}
+		if shell == "true" {
+			table = addrow(table, abold, caps, "SHELL", &String::from_utf8_lossy(&sh.stdout));
+		}
+		if terminal == "true" {
+			let term = Command::new("/usr/bin/bash")
 					.arg("-c")
 					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
 					.output()
 					.expect("failed to execute process");
-	// Output
-	println!("");
-	if logo == "true" {
-		println!("{}", bold(" \\    / /\\   |    |    |--- \\   /"));
-		println!("{}", bold("  \\  / /__\\  |    |    |---  \\ /"));
-		println!("{}", bold("   \\/ /----\\ |___ |___ |---   |"));
-	}
-	if user == "true" {
-		table.add_row(row![bold("USER"), "=", String::from_utf8_lossy(&you.stdout)]);
-	}
-	if ip_address == "true" {
-		table.add_row(row![bold("IP ADDRESS"), "=", String::from_utf8_lossy(&ip.stdout)]);
-	}
-	if shell == "true" {
-		table.add_row(row![bold("SHELL"), "=", String::from_utf8_lossy(&sh.stdout)]);
-	}
-	if terminal == "true" {
-		table.add_row(row![bold("TERMINAL"), "=", String::from_utf8_lossy(&term.stdout)]);
-	}
-	if window_manager == "true" {
-		table.add_row(row![bold("WINDOW MANAGER"), "=", String::from_utf8_lossy(&wm.stdout)]);
-	}
-	if distro == "true" {
-		table.add_row(row![bold("DISTRO"), "=", String::from_utf8_lossy(&dist.stdout)]);
-	}
-	if kernel == "true" {
-		table.add_row(row![bold("KERNEL"), "=", String::from_utf8_lossy(&kern.stdout)]);
-	}
-	if uptime == "true" {
-		table.add_row(row![bold("UPTIME"), "=", String::from_utf8_lossy(&upt.stdout)]);
-	}
-	if packages == "true" {
-		table.add_row(row![bold("PACKAGES"), "=", String::from_utf8_lossy(&pkgs.stdout)]);
-	}
-	if music == "mpd" {
-		let mus = Command::new("/usr/bin/bash")
+			table = addrow(table, abold, caps, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
+		}
+		if ip_address == "true" {
+			table = addrow(table, abold, caps, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
+		}
+		if packages == "true" {
+			let pkgs = Command::new("/usr/bin/bash")
 					.arg("-c")
-					.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
+					.arg("echo \"$(pacman -Q | wc -l)\"")
 					.output()
 					.expect("failed to execute process");
-		table.add_row(row![bold("MUSIC (MPD)"), "=", String::from_utf8_lossy(&mus.stdout)]);
-	}
-	table.printstd();;
+			table = addrow(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+		} else if package_counts == "true" {
+			let pkgs = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
+					.output()
+					.expect("failed to execute process");
+			table = addrow(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+		}
+		if music == "mpd" {
+			let mus = Command::new("/usr/bin/bash")
+						.arg("-c")
+						.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
+						.output()
+						.expect("failed to execute process");
+			table = addrow(table, abold, caps, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
+		}
+		table.printstd();;
 	println!("");
 }

@@ -11,19 +11,39 @@ Note 2.5: So I just noticed an odd bug with the terminal detection. You have to 
 fetch () {
 	pwd="$(pwd)"
 	cd $HOME/.cargo/bin
-	./fetch
+	./fetch $1 $2 $3 $4 $5 $6 $7 $8
 	cd "$pwd"
 }
 ```
+
+Note 2.75: The $1, $2, etc are for making it able to accept flags. (Like -c, -d, etc.)
 
 Note 3: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
 
 ### Requirements
 1. `lshw` for the GPU info.
-2. `pacman-contrib` for the separate package counts. Will add an option soon to turn those off if you don't want to install it.
+2. `pacman-contrib` for the separate package counts. ~~Will add an option soon to turn those off if you don't want to install it.~~ Option has been added.
+
+### Installation
+I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
+
+1. Install rust.
+2. Clone the repository.
+3. cd into directory.
+4. `cargo install --path .` (or use `cargo install --force --path .` if you've already installed it.)
+
+Then is should be installed into "$HOME/.cargo/bin", so make sure that's added to your $PATH.
+
+5. Copy ![term](term) from the repo directory to "$HOME/.cargo/bin".
+6. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip steps 5 and 6.)
+
+### Screenshots
 
 **Help**
 ![Help](Screenshots/help.png?raw=true "Help")
 
 **Default Fetch**
 ![Default](Screenshots/default.png?raw=true "Default")
+
+**Default Fetch - No Caps**
+![Default](Screenshots/default-nocaps.png?raw=true "Default")

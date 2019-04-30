@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "fetch"
-version = "0.9.3"
+version = "0.9.8"
 dependencies = [
  "clap 2.33.0 (git+https://github.com/clap-rs/clap.git)",
  "prettytable-rs 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
