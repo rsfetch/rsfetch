@@ -4,6 +4,8 @@ extern crate clap;
 
 // use commands
 use std::char;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Result};
 use std::process::Command;
 use prettytable::format;
 use prettytable::Table;
@@ -32,6 +34,20 @@ fn addrow(
 	}
 	table.add_row(row![title_str, "=", value]);
 	return table
+}
+
+fn printlogo(file: String) -> Result<()> {
+    let fs = File::open(file)?;
+    for line in BufReader::new(fs).lines() {
+        println!("{}", makebold(&line?));
+    }
+	Ok(())
+}
+
+fn print_defaultlogo() {
+	println!("{}", makebold(" \\    / /\\   |    |    |--- \\   /"));
+	println!("{}", makebold("  \\  / /__\\  |    |    |---  \\ /"));
+	println!("{}", makebold("   \\/ /----\\ |___ |___ |---   |"));
 }
 
 // Main function
@@ -152,6 +168,12 @@ fn main() {
 						.value_name("BOOL")
 						.help("Turn the logo (VALLEY) on or off.")
 						.takes_value(true))
+					.arg(Arg::with_name("logofile")
+						.short("L")
+						.long("logofile")
+						.value_name("STRING")
+						.help("Specifies the file from which to read a custom ASCII logo.")
+						.takes_value(true))
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let abold = matches.value_of("bold").unwrap_or("true");
@@ -170,6 +192,7 @@ fn main() {
 	let package_counts = matches.value_of("package_counts").unwrap_or("false");
 	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
+	let logofile = matches.value_of("logofile").unwrap();
 	let you = Command::new("/usr/bin/whoami")
 					.output()
 					.expect("failed to execute process");
@@ -220,9 +243,12 @@ fn main() {
 	// Output
 	println!("");
 	if logo == "true" {
-		println!("{}", makebold(" \\    / /\\   |    |    |--- \\   /"));
-		println!("{}", makebold("  \\  / /__\\  |    |    |---  \\ /"));
-		println!("{}", makebold("   \\/ /----\\ |___ |___ |---   |"));
+		if logofile != "" {
+			let _res = printlogo(logofile.to_string());
+		} else {
+			print_defaultlogo()
+		}
+		println!(""); // print a newline
 	}
 		if user == "true" {
 			table = addrow(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
