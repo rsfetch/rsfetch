@@ -22,8 +22,8 @@ fn main() {
 						.build();
 	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("0.9.6")
-					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
+					.version("0.9.7")
+					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("caps")
 						.short("c")
 						.long("caps")
@@ -35,6 +35,12 @@ fn main() {
 						.long("user")
 						.value_name("BOOL")
 						.help("Turn user name on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("host")
+						.short("h")
+						.long("host")
+						.value_name("BOOL")
+						.help("Turn device name on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("ip_address")
 						.short("i")
@@ -111,8 +117,9 @@ fn main() {
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
+	let host = matches.value_of("host").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
-	let editor = matches.value_of("editor").unwrap_or("true");
+	let editor = matches.value_of("editor").unwrap_or("false");
 	let shell = matches.value_of("shell").unwrap_or("true");
 	let terminal = matches.value_of("terminal").unwrap_or("true");
 	let window_manager = matches.value_of("window_manager").unwrap_or("true");
@@ -124,6 +131,11 @@ fn main() {
 	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
 	let you = Command::new("/usr/bin/whoami")
+					.output()
+					.expect("failed to execute process");
+	let dev = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo $(< /sys/devices/virtual/dmi/id/product_name)")
 					.output()
 					.expect("failed to execute process");
 	let ed = Command::new("/usr/bin/bash")
@@ -176,6 +188,9 @@ fn main() {
 		if user == "true" {
 			table.add_row(row!["USER", "=", String::from_utf8_lossy(&you.stdout)]);
 		}
+		if host == "true" {
+			table.add_row(row!["HOST", "=", String::from_utf8_lossy(&dev.stdout)]);
+		}
 		if ip_address == "true" {
 			table.add_row(row!["IP ADDRESS", "=", String::from_utf8_lossy(&ip.stdout)]);
 		}
@@ -227,6 +242,9 @@ fn main() {
 	} else if caps == "false" {
 		if user == "true" {
 			table.add_row(row!["user", "=", String::from_utf8_lossy(&you.stdout)]);
+		}
+		if host == "true" {
+			table.add_row(row!["host", "=", String::from_utf8_lossy(&dev.stdout)]);
 		}
 		if ip_address == "true" {
 			table.add_row(row!["ip address", "=", String::from_utf8_lossy(&ip.stdout)]);
