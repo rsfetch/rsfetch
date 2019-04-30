@@ -32,7 +32,7 @@ fn addrow(
 	if abold != "false" {
 		title_str = makebold(&title_str);
 	}
-	table.add_row(row![title_str, "=", value]);
+	table.add_row(row![title_str, value]);
 	return table
 }
 
@@ -54,23 +54,20 @@ fn print_defaultlogo() {
 fn main() {
 	// Variables
 	let mut table = Table::new();
-	let format = format::FormatBuilder::new()
-						.column_separator(' ')
-						.borders('│')
-						.separators(&[format::LinePosition::Top,
-							format::LinePosition::Bottom],
-							format::LineSeparator::new('─', '─', '0', '0'))
-						.padding(1, 1)
-						.build();
-	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("1.0.0")
+					.version("1.0.1")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
 						.long("bold")
 						.value_name("BOOL")
 						.help("Turn bold for field titles on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("borders")
+						.short("B")
+						.long("borders")
+						.value_name("BOOL")
+						.help("Turn borders on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("caps")
 						.short("c")
@@ -171,6 +168,7 @@ fn main() {
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let abold = matches.value_of("bold").unwrap_or("true");
+	let borders = matches.value_of("borders").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
 	let host = matches.value_of("host").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
@@ -238,6 +236,16 @@ fn main() {
 		}
 		println!(""); // print a newline
 	}
+	if borders == "true" {
+		let format = format::FormatBuilder::new()
+						.column_separator(' ')
+						.borders('│')
+						.separators(&[format::LinePosition::Top,
+							format::LinePosition::Bottom],
+							format::LineSeparator::new('─', '─', '0', '0'))
+						.padding(1, 1)
+						.build();
+		table.set_format(format);
 		if user == "true" {
 			table = addrow(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
 		}
@@ -297,5 +305,75 @@ fn main() {
 			table = addrow(table, abold, caps, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
 		}
 		table.printstd();;
+	} else {
+		let format = format::FormatBuilder::new()
+						.column_separator(' ')
+						.borders(' ')
+						.separators(&[format::LinePosition::Top,
+							format::LinePosition::Bottom],
+							format::LineSeparator::new(' ', ' ', ' ', ' '))
+						.padding(1, 1)
+						.build();
+		table.set_format(format);
+		if user == "true" {
+			table = addrow2(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
+		}
+		if host == "true" {
+			table = addrow2(table, abold, caps, "HOST", &String::from_utf8_lossy(&dev.stdout));
+		}
+		if uptime == "true" {
+			table = addrow2(table, abold, caps, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
+		}
+		if distro == "true" {
+			table = addrow2(table, abold, caps, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
+		}
+		if kernel == "true" {
+			table = addrow2(table, abold, caps, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
+		}
+		if window_manager == "true" {
+			table = addrow2(table, abold, caps, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
+		}
+		if editor == "true" {
+			table = addrow2(table, abold, caps, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
+		}
+		if shell == "true" {
+			table = addrow2(table, abold, caps, "SHELL", &String::from_utf8_lossy(&sh.stdout));
+		}
+		if terminal == "true" {
+			let term = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
+					.output()
+					.expect("failed to execute process");
+			table = addrow2(table, abold, caps, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
+		}
+		if ip_address == "true" {
+			table = addrow2(table, abold, caps, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
+		}
+		if packages == "true" {
+			let pkgs = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo \"$(pacman -Q | wc -l)\"")
+					.output()
+					.expect("failed to execute process");
+			table = addrow2(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+		} else if package_counts == "true" {
+			let pkgs = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
+					.output()
+					.expect("failed to execute process");
+			table = addrow2(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+		}
+		if music == "mpd" {
+			let mus = Command::new("/usr/bin/bash")
+						.arg("-c")
+						.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
+						.output()
+						.expect("failed to execute process");
+			table = addrow2(table, abold, caps, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
+		}
+		table.printstd();;
+	}
 	println!("");
 }
