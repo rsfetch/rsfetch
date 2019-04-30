@@ -1,4 +1,4 @@
-// Crates
+// crates
 #[macro_use] extern crate prettytable;
 extern crate clap;
 
@@ -21,18 +21,23 @@ fn makebold(text: &str) -> String {
 fn addrow(
 		mut table: Table, 
 		abold: &str, 
-		caps: &str, 
+		caps: &str,
+		border: &str, 
 		title: &str, 
 		value: &str
 	) -> Table {
 	let mut title_str: String = title.to_string();
-	if caps == "false" {
+	if caps != "true" {
 		title_str = title_str.to_lowercase();
 	}
 	if abold != "false" {
 		title_str = makebold(&title_str);
 	}
-	table.add_row(row![title_str, value]);
+	if border != "true" {
+		table.add_row(row![title_str, value]);
+	} else {
+		table.add_row(row![title_str, "=", value]);
+	}
 	return table
 }
 
@@ -236,108 +241,50 @@ fn main() {
 		}
 		println!(""); // print a newline
 	}
+	let mut format;
 	if borders == "true" {
-		let format = format::FormatBuilder::new()
-						.column_separator(' ')
-						.borders('│')
-						.separators(&[format::LinePosition::Top,
-							format::LinePosition::Bottom],
-							format::LineSeparator::new('─', '─', '0', '0'))
-						.padding(1, 1)
-						.build();
-		table.set_format(format);
-		if user == "true" {
-			table = addrow(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
-		}
-		if host == "true" {
-			table = addrow(table, abold, caps, "HOST", &String::from_utf8_lossy(&dev.stdout));
-		}
-		if uptime == "true" {
-			table = addrow(table, abold, caps, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
-		}
-		if distro == "true" {
-			table = addrow(table, abold, caps, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
-		}
-		if kernel == "true" {
-			table = addrow(table, abold, caps, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
-		}
-		if window_manager == "true" {
-			table = addrow(table, abold, caps, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
-		}
-		if editor == "true" {
-			table = addrow(table, abold, caps, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
-		}
-		if shell == "true" {
-			table = addrow(table, abold, caps, "SHELL", &String::from_utf8_lossy(&sh.stdout));
-		}
-		if terminal == "true" {
-			let term = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
-		}
-		if ip_address == "true" {
-			table = addrow(table, abold, caps, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
-		}
-		if packages == "true" {
-			let pkgs = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo \"$(pacman -Q | wc -l)\"")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-		} else if package_counts == "true" {
-			let pkgs = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-		}
-		if music == "mpd" {
-			let mus = Command::new("/usr/bin/bash")
-						.arg("-c")
-						.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
-						.output()
-						.expect("failed to execute process");
-			table = addrow(table, abold, caps, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
-		}
-		table.printstd();;
+		format = format::FormatBuilder::new()
+			.column_separator(' ')
+			.borders('│')
+			.separators(&[format::LinePosition::Top,
+				format::LinePosition::Bottom],
+				format::LineSeparator::new('─', '─', '■', '■'))
+			.padding(1, 1)
+			.build();
 	} else {
-		let format = format::FormatBuilder::new()
-						.column_separator(' ')
-						.borders(' ')
-						.separators(&[format::LinePosition::Top,
-							format::LinePosition::Bottom],
-							format::LineSeparator::new(' ', ' ', ' ', ' '))
-						.padding(1, 1)
-						.build();
+		format = format::FormatBuilder::new()
+			.column_separator(' ')
+			.borders(' ')
+			.separators(&[format::LinePosition::Top,
+				format::LinePosition::Bottom],
+				format::LineSeparator::new(' ', ' ', ' ', ' '))
+			.padding(1, 1)
+			.build();
+	}
 		table.set_format(format);
 		if user == "true" {
-			table = addrow2(table, abold, caps, "USER", &String::from_utf8_lossy(&you.stdout));
+			table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
 		}
 		if host == "true" {
-			table = addrow2(table, abold, caps, "HOST", &String::from_utf8_lossy(&dev.stdout));
+			table = addrow(table, abold, caps, borders, "HOST", &String::from_utf8_lossy(&dev.stdout));
 		}
 		if uptime == "true" {
-			table = addrow2(table, abold, caps, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
+			table = addrow(table, abold, caps, borders, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
 		}
 		if distro == "true" {
-			table = addrow2(table, abold, caps, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
+			table = addrow(table, abold, caps, borders, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
 		}
 		if kernel == "true" {
-			table = addrow2(table, abold, caps, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
+			table = addrow(table, abold, caps, borders, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
 		}
 		if window_manager == "true" {
-			table = addrow2(table, abold, caps, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
+			table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
 		}
 		if editor == "true" {
-			table = addrow2(table, abold, caps, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
+			table = addrow(table, abold, caps, borders, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
 		}
 		if shell == "true" {
-			table = addrow2(table, abold, caps, "SHELL", &String::from_utf8_lossy(&sh.stdout));
+			table = addrow(table, abold, caps, borders, "SHELL", &String::from_utf8_lossy(&sh.stdout));
 		}
 		if terminal == "true" {
 			let term = Command::new("/usr/bin/bash")
@@ -345,10 +292,10 @@ fn main() {
 					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
 					.output()
 					.expect("failed to execute process");
-			table = addrow2(table, abold, caps, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
+			table = addrow(table, abold, caps, borders, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
 		}
 		if ip_address == "true" {
-			table = addrow2(table, abold, caps, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
+			table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
 		}
 		if packages == "true" {
 			let pkgs = Command::new("/usr/bin/bash")
@@ -356,14 +303,14 @@ fn main() {
 					.arg("echo \"$(pacman -Q | wc -l)\"")
 					.output()
 					.expect("failed to execute process");
-			table = addrow2(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+			table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
 		} else if package_counts == "true" {
 			let pkgs = Command::new("/usr/bin/bash")
 					.arg("-c")
 					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
 					.output()
 					.expect("failed to execute process");
-			table = addrow2(table, abold, caps, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+			table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
 		}
 		if music == "mpd" {
 			let mus = Command::new("/usr/bin/bash")
@@ -371,9 +318,8 @@ fn main() {
 						.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
 						.output()
 						.expect("failed to execute process");
-			table = addrow2(table, abold, caps, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
+			table = addrow(table, abold, caps, borders, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
 		}
 		table.printstd();;
-	}
 	println!("");
 }
