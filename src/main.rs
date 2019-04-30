@@ -2,11 +2,19 @@
 #[macro_use] extern crate prettytable;
 extern crate clap;
 
-// Use commands
+// use commands
+use std::char;
 use std::process::Command;
 use prettytable::format;
 use prettytable::Table;
 use clap::{Arg, App};
+
+// escape character (U+001B)
+const E: char = 0x1B as char;
+
+fn bold(text: &str) -> String {
+	format!("{}[1m{}{}[0m", E, text, E)
+}
 
 // Main function
 fn main() {
@@ -147,36 +155,36 @@ fn main() {
 	// Output
 	println!("");
 	if logo == "true" {
-		println!(" \\    / /\\   |    |    |--- \\   /");
-		println!("  \\  / /__\\  |    |    |---  \\ /");
-		println!("   \\/ /----\\ |___ |___ |---   |");
+		println!("{}", bold(" \\    / /\\   |    |    |--- \\   /"));
+		println!("{}", bold("  \\  / /__\\  |    |    |---  \\ /"));
+		println!("{}", bold("   \\/ /----\\ |___ |___ |---   |"));
 	}
 	if user == "true" {
-		table.add_row(row!["USER", "=", String::from_utf8_lossy(&you.stdout)]);
+		table.add_row(row![bold("USER"), "=", String::from_utf8_lossy(&you.stdout)]);
 	}
 	if ip_address == "true" {
-		table.add_row(row!["IP ADDRESS", "=", String::from_utf8_lossy(&ip.stdout)]);
+		table.add_row(row![bold("IP ADDRESS"), "=", String::from_utf8_lossy(&ip.stdout)]);
 	}
 	if shell == "true" {
-		table.add_row(row!["SHELL", "=", String::from_utf8_lossy(&sh.stdout)]);
+		table.add_row(row![bold("SHELL"), "=", String::from_utf8_lossy(&sh.stdout)]);
 	}
 	if terminal == "true" {
-		table.add_row(row!["TERMINAL", "=", String::from_utf8_lossy(&term.stdout)]);
+		table.add_row(row![bold("TERMINAL"), "=", String::from_utf8_lossy(&term.stdout)]);
 	}
 	if window_manager == "true" {
-		table.add_row(row!["WINDOW MANAGER", "=", String::from_utf8_lossy(&wm.stdout)]);
+		table.add_row(row![bold("WINDOW MANAGER"), "=", String::from_utf8_lossy(&wm.stdout)]);
 	}
 	if distro == "true" {
-		table.add_row(row!["DISTRO", "=", String::from_utf8_lossy(&dist.stdout)]);
+		table.add_row(row![bold("DISTRO"), "=", String::from_utf8_lossy(&dist.stdout)]);
 	}
 	if kernel == "true" {
-		table.add_row(row!["KERNEL", "=", String::from_utf8_lossy(&kern.stdout)]);
+		table.add_row(row![bold("KERNEL"), "=", String::from_utf8_lossy(&kern.stdout)]);
 	}
 	if uptime == "true" {
-		table.add_row(row!["UPTIME", "=", String::from_utf8_lossy(&upt.stdout)]);
+		table.add_row(row![bold("UPTIME"), "=", String::from_utf8_lossy(&upt.stdout)]);
 	}
 	if packages == "true" {
-		table.add_row(row!["PACKAGES", "=", String::from_utf8_lossy(&pkgs.stdout)]);
+		table.add_row(row![bold("PACKAGES"), "=", String::from_utf8_lossy(&pkgs.stdout)]);
 	}
 	if music == "mpd" {
 		let mus = Command::new("/usr/bin/bash")
@@ -184,7 +192,7 @@ fn main() {
 					.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
 					.output()
 					.expect("failed to execute process");
-		table.add_row(row!["MUSIC (MPD)", "=", String::from_utf8_lossy(&mus.stdout)]);
+		table.add_row(row![bold("MUSIC (MPD)"), "=", String::from_utf8_lossy(&mus.stdout)]);
 	}
 	table.printstd();;
 	println!("");
