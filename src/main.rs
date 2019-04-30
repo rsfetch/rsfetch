@@ -22,13 +22,19 @@ fn main() {
 						.build();
 	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("0.9.7")
+					.version("0.9.8")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("caps")
 						.short("c")
 						.long("caps")
 						.value_name("BOOL")
 						.help("Turn all caps on or off.")
+						.takes_value(true))
+					.arg(Arg::with_name("operating_system")
+						.short("o")
+						.long("operating_system")
+						.value_name("BOOL")
+						.help("Turn name of operating system on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("user")
 						.short("U")
@@ -116,6 +122,7 @@ fn main() {
 						.takes_value(true))
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
+	let operating_system = matches.value_of("operating_system").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
 	let host = matches.value_of("host").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
@@ -172,11 +179,11 @@ fn main() {
 					.arg("curl --silent http://ipecho.net/plain")
 					.output()
 					.expect("failed to execute process");
-	let term = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
-					.output()
-					.expect("failed to execute process");
+	let os = if cfg!(windows) {
+				"Windows"
+			} else {
+				"*nix"
+			};
 	// Output
 	println!("");
 	if logo == "true" {
@@ -191,8 +198,20 @@ fn main() {
 		if host == "true" {
 			table.add_row(row!["HOST", "=", String::from_utf8_lossy(&dev.stdout)]);
 		}
-		if ip_address == "true" {
-			table.add_row(row!["IP ADDRESS", "=", String::from_utf8_lossy(&ip.stdout)]);
+		if uptime == "true" {
+			table.add_row(row!["UPTIME", "=", String::from_utf8_lossy(&upt.stdout)]);
+		}
+		if operating_system == "true" {
+			table.add_row(row!["OPERATING SYSTEM", "=", os]);
+		}
+		if os == "*nix" && distro == "true" {
+			table.add_row(row!["DISTRO", "=", String::from_utf8_lossy(&dist.stdout)]);
+		}
+		if kernel == "true" {
+			table.add_row(row!["KERNEL", "=", String::from_utf8_lossy(&kern.stdout)]);
+		}
+		if window_manager == "true" {
+			table.add_row(row!["WINDOW MANAGER", "=", String::from_utf8_lossy(&wm.stdout)]);
 		}
 		if editor == "true" {
 			table.add_row(row!["EDITOR", "=", String::from_utf8_lossy(&ed.stdout)]);
@@ -201,19 +220,15 @@ fn main() {
 			table.add_row(row!["SHELL", "=", String::from_utf8_lossy(&sh.stdout)]);
 		}
 		if terminal == "true" {
+			let term = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
+					.output()
+					.expect("failed to execute process");
 			table.add_row(row!["TERMINAL", "=", String::from_utf8_lossy(&term.stdout)]);
 		}
-		if window_manager == "true" {
-			table.add_row(row!["WINDOW MANAGER", "=", String::from_utf8_lossy(&wm.stdout)]);
-		}
-		if distro == "true" {
-			table.add_row(row!["DISTRO", "=", String::from_utf8_lossy(&dist.stdout)]);
-		}
-		if kernel == "true" {
-			table.add_row(row!["KERNEL", "=", String::from_utf8_lossy(&kern.stdout)]);
-		}
-		if uptime == "true" {
-			table.add_row(row!["UPTIME", "=", String::from_utf8_lossy(&upt.stdout)]);
+		if ip_address == "true" {
+			table.add_row(row!["IP ADDRESS", "=", String::from_utf8_lossy(&ip.stdout)]);
 		}
 		if packages == "true" {
 			let pkgs = Command::new("/usr/bin/bash")
@@ -246,8 +261,20 @@ fn main() {
 		if host == "true" {
 			table.add_row(row!["host", "=", String::from_utf8_lossy(&dev.stdout)]);
 		}
-		if ip_address == "true" {
-			table.add_row(row!["ip address", "=", String::from_utf8_lossy(&ip.stdout)]);
+		if uptime == "true" {
+			table.add_row(row!["uptime", "=", String::from_utf8_lossy(&upt.stdout)]);
+		}
+		if operating_system == "true" {
+			table.add_row(row!["operating system", "=", os]);
+		}
+		if os == "*nix" && distro == "true" {
+			table.add_row(row!["distro", "=", String::from_utf8_lossy(&dist.stdout)]);
+		}
+		if kernel == "true" {
+			table.add_row(row!["kernel", "=", String::from_utf8_lossy(&kern.stdout)]);
+		}
+		if window_manager == "true" {
+			table.add_row(row!["window manager", "=", String::from_utf8_lossy(&wm.stdout)]);
 		}
 		if editor == "true" {
 			table.add_row(row!["editor", "=", String::from_utf8_lossy(&ed.stdout)]);
@@ -256,19 +283,15 @@ fn main() {
 			table.add_row(row!["shell", "=", String::from_utf8_lossy(&sh.stdout)]);
 		}
 		if terminal == "true" {
+			let term = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
+					.output()
+					.expect("failed to execute process");
 			table.add_row(row!["terminal", "=", String::from_utf8_lossy(&term.stdout)]);
 		}
-		if window_manager == "true" {
-			table.add_row(row!["window manager", "=", String::from_utf8_lossy(&wm.stdout)]);
-		}
-		if distro == "true" {
-			table.add_row(row!["distro", "=", String::from_utf8_lossy(&dist.stdout)]);
-		}
-		if kernel == "true" {
-			table.add_row(row!["kernel", "=", String::from_utf8_lossy(&kern.stdout)]);
-		}
-		if uptime == "true" {
-			table.add_row(row!["uptime", "=", String::from_utf8_lossy(&upt.stdout)]);
+		if ip_address == "true" {
+			table.add_row(row!["ip address", "=", String::from_utf8_lossy(&ip.stdout)]);
 		}
 		if packages == "true" {
 			let pkgs = Command::new("/usr/bin/bash")
