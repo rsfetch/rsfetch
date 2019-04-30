@@ -27,7 +27,7 @@ fn addrow(
 	if caps == "false" {
 		title_str = title_str.to_lowercase();
 	}
-	if abold == "true" {
+	if abold != "false" {
 		title_str = makebold(&title_str);
 	}
 	table.add_row(row![title_str, "=", value]);
