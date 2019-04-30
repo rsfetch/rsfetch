@@ -64,7 +64,7 @@ fn main() {
 						.build();
 	table.set_format(format);
 	let matches = App::new("fetch")
-					.version("0.9.8")
+					.version("1.0.0")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -77,12 +77,6 @@ fn main() {
 						.long("caps")
 						.value_name("BOOL")
 						.help("Turn all caps on or off.")
-						.takes_value(true))
-					.arg(Arg::with_name("operating_system")
-						.short("o")
-						.long("operating_system")
-						.value_name("BOOL")
-						.help("Turn name of operating system on or off.")
 						.takes_value(true))
 					.arg(Arg::with_name("user")
 						.short("U")
@@ -177,7 +171,6 @@ fn main() {
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let abold = matches.value_of("bold").unwrap_or("true");
-	let operating_system = matches.value_of("operating_system").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
 	let host = matches.value_of("host").unwrap_or("true");
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
@@ -235,11 +228,6 @@ fn main() {
 					.arg("curl --silent http://ipecho.net/plain")
 					.output()
 					.expect("failed to execute process");
-	let os = if cfg!(windows) {
-				"Windows"
-			} else {
-				"*nix"
-			};
 	// Output
 	println!("");
 	if logo == "true" {
@@ -259,10 +247,7 @@ fn main() {
 		if uptime == "true" {
 			table = addrow(table, abold, caps, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
 		}
-		if operating_system == "true" {
-			table = addrow(table, abold, caps, "OPERATING SYSTEM", os);
-		}
-		if os == "*nix" && distro == "true" {
+		if distro == "true" {
 			table = addrow(table, abold, caps, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
 		}
 		if kernel == "true" {
