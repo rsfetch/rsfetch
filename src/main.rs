@@ -60,7 +60,7 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.0.1")
+					.version("1.1.0")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -167,12 +167,19 @@ fn main() {
 					.arg(Arg::with_name("logofile")
 						.short("L")
 						.long("logofile")
-						.value_name("STRING")
+						.value_name("FILE")
 						.help("Specifies the file from which to read a custom ASCII logo.")
+						.takes_value(true))
+					.arg(Arg::with_name("corners")
+						.short("C")
+						.long("corners")
+						.value_name("CHARACTER")
+						.help("Specifies the corner style. Choose either \"■\" or \"0\".")
 						.takes_value(true))
 					.get_matches();
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let abold = matches.value_of("bold").unwrap_or("true");
+	let corners = matches.value_of("corners").unwrap_or("■");
 	let borders = matches.value_of("borders").unwrap_or("true");
 	let user = matches.value_of("user").unwrap_or("true");
 	let host = matches.value_of("host").unwrap_or("true");
@@ -241,16 +248,29 @@ fn main() {
 		}
 		println!(""); // print a newline
 	}
-	let mut format;
+	let format;
 	if borders == "true" {
-		format = format::FormatBuilder::new()
-			.column_separator(' ')
-			.borders('│')
-			.separators(&[format::LinePosition::Top,
-				format::LinePosition::Bottom],
-				format::LineSeparator::new('─', '─', '■', '■'))
-			.padding(1, 1)
-			.build();
+		if corners == "■" {
+			format = format::FormatBuilder::new()
+				.column_separator(' ')
+				.borders('│')
+				.separators(&[format::LinePosition::Top,
+					format::LinePosition::Bottom],
+					format::LineSeparator::new('─', '─', '■', '■'))
+				.padding(1, 1)
+				.build();
+			table.set_format(format);
+		} else if corners == "0" {
+			format = format::FormatBuilder::new()
+				.column_separator(' ')
+				.borders('│')
+				.separators(&[format::LinePosition::Top,
+					format::LinePosition::Bottom],
+					format::LineSeparator::new('─', '─', '0', '0'))
+				.padding(1, 1)
+				.build();
+			table.set_format(format);
+		}
 	} else {
 		format = format::FormatBuilder::new()
 			.column_separator(' ')
@@ -260,8 +280,8 @@ fn main() {
 				format::LineSeparator::new(' ', ' ', ' ', ' '))
 			.padding(1, 1)
 			.build();
-	}
 		table.set_format(format);
+	}
 		if user == "true" {
 			table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
 		}
