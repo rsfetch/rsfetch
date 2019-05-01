@@ -27,15 +27,12 @@ Note 3: I will attempt to add support for the set terminal font, but it looks li
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
 
-1. Install rust.
+1. Install rust and cargo.
 2. Clone the repository.
-3. cd into directory.
-4. `cargo install --path .` (or use `cargo install --force --path .` if you've already installed it.)
+3. `cd fetch && make && sudo make install`
+4. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)
 
-Then is should be installed into "$HOME/.cargo/bin", so make sure that's added to your $PATH.
-
-5. Copy ![term](term) from the repo directory to "$HOME/.cargo/bin".
-6. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip steps 5 and 6.)
+Uninstall with `sudo make uninstall`.
 
 ### Screenshots
 
