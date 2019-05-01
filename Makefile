@@ -60,12 +60,12 @@ install: build
 	@echo :: INSTALLING TO ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
+	@cp -f ./term ${DESTDIR}${PREFIX}/bin
 	@chmod 755 ${DESTDIR}${PREFIX}/bin/fetch
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/term
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
 	@rm -f ${DESTDIR}${PREFIX}/bin/fetch
-	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
-	@rm -f ${DESTDIR}${MANPREFIX}/man1/fetch.1
 
 .PHONY: all options run clean dist install uninstall
