@@ -2,8 +2,6 @@
 # See LICENSE file for copyright and license details.
 # This Makefile is proudly stolen from XST project
 
-VERSION = 0.2
-
 # paths
 DBIN = ./target/debug/fetch
 RBIN = ./target/release/fetch
