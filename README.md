@@ -7,7 +7,7 @@ Note 2: If you want the name of your terminal displayed, ![term](term) must be i
 
 Note 2.5: So I just noticed an odd bug with the terminal detection. You have to be in the same directory as both binaries. So I created a little bash function you can use in the meantime when I figure out how to fix it.
 
-```
+```Shell
 fetch () {
 	pwd="$(pwd)"
 	cd $HOME/.cargo/bin
@@ -29,7 +29,7 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 
 1. Install rust and cargo.
 2. Clone the repository.
-3. `cd fetch && make && sudo make install`
+3. `cd fetch; make; sudo make install`
 4. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)
 
 Uninstall with `sudo make uninstall`.
