@@ -1,8 +1,8 @@
-// crates
-#[macro_use] extern crate prettytable;
-extern crate clap;
+// External crates to be used.
+#[macro_use] extern crate prettytable; // For a nice organized output.
+extern crate clap; // For cmd line arguments.
 
-// use commands
+// use commands.
 use std::char;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
@@ -17,10 +17,12 @@ use std::env;
 // escape character (U+001B)
 const E: char = 0x1B as char;
 
+// Function for making bold text.
 fn makebold(text: &str) -> String {
 	format!("{}[1m{}{}[0m", E, text, E)
 }
 
+// Function for adding rows to the table.
 fn addrow(
 		mut table: Table, 
 		abold: &str, 
@@ -44,6 +46,7 @@ fn addrow(
 	return table
 }
 
+// For custom art.
 fn printlogo(file: String) -> Result<()> {
     let fs = File::open(file)?;
     for line in BufReader::new(fs).lines() {
@@ -52,6 +55,7 @@ fn printlogo(file: String) -> Result<()> {
 	Ok(())
 }
 
+// Default art.
 fn print_defaultlogo() {
 	println!("{}", makebold(" \\    / /\\   |    |    |--- \\   /"));
 	println!("{}", makebold("  \\  / /__\\  |    |    |---  \\ /"));
@@ -63,8 +67,8 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.2.1")
-					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
+					.version("1.2.2")
+					.about("\nMy info fetch tool for Linux. Fast (0.02s - 0.3s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
 						.long("bold")
@@ -192,8 +196,9 @@ fn main() {
 	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
 	let logofile = matches.value_of("logofile").unwrap_or("");
-	// Output
-	println!("");
+	
+	// Determine the logo to use.
+	println!(""); // For a blank line before output.
 	if logo == "true" {
 		if logofile != "" {
 			let _res = printlogo(logofile.to_string());
@@ -203,6 +208,8 @@ fn main() {
 		println!(""); // print a newline
 	}
 	let format;
+	
+	// Determine if borders are used, and if they are, the style of the corners.
 	if borders == "true" {
 		if corners == "■" {
 			format = format::FormatBuilder::new()
@@ -236,6 +243,7 @@ fn main() {
 			.build();
 		table.set_format(format);
 	}
+	// Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
 		if user == "true" {
 			let you = Command::new("/usr/bin/whoami")
 					.output()
@@ -314,14 +322,14 @@ fn main() {
 					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
 		}
-		if packages == "true" {
+		if packages == "true" && package_counts == "false" {
 			let pkgs = Command::new("/usr/bin/bash")
 					.arg("-c")
 					.arg("echo \"$(pacman -Q | wc -l)\"")
 					.output()
 					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-		} else if package_counts == "true" {
+		} else if package_counts == "true" && packages == "false" {
 			let pkgs = Command::new("/usr/bin/bash")
 					.arg("-c")
 					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
@@ -337,6 +345,7 @@ fn main() {
 						.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
 		}
+		// After collecting data for variables and adding the rows, print the final output into a custom table.
 		table.printstd();;
-	println!("");
+	println!(""); // For a blank line after output.
 }
