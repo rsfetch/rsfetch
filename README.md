@@ -29,5 +29,11 @@ Uninstall with `sudo make uninstall`.
 **Default Fetch**
 ![Default](Screenshots/default.png?raw=true "Default")
 
-**Default Fetch - No Caps**
-![Default](Screenshots/default-nocaps.png?raw=true "Default")
+**My Preference of Options + Execution Time**
+![Default](Screenshots/preference.png?raw=true "Default")
+
+You can't see what options I choose because I aliased fetch. Here is the actual command ran.
+
+`fetch -C 0 -h false -i false -l false -u false`
+
+And yes, you saw right. Execution time was 0.021s! Crazy fast.
