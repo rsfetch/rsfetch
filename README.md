@@ -17,7 +17,7 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 1. Install rust and cargo.
 2. Clone the repository.
 3. `cd fetch; make; sudo make install`
-4. ~~To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)~~ Removed terminal dtection for now. At least until I can figure out how to implement it in rust.
+4. ~~To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)~~ Removed terminal detection for now. At least until I can figure out how to implement it in rust.
 
 Uninstall with `sudo make uninstall`.
 
