@@ -5,22 +5,7 @@ WARNING: I've updated a lot of things in this, so things are GUARANTEED to be br
 
 Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman` and `paclist`.
 
-Note 2: If you want the name of your terminal displayed, ![term](term) must be in the same directory as the fetch binary. Yes, I used a bash script, but I couldn't find a better way to do it. :(
-
-Note 2.5: So I just noticed an odd bug with the terminal detection. You have to be in the same directory as both binaries. So I created a little bash function you can use in the meantime when I figure out how to fix it.
-
-```Shell
-fetch () {
-	pwd="$(pwd)"
-	cd $HOME/.cargo/bin
-	./fetch $1 $2 $3 $4 $5 $6 $7 $8
-	cd "$pwd"
-}
-```
-
-Note 2.75: The $1, $2, etc are for making it able to accept flags. (Like -c, -d, etc.)
-
-Note 3: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
+Note 2: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
 
 ### Requirements
 1. `lshw` for the GPU info.
@@ -32,7 +17,7 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 1. Install rust and cargo.
 2. Clone the repository.
 3. `cd fetch; make; sudo make install`
-4. To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)
+4. ~~To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)~~ Removed terminal dtection for now. At least until I can figure out how to implement it in rust.
 
 Uninstall with `sudo make uninstall`.
 

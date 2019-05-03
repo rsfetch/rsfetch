@@ -63,7 +63,7 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.2.0")
+					.version("1.2.1")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -112,12 +112,6 @@ fn main() {
 						.long("shell")
 						.value_name("BOOL")
 						.help("Turn default shell name on or off.")
-						.takes_value(true))
-					.arg(Arg::with_name("terminal")
-						.short("t")
-						.long("terminal")
-						.value_name("BOOL")
-						.help("Turn terminal display on or off. Requires \"term\", and you must be in the same directory as both fetch and term.")
 						.takes_value(true))
 					.arg(Arg::with_name("window_manager")
 						.short("w")
@@ -189,7 +183,6 @@ fn main() {
 	let ip_address = matches.value_of("ip_address").unwrap_or("true");
 	let editor = matches.value_of("editor").unwrap_or("false");
 	let shell = matches.value_of("shell").unwrap_or("true");
-	let terminal = matches.value_of("terminal").unwrap_or("true");
 	let window_manager = matches.value_of("window_manager").unwrap_or("true");
 	let distro = matches.value_of("distro").unwrap_or("true");
 	let kernel = matches.value_of("kernel").unwrap_or("true");
@@ -312,14 +305,6 @@ fn main() {
 			let thefile = contents;
 			let sh = &thefile[692..701];
 			table = addrow(table, abold, caps, borders, "SHELL", sh);
-		}
-		if terminal == "true" {
-			let term = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("./term") // Yes, I cheated. I used a bash script to find the name of the term. I feel deeply saddened. :(
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
 		}
 		if ip_address == "true" {
 			let ip = Command::new("/usr/bin/bash")
