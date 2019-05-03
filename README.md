@@ -3,13 +3,12 @@ My info fetch program, written in Rust. Minimalistic (for the most part).
 
 WARNING: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
 
-Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman` and `paclist`.
+Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman`.
 
 Note 2: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
 
 ### Requirements
-1. `pacman-contrib` for the separate package counts. Optional, spearate package counts are disabled by default.
-2. `mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
+`mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
@@ -36,7 +35,7 @@ You can't see what options I choose because I aliased fetch. Here is the actual 
 
 `fetch -C 0 -h false -i false -l false -u false`
 
-And yes, you saw right. Execution time was 0.021s! Crazy fast.
+And yes, you saw right. Execution time was 0.015s! Crazy fast.
 
 ### Amount of code. (According to tokei).
 
@@ -45,8 +44,8 @@ And yes, you saw right. Execution time was 0.021s! Crazy fast.
  Language            Files        Lines         Code     Comments       Blanks
 -------------------------------------------------------------------------------
  Makefile                1           69           46            9           14
- Rust                    1          370          348           13            9
+ Rust                    1          364          342           13            9
 -------------------------------------------------------------------------------
- Total                   2          439          394           22           23
+ Total                   2          433          388           22           23
 -------------------------------------------------------------------------------
 ```

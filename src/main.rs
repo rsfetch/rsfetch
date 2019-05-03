@@ -4,6 +4,7 @@ extern crate clap; // For cmd line arguments.
 
 // use commands.
 use std::char;
+use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 use std::io::prelude::*;
@@ -68,12 +69,12 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.2.2")
-					.about("\nMy info fetch tool for Linux. Fast (0.02s - 0.3s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
+					.version("1.3.0")
+					.about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of editor), and \"SOURCE\" defaults to no.")
 					.arg(Arg::with_name("credits")
 						.long("credits")
 						.value_name(" ")
-						.help("View links to those who helped make this, as well as thanks to others who've helped me.")
+						.help("Links to those who helped make this, and thanks to others who've helped me with my struggles.")
 						.takes_value(false))
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -153,12 +154,6 @@ fn main() {
 						.value_name("BOOL")
 						.help("Turn total package count on or off.")
 						.takes_value(true))
-					.arg(Arg::with_name("package_counts")
-						.short("P")
-						.long("package_counts")
-						.value_name("BOOL")
-						.help("Turn separate package counts on or off.")
-						.takes_value(true))
 					.arg(Arg::with_name("music")
 						.short("m")
 						.long("music")
@@ -206,7 +201,6 @@ fn main() {
 	let kernel = matches.value_of("kernel").unwrap_or("true");
 	let uptime = matches.value_of("uptime").unwrap_or("true");
 	let packages = matches.value_of("packages").unwrap_or("true");
-	let package_counts = matches.value_of("package_counts").unwrap_or("false");
 	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
 	let logofile = matches.value_of("logofile").unwrap_or("");
@@ -336,20 +330,20 @@ fn main() {
 				.expect("failed to execute process");
 		table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
 	}
-	if packages == "true" && package_counts == "false" {
-		let pkgs = Command::new("/usr/bin/bash")
-				.arg("-c")
-				.arg("echo \"$(pacman -Q | wc -l)\"")
-				.output()
-				.expect("failed to execute process");
-		table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-	} else if package_counts == "true" && packages == "false" {
-		let pkgs = Command::new("/usr/bin/bash")
-				.arg("-c")
-				.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
-				.output()
-				.expect("failed to execute process");
-		table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+	if packages == "true" {
+		let mut pkgs = 0;
+		let a = Command::new("/usr/bin/pacman")
+					.arg("-Q")
+					.output()
+					.expect("failed to execute process");
+		let b = &String::from_utf8_lossy(&a.stdout).to_string();
+		fs::write("/tmp/packages", b).expect("Unable to write file");
+		let file = BufReader::new(File::open("/tmp/packages").unwrap());
+		for _line in file.lines() {
+			pkgs = pkgs + 1;
+		}
+		let pkg = format!("{}", pkgs);
+		table = addrow(table, abold, caps, borders, "PACKAGES", &pkg);
 	}
 	if music == "mpd" {
 		let a = Command::new("/usr/bin/mpc")
