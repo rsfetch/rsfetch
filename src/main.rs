@@ -352,12 +352,17 @@ fn main() {
 		table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
 	}
 	if music == "mpd" {
-		let mus = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
+		let a = Command::new("/usr/bin/mpc")
+					.arg("current")
+					.arg("-f")
+					.arg("%artist% - (%date%) %album% - %title%")
 					.output()
 					.expect("failed to execute process");
-		table = addrow(table, abold, caps, borders, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
+		let mus = &mut String::from_utf8_lossy(&a.stdout).to_string();
+		let len = mus.len();
+		mus.truncate(len - 1);
+		assert_eq!(mus, mus);
+		table = addrow(table, abold, caps, borders, "MUSIC (MPD)", mus);
 	}
 	// After collecting data for variables and adding the rows, print the final output into a custom table.
 	table.printstd();;
