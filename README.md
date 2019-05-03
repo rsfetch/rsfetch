@@ -1,6 +1,8 @@
 # fetch
 My info fetch program, written in Rust. Minimalistic (for the most part).
 
+WARNING: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
+
 Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman` and `paclist`.
 
 Note 2: If you want the name of your terminal displayed, ![term](term) must be in the same directory as the fetch binary. Yes, I used a bash script, but I couldn't find a better way to do it. :(
