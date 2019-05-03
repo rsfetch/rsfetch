@@ -10,6 +10,7 @@ Note 2: I will attempt to add support for the set terminal font, but it looks li
 ### Requirements
 1. `lshw` for the GPU info.
 2. `pacman-contrib` for the separate package counts. ~~Will add an option soon to turn those off if you don't want to install it.~~ Option has been added.
+3. `mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
