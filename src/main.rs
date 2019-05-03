@@ -8,6 +8,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 use std::io::prelude::*;
 use std::process::Command;
+use std::process;
 use prettytable::format;
 use prettytable::Table;
 use clap::{Arg, App};
@@ -69,6 +70,11 @@ fn main() {
 	let matches = App::new("fetch")
 					.version("1.2.2")
 					.about("\nMy info fetch tool for Linux. Fast (0.02s - 0.3s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
+					.arg(Arg::with_name("credits")
+						.long("credits")
+						.value_name(" ")
+						.help("View links to those who helped make this, as well as thanks to others who've helped me.")
+						.takes_value(false))
 					.arg(Arg::with_name("bold")
 						.short("b")
 						.long("bold")
@@ -178,6 +184,14 @@ fn main() {
 						.help("Specifies the corner style. Choose either \"■\" or \"0\".")
 						.takes_value(true))
 					.get_matches();
+	if matches.is_present("credits") {
+		println!("");
+        println!("Main Developer:   valley (Reddit: /u/Valley6660) (Github: Phate6660)");
+        println!("Contributor:      kiedtl (Reddit: /u/kiedtl)     (Github: kiedtl)\n");
+        println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
+        println!("");
+        process::exit(0x0100); // Exit program here so that nothing else is output.
+	}
 	let caps = matches.value_of("caps").unwrap_or("true");
 	let abold = matches.value_of("bold").unwrap_or("true");
 	let corners = matches.value_of("corners").unwrap_or("■");
