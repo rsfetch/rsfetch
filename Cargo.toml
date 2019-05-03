@@ -1,6 +1,6 @@
 [package]
 name = "fetch"
-version = "1.1.0"
+version = "1.1.1"
 authors = ["Phate6660 <ValleyKnight@protonmail.com>"]
 edition = "2018"
 

@@ -60,7 +60,7 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.1.0")
+					.version("1.1.1")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -196,48 +196,6 @@ fn main() {
 	let music = matches.value_of("music").unwrap_or("no");
 	let logo = matches.value_of("logo").unwrap_or("true");
 	let logofile = matches.value_of("logofile").unwrap_or("");
-	let you = Command::new("/usr/bin/whoami")
-					.output()
-					.expect("failed to execute process");
-	let dev = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo $(< /sys/devices/virtual/dmi/id/product_name)")
-					.output()
-					.expect("failed to execute process");
-	let ed = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo $EDITOR")
-					.output()
-					.expect("failed to execute process");
-	let sh = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("grep $USER /etc/passwd | sed 's/.*://'")
-					.output()
-					.expect("failed to execute process");
-	let upt = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("uptime -p | sed 's/up //'")
-					.output()
-					.expect("failed to execute process");
-	let dist = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("grep PRETTY /etc/os-release | grep -o '\".*\"' | sed 's/\"//g' | awk 'NR>1{print PREV} {PREV=$0} END{printf(\"%s\",$0)}'")
-					.output()
-					.expect("failed to execute process");
-	let kern = Command::new("/usr/bin/uname")
-					.arg("-r")
-					.output()
-					.expect("failed to execute process");
-	let wm = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("tail -n 1 \"${HOME}/.xinitrc\" | cut -d ' ' -f 2")
-					.output()
-					.expect("failed to execute process");
-	let ip = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("curl --silent http://ipecho.net/plain")
-					.output()
-					.expect("failed to execute process");
 	// Output
 	println!("");
 	if logo == "true" {
@@ -283,27 +241,64 @@ fn main() {
 		table.set_format(format);
 	}
 		if user == "true" {
+			let you = Command::new("/usr/bin/whoami")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
 		}
 		if host == "true" {
+			let dev = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo $(< /sys/devices/virtual/dmi/id/product_name)")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "HOST", &String::from_utf8_lossy(&dev.stdout));
 		}
 		if uptime == "true" {
+			let upt = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("uptime -p | sed 's/up //'")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
 		}
 		if distro == "true" {
+			let dist = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("grep PRETTY /etc/os-release | grep -o '\".*\"' | sed 's/\"//g' | awk 'NR>1{print PREV} {PREV=$0} END{printf(\"%s\",$0)}'")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
 		}
 		if kernel == "true" {
+			let kern = Command::new("/usr/bin/uname")
+					.arg("-r")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
 		}
 		if window_manager == "true" {
+			let wm = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("tail -n 1 \"${HOME}/.xinitrc\" | cut -d ' ' -f 2")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
 		}
 		if editor == "true" {
+			let ed = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("echo $EDITOR")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
 		}
 		if shell == "true" {
+			let sh = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("grep $USER /etc/passwd | sed 's/.*://'")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "SHELL", &String::from_utf8_lossy(&sh.stdout));
 		}
 		if terminal == "true" {
@@ -315,6 +310,11 @@ fn main() {
 			table = addrow(table, abold, caps, borders, "TERMINAL", &String::from_utf8_lossy(&term.stdout));
 		}
 		if ip_address == "true" {
+			let ip = Command::new("/usr/bin/bash")
+					.arg("-c")
+					.arg("curl --silent http://ipecho.net/plain")
+					.output()
+					.expect("failed to execute process");
 			table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
 		}
 		if packages == "true" {
