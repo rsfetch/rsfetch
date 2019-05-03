@@ -8,9 +8,8 @@ Note: The packages section only works for Arch (or Arch-based) distros as it use
 Note 2: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
 
 ### Requirements
-1. `lshw` for the GPU info.
-2. `pacman-contrib` for the separate package counts. ~~Will add an option soon to turn those off if you don't want to install it.~~ Option has been added.
-3. `mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
+1. `pacman-contrib` for the separate package counts. Optional, spearate package counts are disabled by default.
+2. `mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
