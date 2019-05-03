@@ -6,10 +6,13 @@ extern crate clap;
 use std::char;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
+use std::io::prelude::*;
 use std::process::Command;
 use prettytable::format;
 use prettytable::Table;
 use clap::{Arg, App};
+use std::path::PathBuf;
+use std::env;
 
 // escape character (U+001B)
 const E: char = 0x1B as char;
@@ -60,7 +63,7 @@ fn main() {
 	// Variables
 	let mut table = Table::new();
 	let matches = App::new("fetch")
-					.version("1.1.1")
+					.version("1.2.0")
 					.about("\nFetches system info. Somewhat(?) minimalistic.\nAll \"BOOL\" options default to \"true\" (with the exception of separate package counts and editor), and \"SOURCE\" defaults to no.\n\nNote: If you set -P to \"true\", make sure to set -p to \"false\".")
 					.arg(Arg::with_name("bold")
 						.short("b")
@@ -247,12 +250,14 @@ fn main() {
 			table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
 		}
 		if host == "true" {
-			let dev = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo $(< /sys/devices/virtual/dmi/id/product_name)")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "HOST", &String::from_utf8_lossy(&dev.stdout));
+			let mut file = File::open("/sys/devices/virtual/dmi/id/product_name").expect("Unable to open the file");
+			let mut contents = String::new();
+			file.read_to_string(&mut contents).expect("Unable to read the file");
+			let mut dev = contents.to_string();
+			let len = dev.len();
+			dev.truncate(len - 1);
+			assert_eq!(dev, dev);
+			table = addrow(table, abold, caps, borders, "HOST", &dev);
 		}
 		if uptime == "true" {
 			let upt = Command::new("/usr/bin/bash")
@@ -263,12 +268,12 @@ fn main() {
 			table = addrow(table, abold, caps, borders, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
 		}
 		if distro == "true" {
-			let dist = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("grep PRETTY /etc/os-release | grep -o '\".*\"' | sed 's/\"//g' | awk 'NR>1{print PREV} {PREV=$0} END{printf(\"%s\",$0)}'")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "DISTRO", &String::from_utf8_lossy(&dist.stdout));
+			let mut file = File::open("/etc/os-release").expect("Unable to open the file");
+			let mut contents = String::new();
+			file.read_to_string(&mut contents).expect("Unable to read the file");
+			let thefile = contents;
+			let dist = &thefile[31..41];
+			table = addrow(table, abold, caps, borders, "DISTRO", dist);
 		}
 		if kernel == "true" {
 			let kern = Command::new("/usr/bin/uname")
@@ -278,12 +283,19 @@ fn main() {
 			table = addrow(table, abold, caps, borders, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
 		}
 		if window_manager == "true" {
-			let wm = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("tail -n 1 \"${HOME}/.xinitrc\" | cut -d ' ' -f 2")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &String::from_utf8_lossy(&wm.stdout));
+			let mut path: PathBuf = env::var("HOME").expect("$HOME not set").into();
+			path.push(".xinitrc");
+			let file = File::open(path).expect("unable to open file");
+			let reader = BufReader::new(file);
+			let last_line = reader.lines().last()
+				.expect("no last line")
+				.expect("io error reading file");
+			let word = last_line.to_string();
+			let start_bytes = word.find(" ").unwrap();
+			let result = &word[start_bytes..];
+			let mut wm = result.to_string();
+			assert_eq!(wm.remove(0), ' ');
+			table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &wm);
 		}
 		if editor == "true" {
 			let ed = Command::new("/usr/bin/bash")
@@ -294,12 +306,12 @@ fn main() {
 			table = addrow(table, abold, caps, borders, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
 		}
 		if shell == "true" {
-			let sh = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("grep $USER /etc/passwd | sed 's/.*://'")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "SHELL", &String::from_utf8_lossy(&sh.stdout));
+			let mut file = File::open("/etc/passwd").expect("Unable to open the file");
+			let mut contents = String::new();
+			file.read_to_string(&mut contents).expect("Unable to read the file");
+			let thefile = contents;
+			let sh = &thefile[692..701];
+			table = addrow(table, abold, caps, borders, "SHELL", sh);
 		}
 		if terminal == "true" {
 			let term = Command::new("/usr/bin/bash")
