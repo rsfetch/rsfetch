@@ -258,108 +258,108 @@ fn main() {
 		table.set_format(format);
 	}
 	// Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-		if user == "true" {
-			let you = Command::new("/usr/bin/whoami")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
-		}
-		if host == "true" {
-			let mut file = File::open("/sys/devices/virtual/dmi/id/product_name").expect("Unable to open the file");
-			let mut contents = String::new();
-			file.read_to_string(&mut contents).expect("Unable to read the file");
-			let mut dev = contents.to_string();
-			let len = dev.len();
-			dev.truncate(len - 1);
-			assert_eq!(dev, dev);
-			table = addrow(table, abold, caps, borders, "HOST", &dev);
-		}
-		if uptime == "true" {
-			let upt = Command::new("/usr/bin/bash")
+	if user == "true" {
+		let you = Command::new("/usr/bin/whoami")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "USER", &String::from_utf8_lossy(&you.stdout));
+	}
+	if host == "true" {
+		let mut file = File::open("/sys/devices/virtual/dmi/id/product_name").expect("Unable to open the file");
+		let mut contents = String::new();
+		file.read_to_string(&mut contents).expect("Unable to read the file");
+		let mut dev = contents.to_string();
+		let len = dev.len();
+		dev.truncate(len - 1);
+		assert_eq!(dev, dev);
+		table = addrow(table, abold, caps, borders, "HOST", &dev);
+	}
+	if uptime == "true" {
+		let upt = Command::new("/usr/bin/bash")
+				.arg("-c")
+				.arg("uptime -p | sed 's/up //'")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
+	}
+	if distro == "true" {
+		let mut file = File::open("/etc/os-release").expect("Unable to open the file");
+		let mut contents = String::new();
+		file.read_to_string(&mut contents).expect("Unable to read the file");
+		let thefile = contents;
+		let dist = &thefile[31..41];
+		table = addrow(table, abold, caps, borders, "DISTRO", dist);
+	}
+	if kernel == "true" {
+		let kern = Command::new("/usr/bin/uname")
+				.arg("-r")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
+	}
+	if window_manager == "true" {
+		let mut path: PathBuf = env::var("HOME").expect("$HOME not set").into();
+		path.push(".xinitrc");
+		let file = File::open(path).expect("unable to open file");
+		let reader = BufReader::new(file);
+		let last_line = reader.lines().last()
+			.expect("no last line")
+			.expect("io error reading file");
+		let word = last_line.to_string();
+		let start_bytes = word.find(" ").unwrap();
+		let result = &word[start_bytes..];
+		let mut wm = result.to_string();
+		assert_eq!(wm.remove(0), ' ');
+		table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &wm);
+	}
+	if editor == "true" {
+		let ed = Command::new("/usr/bin/bash")
+				.arg("-c")
+				.arg("echo $EDITOR")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
+	}
+	if shell == "true" {
+		let mut file = File::open("/etc/passwd").expect("Unable to open the file");
+		let mut contents = String::new();
+		file.read_to_string(&mut contents).expect("Unable to read the file");
+		let thefile = contents;
+		let sh = &thefile[692..701];
+		table = addrow(table, abold, caps, borders, "SHELL", sh);
+	}
+	if ip_address == "true" {
+		let ip = Command::new("/usr/bin/bash")
+				.arg("-c")
+				.arg("curl --silent http://ipecho.net/plain")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
+	}
+	if packages == "true" && package_counts == "false" {
+		let pkgs = Command::new("/usr/bin/bash")
+				.arg("-c")
+				.arg("echo \"$(pacman -Q | wc -l)\"")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+	} else if package_counts == "true" && packages == "false" {
+		let pkgs = Command::new("/usr/bin/bash")
+				.arg("-c")
+				.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
+				.output()
+				.expect("failed to execute process");
+		table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
+	}
+	if music == "mpd" {
+		let mus = Command::new("/usr/bin/bash")
 					.arg("-c")
-					.arg("uptime -p | sed 's/up //'")
+					.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
 					.output()
 					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "UPTIME", &String::from_utf8_lossy(&upt.stdout));
-		}
-		if distro == "true" {
-			let mut file = File::open("/etc/os-release").expect("Unable to open the file");
-			let mut contents = String::new();
-			file.read_to_string(&mut contents).expect("Unable to read the file");
-			let thefile = contents;
-			let dist = &thefile[31..41];
-			table = addrow(table, abold, caps, borders, "DISTRO", dist);
-		}
-		if kernel == "true" {
-			let kern = Command::new("/usr/bin/uname")
-					.arg("-r")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "KERNEL", &String::from_utf8_lossy(&kern.stdout));
-		}
-		if window_manager == "true" {
-			let mut path: PathBuf = env::var("HOME").expect("$HOME not set").into();
-			path.push(".xinitrc");
-			let file = File::open(path).expect("unable to open file");
-			let reader = BufReader::new(file);
-			let last_line = reader.lines().last()
-				.expect("no last line")
-				.expect("io error reading file");
-			let word = last_line.to_string();
-			let start_bytes = word.find(" ").unwrap();
-			let result = &word[start_bytes..];
-			let mut wm = result.to_string();
-			assert_eq!(wm.remove(0), ' ');
-			table = addrow(table, abold, caps, borders, "WINDOW MANAGER", &wm);
-		}
-		if editor == "true" {
-			let ed = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo $EDITOR")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "EDITOR", &String::from_utf8_lossy(&ed.stdout));
-		}
-		if shell == "true" {
-			let mut file = File::open("/etc/passwd").expect("Unable to open the file");
-			let mut contents = String::new();
-			file.read_to_string(&mut contents).expect("Unable to read the file");
-			let thefile = contents;
-			let sh = &thefile[692..701];
-			table = addrow(table, abold, caps, borders, "SHELL", sh);
-		}
-		if ip_address == "true" {
-			let ip = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("curl --silent http://ipecho.net/plain")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "IP ADDRESS", &String::from_utf8_lossy(&ip.stdout));
-		}
-		if packages == "true" && package_counts == "false" {
-			let pkgs = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo \"$(pacman -Q | wc -l)\"")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-		} else if package_counts == "true" && packages == "false" {
-			let pkgs = Command::new("/usr/bin/bash")
-					.arg("-c")
-					.arg("echo \"$(pacman -Q | wc -l) (total) | $(paclist core | wc -l) (core), $(paclist extra | wc -l) (extra), $(paclist community | wc -l) (community), $(pacman -Qm | wc -l) (aur)\"")
-					.output()
-					.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "PACKAGES", &String::from_utf8_lossy(&pkgs.stdout));
-		}
-		if music == "mpd" {
-			let mus = Command::new("/usr/bin/bash")
-						.arg("-c")
-						.arg("mpc -f \"%artist% - (%date%) %album% - %title%\" | head -n1")
-						.output()
-						.expect("failed to execute process");
-			table = addrow(table, abold, caps, borders, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
-		}
-		// After collecting data for variables and adding the rows, print the final output into a custom table.
-		table.printstd();;
+		table = addrow(table, abold, caps, borders, "MUSIC (MPD)", &String::from_utf8_lossy(&mus.stdout));
+	}
+	// After collecting data for variables and adding the rows, print the final output into a custom table.
+	table.printstd();;
 	println!(""); // For a blank line after output.
 }
