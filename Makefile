@@ -58,9 +58,7 @@ install: build
 	@echo :: INSTALLING TO ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
-	@cp -f ./term ${DESTDIR}${PREFIX}/bin
 	@chmod 755 ${DESTDIR}${PREFIX}/bin/fetch
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/term
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
