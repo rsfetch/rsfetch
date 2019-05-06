@@ -1,6 +1,15 @@
 # fetch
 My info fetch program, written in Rust.
 
+* [fetch](#fetch)
+    * [Help Wanted](#help-wanted)
+    * [Things to Know](#things-to-know)
+    * [Requirements](#requirements)
+    * [Installation](#installation)
+    * [Screenshots](#screenshots)
+    * [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
+
+
 ### Help Wanted
 
 1. I just found out that there is already a tool called "fetch" on BSD. So to avoid confusion, the name will be changed. To those of you reading this, what do you think about one of these names? "vfetch", "rsfetch", "fetch-rs", or "fetcher"? If none of those names sound good, reply with a name of your own you think would sound good.
