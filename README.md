@@ -22,7 +22,7 @@ Rust skills).
 
 ### Help Wanted
 
-1. I just found out that there is already a tool called "fetch" on BSD. So to avoid confusion, the name will be changed. To those of you reading this, what do you think about one of these names? "vfetch", "rsfetch", "fetch-rs", or "fetcher"? If none of those names sound good, reply with a name of your own you think would sound good.
+1. I just found out that there is already a tool called "fetch" on BSD. So to avoid confusion, the name will be changed. To those of you reading this, what do you think about one of these names? "vfetch", "rsfetch", "fetch-rs", or "fetcher"? If none of those names sound good, [reply](https://github.com/Phate6660/fetch/issues/10) with a name of your own you think would sound good.
 
 2. I've been made aware of various ways to make my code better (thanks to various Reddit users). If possible, I would love some help in implementing them. Some of the things that were suggested were a bit confusing to be honest, but that might be because I've just started Rust with this project.
 
