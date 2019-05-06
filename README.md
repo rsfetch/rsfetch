@@ -1,11 +1,19 @@
 # fetch
-My info fetch program, written in Rust. Minimalistic (for the most part).
+My info fetch program, written in Rust.
 
-WARNING: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
+### Help Wanted
 
-Note: The packages section only works for Arch (or Arch-based) distros as it uses `pacman`.
+1. I just found out that there is already a tool called "fetch" on BSD. So to avoid confusion, the name will be changed. To those of you reading this, what do you think about one of these names? "vfetch", "rsfetch", "fetch-rs", or "fetcher"? If none of those names sound good, reply with a name of your own you think would sound good.
 
-Note 2: I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
+2. I've been made aware of various ways to make my code better (thanks to various Reddit users). If possible, I would love some help in implementing them. Some of the things that were suggested were a bit confusing to be honest, but that might be because I've just started Rust with this project.
+
+### Things to Know
+
+1. The packages section only works for Arch (or Arch-based) distros as it uses `pacman`.
+
+2. I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
+
+**WARNING**: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
 
 ### Requirements
 `mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
@@ -43,9 +51,9 @@ And yes, you saw right. Execution time was 0.015s! Crazy fast.
 -------------------------------------------------------------------------------
  Language            Files        Lines         Code     Comments       Blanks
 -------------------------------------------------------------------------------
- Makefile                1           69           46            9           14
- Rust                    1          364          342           13            9
+ Makefile                1           67           44            9           14
+ Rust                    1          391          369           13            9
 -------------------------------------------------------------------------------
- Total                   2          433          388           22           23
+ Total                   2          458          413           22           23
 -------------------------------------------------------------------------------
 ```
