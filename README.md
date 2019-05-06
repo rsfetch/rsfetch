@@ -1,14 +1,24 @@
-# fetch
-My info fetch program, written in Rust.
+### Table of Contents
 
 * [fetch](#fetch)
-    * [Help Wanted](#help-wanted)
-    * [Things to Know](#things-to-know)
-    * [Requirements](#requirements)
-    * [Installation](#installation)
-    * [Screenshots](#screenshots)
-    * [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
+	* [Help Wanted](#help-wanted)
+	* [Things to Know](#things-to-know)
+	* [Requirements](#requirements)
+	* [Installation](#installation)
+	* [Screenshots](#screenshots)
+	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
 
+### fetch
+
+My linux info fetch program, written in Rust.
+
+**Why I made it:** I used to use neofetch, ufetch, and 
+aurafetch a lot, but then that got me thinking. I have the skill to make
+ my own script, so why not? At first, it was just a simple BASH script. 
+Then I decided I wanted to try my hand at Rust, as it has interested me 
+for a while. So... here's the end result. I am open to any criticisms 
+you have. After all, I wish to make this better (as well as improve my 
+Rust skills).
 
 ### Help Wanted
 
