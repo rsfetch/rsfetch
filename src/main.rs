@@ -9,7 +9,6 @@ use prettytable::format;
 use prettytable::Table;
 use std::char;
 use std::env;
-use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader, Result};
@@ -358,17 +357,11 @@ fn main() {
         );
     }
     if packages == "true" {
-        let mut pkgs = 0;
-        let a = Command::new("/usr/bin/pacman")
-            .arg("-Q")
+        let out = Command::new("/usr/bin/pacman")
+            .arg("-Qq")
             .output()
             .expect("failed to execute process");
-        let b = &String::from_utf8_lossy(&a.stdout).to_string();
-        fs::write("/tmp/packages", b).expect("Unable to write file");
-        let file = BufReader::new(File::open("/tmp/packages").unwrap());
-        for _line in file.lines() {
-            pkgs = pkgs + 1;
-        }
+        let pkgs = bytecount::count(&out.stdout, b'\n');
         let pkg = format!("{}", pkgs);
         table = add_row(table, abold, caps, borders, "PACKAGES", &pkg);
     }
