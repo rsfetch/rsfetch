@@ -358,7 +358,7 @@ fn main() {
     }
     if packages == "true" {
         let out = Command::new("/usr/bin/pacman")
-            .arg("-Q")
+            .arg("-Qq")
             .output()
             .expect("failed to execute process");
         let pkgs = bytecount::count(&out.stdout, b'\n');
