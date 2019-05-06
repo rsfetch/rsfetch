@@ -10,7 +10,6 @@ use prettytable::Table;
 use pwd::Passwd;
 use std::char;
 use std::env;
-use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader, Result};
@@ -64,6 +63,36 @@ fn print_default_logo() {
     println!("{}", make_bold(" \\    / /\\   |    |    |--- \\   /"));
     println!("{}", make_bold("  \\  / /__\\  |    |    |---  \\ /"));
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
+}
+
+fn get_value(key: &str, line: &str) -> Option<String> {
+    if line.starts_with(key) {
+        Some(
+            line[key.len() + 1..line.len() - 1]
+                .trim_matches('"')
+                .to_string(),
+        )
+    } else {
+        None
+    }
+}
+
+fn get_os_release() -> Result<Option<String>> {
+    let file = File::open("/etc/os-release")?;
+    let mut reader = BufReader::new(file);
+    let mut line = String::new();
+    let mut name = None;
+    let mut pretty_name = None;
+    while reader.read_line(&mut line)? > 0 {
+        if let Some(val) = get_value("NAME", &line) {
+            name = Some(val);
+        } else if let Some(val) = get_value("PRETTY_NAME", &line) {
+            pretty_name = Some(val);
+            break;
+        }
+        line.clear();
+    }
+    Ok(pretty_name.or(name))
 }
 
 // Main function
@@ -295,13 +324,9 @@ fn main() {
         );
     }
     if distro == "true" {
-        let mut file = File::open("/etc/os-release").expect("Unable to open the file");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .expect("Unable to read the file");
-        let thefile = contents;
-        let dist = &thefile[31..41];
-        table = add_row(table, abold, caps, borders, "DISTRO", dist);
+        if let Ok(Some(dist)) = get_os_release() {
+            table = add_row(table, abold, caps, borders, "DISTRO", &dist);
+        }
     }
     if kernel == "true" {
         let mut file = File::open("/proc/sys/kernel/osrelease").expect("Unable to open the file");
@@ -364,17 +389,11 @@ fn main() {
         );
     }
     if packages == "true" {
-        let mut pkgs = 0;
-        let a = Command::new("/usr/bin/pacman")
-            .arg("-Q")
+        let out = Command::new("/usr/bin/pacman")
+            .arg("-Qq")
             .output()
             .expect("failed to execute process");
-        let b = &String::from_utf8_lossy(&a.stdout).to_string();
-        fs::write("/tmp/packages", b).expect("Unable to write file");
-        let file = BufReader::new(File::open("/tmp/packages").unwrap());
-        for _line in file.lines() {
-            pkgs = pkgs + 1;
-        }
+        let pkgs = bytecount::count(&out.stdout, b'\n');
         let pkg = format!("{}", pkgs);
         table = add_row(table, abold, caps, borders, "PACKAGES", &pkg);
     }
