@@ -66,6 +66,36 @@ fn print_default_logo() {
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
 }
 
+fn get_value(key: &str, line: &str) -> Option<String> {
+    if line.starts_with(key) {
+        Some(
+            line[key.len() + 1..line.len() - 1]
+                .trim_matches('"')
+                .to_string(),
+        )
+    } else {
+        None
+    }
+}
+
+fn get_os_release() -> Result<Option<String>> {
+    let file = File::open("/etc/os-release")?;
+    let mut reader = BufReader::new(file);
+    let mut line = String::new();
+    let mut name = None;
+    let mut pretty_name = None;
+    while reader.read_line(&mut line)? > 0 {
+        if let Some(val) = get_value("NAME", &line) {
+            name = Some(val);
+        } else if let Some(val) = get_value("PRETTY_NAME", &line) {
+            pretty_name = Some(val);
+            break;
+        }
+        line.clear();
+    }
+    Ok(pretty_name.or(name))
+}
+
 // Main function
 fn main() {
     // Variables
@@ -296,13 +326,9 @@ fn main() {
         );
     }
     if distro == "true" {
-        let mut file = File::open("/etc/os-release").expect("Unable to open the file");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .expect("Unable to read the file");
-        let thefile = contents;
-        let dist = &thefile[31..41];
-        table = add_row(table, abold, caps, borders, "DISTRO", dist);
+        if let Ok(Some(dist)) = get_os_release() {
+            table = add_row(table, abold, caps, borders, "DISTRO", &dist);
+        }
     }
     if kernel == "true" {
         let mut file = File::open("/proc/sys/kernel/osrelease").expect("Unable to open the file");
