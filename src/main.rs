@@ -7,16 +7,16 @@ extern crate clap; // For cmd line arguments.
 use clap::{App, Arg};
 use prettytable::format;
 use prettytable::Table;
+use pwd::Passwd;
 use std::char;
 use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader, Result};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 use std::process::Command;
-use users::{get_current_uid, get_user_by_uid};
 
 // escape character (U+001B)
 const E: char = 0x1B as char;
@@ -257,16 +257,15 @@ fn main() {
         table.set_format(format);
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
+    let current_user = if user == "true" || shell == "true" {
+        Passwd::current_user()
+    } else {
+        None
+    };
     if user == "true" {
-        let user = get_user_by_uid(get_current_uid()).unwrap();
-        table = add_row(
-            table,
-            abold,
-            caps,
-            borders,
-            "USER",
-            &user.name().to_string_lossy(),
-        );
+        if let Some(ref user) = current_user {
+            table = add_row(table, abold, caps, borders, "USER", &user.name);
+        }
     }
     if host == "true" {
         let mut file = File::open("/sys/devices/virtual/dmi/id/product_name")
@@ -334,13 +333,20 @@ fn main() {
         table = add_row(table, abold, caps, borders, "EDITOR", &ed);
     }
     if shell == "true" {
-        let mut file = File::open("/etc/passwd").expect("Unable to open the file");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .expect("Unable to read the file");
-        let thefile = contents;
-        let sh = &thefile[692..701];
-        table = add_row(table, abold, caps, borders, "SHELL", sh);
+        if let Some(ref user) = current_user {
+            if let Some(shell) = Path::new(&user.shell).file_name() {
+                table = add_row(
+                    table,
+                    abold,
+                    caps,
+                    borders,
+                    "SHELL",
+                    shell.to_string_lossy().as_ref(),
+                );
+            } else {
+                table = add_row(table, abold, caps, borders, "SHELL", &user.shell);
+            }
+        }
     }
     if ip_address == "true" {
         let ip = Command::new("/usr/bin/bash")
