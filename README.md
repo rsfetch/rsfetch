@@ -7,6 +7,7 @@
 	* [Installation](#installation)
 	* [Screenshots](#screenshots)
 	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
+    * [License](#license)
 
 ### fetch
 
@@ -78,3 +79,7 @@ And yes, you saw right. Execution time was 0.015s! Crazy fast.
  Total                   2          458          413           22           23
 -------------------------------------------------------------------------------
 ```
+
+### License
+
+I have set my repo to "The Unlicense". Anyone can do anything they want, with anything in my repo.
