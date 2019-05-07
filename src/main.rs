@@ -16,6 +16,7 @@ use std::io::{BufRead, BufReader, Result};
 use std::path::{Path, PathBuf};
 use std::process;
 use std::process::Command;
+use std::time::Duration;
 
 // escape character (U+001B)
 const E: char = 0x1B as char;
@@ -93,6 +94,52 @@ fn get_os_release() -> Result<Option<String>> {
         line.clear();
     }
     Ok(pretty_name.or(name))
+}
+
+fn format_duration(duration: Duration) -> String {
+    let mut duration = duration.as_secs();
+    if duration < 60 {
+        if duration == 1 {
+            return String::from("1 second");
+        } else {
+            return format!("{} seconds", duration);
+        }
+    }
+
+    duration /= 60;
+    let minutes = duration % 60;
+    duration /= 60;
+    let hours = duration % 24;
+    duration /= 24;
+    let days = duration % 7;
+    let weeks = (duration / 7) % 52;
+    duration /= 365;
+    let years = duration % 10;
+    let decades = duration / 10;
+
+    let mut s = String::new();
+    let mut comma = false;
+    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) {
+        if value > 0 {
+            if *comma {
+                s.push_str(", ");
+            }
+            itoa::fmt(&mut s, value).expect("unable to format String");
+            s.push(' ');
+            s.push_str(name);
+            if value > 1 {
+                s.push('s');
+            }
+            *comma = true;
+        }
+    }
+    add_part(&mut comma, &mut s, "decade", decades);
+    add_part(&mut comma, &mut s, "year", years);
+    add_part(&mut comma, &mut s, "week", weeks);
+    add_part(&mut comma, &mut s, "day", days);
+    add_part(&mut comma, &mut s, "hour", hours);
+    add_part(&mut comma, &mut s, "minute", minutes);
+    s
 }
 
 // Main function
@@ -310,19 +357,17 @@ fn main() {
         table = add_row(table, abold, caps, borders, "HOST", &dev);
     }
     if uptime == "true" {
-        let upt = Command::new("/usr/bin/bash")
-            .arg("-c")
-            .arg("uptime -p | sed 's/up //'")
-            .output()
-            .expect("failed to execute process");
-        table = add_row(
-            table,
-            abold,
-            caps,
-            borders,
-            "UPTIME",
-            &String::from_utf8_lossy(&upt.stdout),
-        );
+        if let Some(uptime) = uptime_lib::get()
+            .ok()
+            .and_then(|uptime| uptime.to_std().ok())
+        {
+            if uptime.as_secs() == 0 {
+                table = add_row(table, abold, caps, borders, "UPTIME", "now");
+            } else {
+                let uptime = format_duration(uptime);
+                table = add_row(table, abold, caps, borders, "UPTIME", &uptime);
+            }
+        };
     }
     if distro == "true" {
         if let Ok(Some(dist)) = get_os_release() {
