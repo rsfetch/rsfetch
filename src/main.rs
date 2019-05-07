@@ -1,25 +1,15 @@
-// External crates to be used.
-#[macro_use]
-extern crate prettytable; // For a nice organized output.
-extern crate clap; // For cmd line arguments.
-
-// use commands.
 use clap::{App, Arg};
-use prettytable::format;
-use prettytable::Table;
+use prettytable::{cell, format, row, Table};
 use pwd::Passwd;
-use std::char;
 use std::env;
-use std::fs::File;
-use std::io::prelude::*;
+use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Result};
 use std::path::{Path, PathBuf};
-use std::process;
-use std::process::Command;
+use std::process::{self, Command};
 use std::time::Duration;
 
 // escape character (U+001B)
-const E: char = 0x1B as char;
+const E: char = '\x1B';
 
 // Function for making bold text.
 fn make_bold(text: &str) -> String {
@@ -35,7 +25,7 @@ fn add_row(
     title: &str,
     value: &str,
 ) -> Table {
-    let mut title_str: String = title.to_string();
+    let mut title_str = title.to_string();
     if caps != "true" {
         title_str = title_str.to_lowercase();
     }
@@ -258,13 +248,13 @@ fn main() {
                         .takes_value(true))
                     .get_matches();
     if matches.is_present("credits") {
-        println!("");
+        println!();
         println!("Main Developer:   valley  (Reddit: /u/Valley6660) (Github: Phate6660)");
         println!("Contributor:      kiedtl  (Reddit: /u/kiedtl)     (Github: kiedtl)");
         println!("Contributor:      lnicola                         (Github: lnicola)\n");
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
-        println!("");
-        process::exit(0x0100); // Exit program here so that nothing else is output.
+        println!();
+        process::exit(0); // Exit program here so that nothing else is output.
     }
     let caps = matches.value_of("caps").unwrap_or("true");
     let abold = matches.value_of("bold").unwrap_or("true");
@@ -285,14 +275,14 @@ fn main() {
     let logofile = matches.value_of("logofile").unwrap_or("");
 
     // Determine the logo to use.
-    println!(""); // For a blank line before output.
+    println!(); // For a blank line before output.
     if logo == "true" {
-        if logofile != "" {
+        if !logofile.is_empty() {
             let _res = print_logo(logofile.to_string());
         } else {
             print_default_logo()
         }
-        println!(""); // print a newline
+        println!(); // print a newline
     }
     let format;
 
@@ -345,15 +335,9 @@ fn main() {
         }
     }
     if host == "true" {
-        let mut file = File::open("/sys/devices/virtual/dmi/id/product_name")
-            .expect("Unable to open the file");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
+        let contents = fs::read_to_string("/sys/devices/virtual/dmi/id/product_name")
             .expect("Unable to read the file");
-        let mut dev = contents.to_string();
-        let len = dev.len();
-        dev.truncate(len - 1);
-        assert_eq!(dev, dev);
+        let dev = contents.trim_end();
         table = add_row(table, abold, caps, borders, "HOST", &dev);
     }
     if uptime == "true" {
@@ -375,11 +359,9 @@ fn main() {
         }
     }
     if kernel == "true" {
-        let mut file = File::open("/proc/sys/kernel/osrelease").expect("Unable to open the file");
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .expect("Unable to read the file");
-        let kern = contents.trim();
+        let contents =
+            fs::read_to_string("/proc/sys/kernel/osrelease").expect("Unable to read the file");
+        let kern = contents.trim_end();
         table = add_row(table, abold, caps, borders, "KERNEL", kern);
     }
     if window_manager == "true" {
@@ -400,7 +382,7 @@ fn main() {
         table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm);
     }
     if editor == "true" {
-        let ed: String = env::var("EDITOR").expect("$EDITOR not set").into();
+        let ed = env::var("EDITOR").expect("$EDITOR not set");
         table = add_row(table, abold, caps, borders, "EDITOR", &ed);
     }
     if shell == "true" {
@@ -420,9 +402,9 @@ fn main() {
         }
     }
     if ip_address == "true" {
-        let ip = Command::new("/usr/bin/bash")
-            .arg("-c")
-            .arg("curl --silent http://ipecho.net/plain")
+        let ip = Command::new("curl")
+            .arg("--silent")
+            .arg("https://ipecho.net/plain")
             .output()
             .expect("failed to execute process");
         table = add_row(
@@ -435,7 +417,7 @@ fn main() {
         );
     }
     if packages == "true" {
-        let out = Command::new("/usr/bin/pacman")
+        let out = Command::new("pacman")
             .arg("-Qq")
             .output()
             .expect("failed to execute process");
@@ -444,7 +426,7 @@ fn main() {
         table = add_row(table, abold, caps, borders, "PACKAGES", &pkg);
     }
     if music == "mpd" {
-        let a = Command::new("/usr/bin/mpc")
+        let a = Command::new("mpc")
             .arg("current")
             .arg("-f")
             .arg("%artist% - (%date%) %album% - %title%")
@@ -457,6 +439,6 @@ fn main() {
         table = add_row(table, abold, caps, borders, "MUSIC (MPD)", mus);
     }
     // After collecting data for variables and adding the rows, print the final output into a custom table.
-    table.printstd();;
-    println!(""); // For a blank line after output.
+    table.printstd();
+    println!(); // For a blank line after output.
 }
