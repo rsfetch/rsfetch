@@ -1,4 +1,4 @@
-<h3 align="center"><img src="https://user-images.githubusercontent.com/32681240/57324076-24d82200-70d5-11e9-91af-0f42b2bb381c.jpg" alt="logo" height="100px"></h3>
+<h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/logo.jpg" alt="logo" height="100px"></h3>
 <p align="center">Fast (0.01s - 0.2s execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
 <p align="center">
