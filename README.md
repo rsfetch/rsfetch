@@ -11,6 +11,8 @@
 
 ### rsfetch
 
+![logo](Screenshots/logo.jpg?raw=true "logo")
+
 My linux info fetch program, written in Rust.
 
 **Why I made it:** I used to use neofetch, ufetch, and 
