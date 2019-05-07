@@ -100,7 +100,7 @@ fn main() {
     // Variables
     let mut table = Table::new();
     let matches = App::new("fetch")
-                    .version("1.3.8")
+                    .version("1.4.0")
                     .about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of editor, window manager, and ip address), and \"SOURCE\" defaults to no.")
                     .arg(Arg::with_name("credits")
                         .long("credits")

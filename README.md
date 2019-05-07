@@ -1,6 +1,6 @@
 ### Table of Contents
 
-* [fetch](#fetch)
+* [rsfetch](#rsfetch)
 	* [Help Wanted](#help-wanted)
 	* [Things to Know](#things-to-know)
 	* [Requirements](#requirements)
@@ -9,7 +9,7 @@
 	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
     * [License](#license)
 
-### fetch
+### rsfetch
 
 My linux info fetch program, written in Rust.
 
@@ -23,9 +23,7 @@ Rust skills).
 
 ### Help Wanted
 
-1. I just found out that there is already a tool called "fetch" on BSD. I also found out that neofetch actaully used to be called "fetch" too. So to avoid confusion, the name will be changed. To those of you reading this, go to [this](https://github.com/Phate6660/fetch/issues/10) issue. Let me know what you think about one of these names. "vfetch", "rsfetch", "fetch-rs", or "fetcher"? If none of those names sound good, give me a suggestion on a name you think would sound good.
-
-2. I've been made aware of various ways to make my code better (thanks to various Reddit users). If possible, I would love some help in implementing them. Some of the things that were suggested were a bit confusing to be honest, but that might be because I've just started Rust with this project. If you want to help, let me know via; [Reddit](https://www.reddit.com/user/Valley6660) (please send a PM and not start a chat as Reddit Chat is broken for me), a Github issue, or a pull request. I respond usually pretty quickly (within 1-10 minutes). If I don't respond, it's because I probably crashed from sleep deprivation.
+I've been made aware of various ways to make my code better (thanks to various Reddit users). If possible, I would love some help in implementing them. Some of the things that were suggested were a bit confusing to be honest, but that might be because I've just started Rust with this project. If you want to help, let me know via; [Reddit](https://www.reddit.com/user/Valley6660) (please send a PM and not start a chat as Reddit Chat is broken for me), a Github issue, or a pull request. I respond usually pretty quickly (within 1-10 minutes). If I don't respond, it's because I probably crashed from sleep deprivation.
 
 ### Things to Know
 
@@ -74,9 +72,9 @@ And yes, you saw right. Execution time was 0.015s! Crazy fast.
  Language            Files        Lines         Code     Comments       Blanks
 -------------------------------------------------------------------------------
  Makefile                1           67           44            9           14
- Rust                    1          391          369           13            9
+ Rust                    1          416          397            8           11
 -------------------------------------------------------------------------------
- Total                   2          458          413           22           23
+ Total                   2          483          441           17           25
 -------------------------------------------------------------------------------
 ```
 
