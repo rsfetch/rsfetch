@@ -42,7 +42,8 @@ I've been made aware of various ways to make my code better (thanks to various R
 **WARNING**: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
 
 ### Requirements
-`mpd + mpc` for the music info. Completely optional, as music info is turned off by default.
+- `mpd + mpc` for the music info. (Completely optional, as music info is turned off by default.)
+- An Arch-based system (Arch, Manjaro, Antergeros, Archlabs, etc.) for the package info. (Also optional; package info can be turned off if desired.)
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
