@@ -63,7 +63,7 @@ You can't see what options I choose because I aliased fetch. Here is the actual 
 
 `rsfetch -C 0 -h false -i false -l false -u false`
 
-And yes, you saw right. Execution time was 0.015s! Crazy fast.
+And yes, you saw right. Execution time was 0.013s! Crazy fast.
 
 ### Amount of code. (According to tokei).
 
