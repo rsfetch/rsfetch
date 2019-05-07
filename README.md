@@ -1,3 +1,13 @@
+<h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/logo.jpg" alt="logo" height="100px"></h3>
+<p align="center">Fast (0.01s - 0.2s execution time) and somewhat(?) minimal fetch program written in Rust.</p>
+
+<p align="center">
+<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/rsfetch/rsfetch.svg">
+<img alt="GitHub" src="https://img.shields.io/github/license/rsfetch/rsfetch.svg">
+<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/rsfetch/rsfetch.svg">
+<img alt="GitHub issues" src="https://img.shields.io/github/issues/rsfetch/rsfetch.svg?color=gren">
+</p>
+
 ### Table of Contents
 
 * [rsfetch](#rsfetch)
@@ -8,12 +18,6 @@
 	* [Screenshots](#screenshots)
 	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
     * [License](#license)
-
-### rsfetch
-
-![logo](Screenshots/logo.jpg?raw=true "logo")
-
-My linux info fetch program, written in Rust.
 
 **Why I made it:** I used to use neofetch, ufetch, and 
 aurafetch a lot, but then that got me thinking. I have the skill to make
