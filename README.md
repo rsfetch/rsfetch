@@ -49,7 +49,7 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 Uninstall with `sudo make uninstall`.
 
 #### AUR package
-Optionally, if you use a `pacman`-based distro, you can use the [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) AUR package:
+Optionally, if you use a Arch-based distro, you can use the [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) AUR package:
 ```
 yay -S rsfetch-git
 ```
