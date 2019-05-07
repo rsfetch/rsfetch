@@ -1,10 +1,10 @@
-# fetch - minimalistic fetch program
+# rsfetch - minimalistic fetch program
 # See LICENSE file for copyright and license details.
 # This Makefile is proudly stolen from XST project
 
 # paths
-DBIN = ./target/debug/fetch
-RBIN = ./target/release/fetch
+DBIN = ./target/debug/rsfetch
+RBIN = ./target/release/rsfetch
 PREFIX = /usr/local
 
 # flags
@@ -44,24 +44,24 @@ build:
 clean:
 	@echo :: CLEANING
 	@rm -rf ./target/
-	@rm -f fetch.tar.gz
+	@rm -f rsfetch.tar.gz
 
 dist: options clean build
 	@echo :: CREATING TARBALL
-	@mkdir -p fetch-tmp
-	@cp -f ${RBIN} ./fetch-tmp/ 
-	@tar -cf fetch.tar fetch-tmp
-	@gzip fetch.tar
-	@rm -rf fetch
+	@mkdir -p rsfetch-tmp
+	@cp -f ${RBIN} ./rsfetch-tmp/ 
+	@tar -cf rsfetch.tar rsfetch-tmp
+	@gzip rsfetch.tar
+	@rm -rf rsfetch
 
 install: build
 	@echo :: INSTALLING TO ${DESTDIR}${PREFIX}/bin
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/fetch
+	@chmod 755 ${DESTDIR}${PREFIX}/bin/rsfetch
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/fetch
+	@rm -f ${DESTDIR}${PREFIX}/bin/rsfetch
 
 .PHONY: all options run clean dist install uninstall
