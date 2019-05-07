@@ -1,12 +1,50 @@
 use clap::{App, Arg};
+use log::error;
 use prettytable::{cell, format, row, Table};
 use pwd::Passwd;
+use snafu::{OptionExt, ResultExt, Snafu};
 use std::env;
+use std::fmt;
 use std::fs::{self, File};
-use std::io::{BufRead, BufReader, Result};
-use std::path::{Path, PathBuf};
-use std::process::{self, Command};
+use std::io::{self, BufRead, BufReader};
+use std::path::Path;
+use std::process::Command;
+use std::result;
 use std::time::Duration;
+
+#[derive(Debug, Snafu)]
+enum Error {
+    #[snafu(display("Could not retrieve device name: {}", source))]
+    DeviceName { source: io::Error },
+    #[snafu(display("Could not read the OS release: {}", source))]
+    OsRelease { source: io::Error },
+    #[snafu(display("Could not read the kernel version: {}", source))]
+    KernelVersion { source: io::Error },
+    #[snafu(display("Could not read the logo file: {}", source))]
+    ReadLogo { source: io::Error },
+    #[snafu(display("Could not format uptime: {}", source))]
+    FormatUptime { source: fmt::Error },
+    #[snafu(display("Could not determine home directory"))]
+    HomeDir,
+    #[snafu(display("Could not open .xinitrc: {}", source))]
+    OpenXInitRc { source: io::Error },
+    #[snafu(display("Empty .xinitrc"))]
+    EmptyXInitRc,
+    #[snafu(display("Could not read .xinitrc: {}", source))]
+    ReadXInitRc { source: io::Error },
+    #[snafu(display("Could not guess window manager"))]
+    GuessWm,
+    #[snafu(display("Could not determine editor"))]
+    Editor { source: env::VarError },
+    #[snafu(display("Could not run curl"))]
+    Curl { source: io::Error },
+    #[snafu(display("Could not run pacman"))]
+    Pacman { source: io::Error },
+    #[snafu(display("Could not run mpc"))]
+    Mpc { source: io::Error },
+}
+
+type Result<T, E = Error> = result::Result<T, E>;
 
 // escape character (U+001B)
 const E: char = '\x1B';
@@ -41,10 +79,10 @@ fn add_row(
 }
 
 // For custom art.
-fn print_logo(file: String) -> Result<()> {
-    let fs = File::open(file)?;
+fn print_logo(file: &str) -> Result<()> {
+    let fs = File::open(file).context(ReadLogo)?;
     for line in BufReader::new(fs).lines() {
-        println!("{}", make_bold(&line?));
+        println!("{}", make_bold(&line.context(ReadLogo)?));
     }
     Ok(())
 }
@@ -68,13 +106,20 @@ fn get_value(key: &str, line: &str) -> Option<String> {
     }
 }
 
+fn get_device_name() -> Result<String> {
+    let contents =
+        fs::read_to_string("/sys/devices/virtual/dmi/id/product_name").context(DeviceName)?;
+    let dev = contents.trim_end().to_string();
+    Ok(dev)
+}
+
 fn get_os_release() -> Result<Option<String>> {
-    let file = File::open("/etc/os-release")?;
+    let file = File::open("/etc/os-release").context(OsRelease)?;
     let mut reader = BufReader::new(file);
     let mut line = String::new();
     let mut name = None;
     let mut pretty_name = None;
-    while reader.read_line(&mut line)? > 0 {
+    while reader.read_line(&mut line).context(OsRelease)? > 0 {
         if let Some(val) = get_value("NAME", &line) {
             name = Some(val);
         } else if let Some(val) = get_value("PRETTY_NAME", &line) {
@@ -86,14 +131,70 @@ fn get_os_release() -> Result<Option<String>> {
     Ok(pretty_name.or(name))
 }
 
-fn format_duration(duration: Duration) -> String {
+fn get_kernel_version() -> Result<String> {
+    let contents = fs::read_to_string("/proc/sys/kernel/osrelease").context(KernelVersion)?;
+    let kern = contents.trim_end().to_string();
+    Ok(kern)
+}
+
+fn get_window_manager() -> Result<String> {
+    let mut path = dirs::home_dir().context(HomeDir)?;
+    path.push(".xinitrc");
+    let file = File::open(path).context(OpenXInitRc)?;
+    let reader = BufReader::new(file);
+    let last_line = reader
+        .lines()
+        .last()
+        .context(EmptyXInitRc)?
+        .context(ReadXInitRc)?;
+    let space = last_line.find(' ').context(GuessWm)?;
+    let wm = last_line[space + 1..].to_string();
+    Ok(wm)
+}
+
+fn get_editor() -> Result<String> {
+    let ed = env::var("EDITOR").context(Editor)?.to_string();
+    Ok(ed)
+}
+
+fn get_ip_address() -> Result<String> {
+    let curl = Command::new("curl")
+        .arg("--silent")
+        .arg("https://ipecho.net/plain")
+        .output()
+        .context(Curl)?;
+    let ip = String::from_utf8_lossy(&curl.stdout).into_owned();
+    Ok(ip)
+}
+
+fn get_package_count() -> Result<String> {
+    let pacman = Command::new("pacman").arg("-Qq").output().context(Pacman)?;
+    let pkgs = bytecount::count(&pacman.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_mpd_song() -> Result<String> {
+    let mpc = Command::new("mpc")
+        .arg("current")
+        .arg("-f")
+        .arg("%artist% - (%date%) %album% - %title%")
+        .output()
+        .context(Mpc)?;
+    let mut mus = String::from_utf8_lossy(&mpc.stdout).into_owned();
+    mus.pop();
+    Ok(mus)
+}
+
+fn format_duration(duration: Duration) -> Result<String> {
     let mut duration = duration.as_secs();
     if duration < 60 {
-        if duration == 1 {
-            return String::from("1 second");
+        let s = if duration == 1 {
+            String::from("1 second")
         } else {
-            return format!("{} seconds", duration);
-        }
+            format!("{} seconds", duration)
+        };
+        return Ok(s);
     }
 
     duration /= 60;
@@ -109,12 +210,12 @@ fn format_duration(duration: Duration) -> String {
 
     let mut s = String::new();
     let mut comma = false;
-    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) {
+    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) -> Result<()> {
         if value > 0 {
             if *comma {
                 s.push_str(", ");
             }
-            itoa::fmt(&mut s, value).expect("unable to format String");
+            itoa::fmt(&mut s, value).context(FormatUptime)?;
             s.push(' ');
             s.push_str(name);
             if value > 1 {
@@ -122,18 +223,21 @@ fn format_duration(duration: Duration) -> String {
             }
             *comma = true;
         }
+        Ok(())
     }
-    add_part(&mut comma, &mut s, "decade", decades);
-    add_part(&mut comma, &mut s, "year", years);
-    add_part(&mut comma, &mut s, "week", weeks);
-    add_part(&mut comma, &mut s, "day", days);
-    add_part(&mut comma, &mut s, "hour", hours);
-    add_part(&mut comma, &mut s, "minute", minutes);
-    s
+    add_part(&mut comma, &mut s, "decade", decades)?;
+    add_part(&mut comma, &mut s, "year", years)?;
+    add_part(&mut comma, &mut s, "week", weeks)?;
+    add_part(&mut comma, &mut s, "day", days)?;
+    add_part(&mut comma, &mut s, "hour", hours)?;
+    add_part(&mut comma, &mut s, "minute", minutes)?;
+    Ok(s)
 }
 
 // Main function
 fn main() {
+    pretty_env_logger::init();
+
     // Variables
     let mut table = Table::new();
     let matches = App::new("rsfetch")
@@ -254,7 +358,7 @@ fn main() {
         println!("Contributor:      lnicola                         (Github: lnicola)\n");
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
         println!();
-        process::exit(0); // Exit program here so that nothing else is output.
+        return;
     }
     let caps = matches.value_of("caps").unwrap_or("true");
     let abold = matches.value_of("bold").unwrap_or("true");
@@ -278,7 +382,9 @@ fn main() {
     println!(); // For a blank line before output.
     if logo == "true" {
         if !logofile.is_empty() {
-            let _res = print_logo(logofile.to_string());
+            if let Err(e) = print_logo(logofile) {
+                error!("{}", e);
+            }
         } else {
             print_default_logo()
         }
@@ -335,21 +441,19 @@ fn main() {
         }
     }
     if host == "true" {
-        let contents = fs::read_to_string("/sys/devices/virtual/dmi/id/product_name")
-            .expect("Unable to read the file");
-        let dev = contents.trim_end();
-        table = add_row(table, abold, caps, borders, "HOST", &dev);
+        match get_device_name() {
+            Ok(dev) => table = add_row(table, abold, caps, borders, "HOST", &dev),
+            Err(e) => error!("{}", e),
+        }
     }
     if uptime == "true" {
         if let Some(uptime) = uptime_lib::get()
             .ok()
             .and_then(|uptime| uptime.to_std().ok())
         {
-            if uptime.as_secs() == 0 {
-                table = add_row(table, abold, caps, borders, "UPTIME", "now");
-            } else {
-                let uptime = format_duration(uptime);
-                table = add_row(table, abold, caps, borders, "UPTIME", &uptime);
+            match format_duration(uptime) {
+                Ok(uptime) => table = add_row(table, abold, caps, borders, "UPTIME", &uptime),
+                Err(e) => error!("{}", e),
             }
         };
     }
@@ -359,31 +463,22 @@ fn main() {
         }
     }
     if kernel == "true" {
-        let contents =
-            fs::read_to_string("/proc/sys/kernel/osrelease").expect("Unable to read the file");
-        let kern = contents.trim_end();
-        table = add_row(table, abold, caps, borders, "KERNEL", kern);
+        match get_kernel_version() {
+            Ok(kern) => table = add_row(table, abold, caps, borders, "KERNEL", &kern),
+            Err(e) => error!("{}", e),
+        }
     }
     if window_manager == "true" {
-        let mut path: PathBuf = env::var("HOME").expect("$HOME not set").into();
-        path.push(".xinitrc");
-        let file = File::open(path).expect("unable to open file");
-        let reader = BufReader::new(file);
-        let last_line = reader
-            .lines()
-            .last()
-            .expect("no last line")
-            .expect("io error reading file");
-        let word = last_line.to_string();
-        let start_bytes = word.find(" ").unwrap();
-        let result = &word[start_bytes..];
-        let mut wm = result.to_string();
-        assert_eq!(wm.remove(0), ' ');
-        table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm);
+        match get_window_manager() {
+            Ok(wm) => table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm),
+            Err(e) => error!("{}", e),
+        }
     }
     if editor == "true" {
-        let ed = env::var("EDITOR").expect("$EDITOR not set");
-        table = add_row(table, abold, caps, borders, "EDITOR", &ed);
+        match get_editor() {
+            Ok(ed) => table = add_row(table, abold, caps, borders, "EDITOR", &ed),
+            Err(e) => error!("{}", e),
+        }
     }
     if shell == "true" {
         if let Some(ref user) = current_user {
@@ -402,41 +497,22 @@ fn main() {
         }
     }
     if ip_address == "true" {
-        let ip = Command::new("curl")
-            .arg("--silent")
-            .arg("https://ipecho.net/plain")
-            .output()
-            .expect("failed to execute process");
-        table = add_row(
-            table,
-            abold,
-            caps,
-            borders,
-            "IP ADDRESS",
-            &String::from_utf8_lossy(&ip.stdout),
-        );
+        match get_ip_address() {
+            Ok(ip) => table = add_row(table, abold, caps, borders, "IP ADDRESS", &ip),
+            Err(e) => error!("{}", e),
+        }
     }
     if packages == "true" {
-        let out = Command::new("pacman")
-            .arg("-Qq")
-            .output()
-            .expect("failed to execute process");
-        let pkgs = bytecount::count(&out.stdout, b'\n');
-        let pkg = format!("{}", pkgs);
-        table = add_row(table, abold, caps, borders, "PACKAGES", &pkg);
+        match get_package_count() {
+            Ok(pkg) => table = add_row(table, abold, caps, borders, "PACKAGES", &pkg),
+            Err(e) => error!("{}", e),
+        }
     }
     if music == "mpd" {
-        let a = Command::new("mpc")
-            .arg("current")
-            .arg("-f")
-            .arg("%artist% - (%date%) %album% - %title%")
-            .output()
-            .expect("failed to execute process");
-        let mus = &mut String::from_utf8_lossy(&a.stdout).to_string();
-        let len = mus.len();
-        mus.truncate(len - 1);
-        assert_eq!(mus, mus);
-        table = add_row(table, abold, caps, borders, "MUSIC (MPD)", mus);
+        match get_mpd_song() {
+            Ok(mus) => table = add_row(table, abold, caps, borders, "MUSIC (MPD)", &mus),
+            Err(e) => error!("{}", e),
+        }
     }
     // After collecting data for variables and adding the rows, print the final output into a custom table.
     table.printstd();
