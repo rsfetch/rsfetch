@@ -99,7 +99,7 @@ fn get_os_release() -> Result<Option<String>> {
 fn main() {
     // Variables
     let mut table = Table::new();
-    let matches = App::new("fetch")
+    let matches = App::new("rsfetch")
                     .version("1.4.0")
                     .about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of editor, window manager, and ip address), and \"SOURCE\" defaults to no.")
                     .arg(Arg::with_name("credits")
@@ -212,8 +212,9 @@ fn main() {
                     .get_matches();
     if matches.is_present("credits") {
         println!("");
-        println!("Main Developer:   valley (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      kiedtl (Reddit: /u/kiedtl)     (Github: kiedtl)\n");
+        println!("Main Developer:   valley  (Reddit: /u/Valley6660) (Github: Phate6660)");
+        println!("Contributor:      kiedtl  (Reddit: /u/kiedtl)     (Github: kiedtl)");
+        println!("Contributor:      lnicola                         (Github: lnicola)\n");
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
         println!("");
         process::exit(0x0100); // Exit program here so that nothing else is output.
