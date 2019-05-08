@@ -47,7 +47,7 @@ Uninstall with `sudo make uninstall`.
 #### AUR package
 Optionally, if you use a Arch-based distro, you can use either of the following AUR packages:
 - [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (This requires Rust as it builds from source.)
-- [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs latest binary from releases.)
+- [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs the latest binary from releases.)
 
 ### Screenshots
 
