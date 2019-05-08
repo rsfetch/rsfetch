@@ -16,7 +16,7 @@
 	* [Installation](#installation)
 	* [Screenshots](#screenshots)
 	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
-        * [License](#license)
+    * [License](#license)
 
 **Why I made it:** I used to use neofetch, ufetch, and 
 aurafetch a lot, but then that got me thinking. I have the skill to make
