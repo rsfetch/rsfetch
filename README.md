@@ -33,8 +33,6 @@ Rust skills).
 
 2. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community.
 
-**WARNING**: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
-
 ### Requirements
 - `mpd + mpc` for the music info. (Completely optional, as music info is turned off by default.)
 
