@@ -16,7 +16,7 @@
 	* [Installation](#installation)
 	* [Screenshots](#screenshots)
 	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
-    * [License](#license)
+        * [License](#license)
 
 **Why I made it:** I used to use neofetch, ufetch, and 
 aurafetch a lot, but then that got me thinking. I have the skill to make
@@ -41,14 +41,13 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 1. Install rust and cargo.
 2. Clone the repository.
 3. `cd fetch; make; sudo make install`
-4. ~~To use, put the bash function above into "$HOME/.bashrc" (If you don't care about terminal detection, you can skip this step.)~~ Removed terminal detection for now. At least until I can figure out how to implement it in rust.
 
 Uninstall with `sudo make uninstall`.
 
 #### AUR package
 Optionally, if you use a Arch-based distro, you can use either of the following AUR packages:
-- [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (builds from source)
-- [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (grabs binary from releases)
+- [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (This requires Rust as it builds from source.)
+- [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs latest binary from releases.)
 
 ### Screenshots
 
@@ -61,7 +60,7 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 **My Preference of Options + Execution Time**
 ![Default](Screenshots/preference.png?raw=true "Default")
 
-You can't see what options I choose because I aliased fetch. Here is the actual command ran.
+You can't see what options I choose because I aliased rsfetch to fetch. Here is the actual command ran.
 
 `rsfetch -C 0 -h false -i false -l false -u false`
 
