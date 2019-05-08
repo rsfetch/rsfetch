@@ -27,23 +27,16 @@ for a while. So... here's the end result. I am open to any criticisms
 you have. After all, I wish to make this better (as well as improve my 
 Rust skills).
 
-### Help Wanted
-
-I've been made aware of various ways to make my code better (thanks to various Reddit users). If possible, I would love some help in implementing them. Some of the things that were suggested were a bit confusing to be honest, but that might be because I've just started Rust with this project. If you want to help, let me know via; [Reddit](https://www.reddit.com/user/Valley6660) (please send a PM and not start a chat as Reddit Chat is broken for me), a Github issue, or a pull request. I respond usually pretty quickly (within 1-10 minutes). If I don't respond, it's because I probably crashed from sleep deprivation.
-
 ### Things to Know
 
 1. The packages section only works for Arch (or Arch-based) distros as it uses `pacman`.
 
-2. I will attempt to add support for the set terminal font, but it looks like a lot of confusing work to get done.
-
-3. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community.
+2. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community.
 
 **WARNING**: I've updated a lot of things in this, so things are GUARANTEED to be broken for other people. Please report bugs you find.
 
 ### Requirements
 - `mpd + mpc` for the music info. (Completely optional, as music info is turned off by default.)
-- An Arch-based system (Arch, Manjaro, Antergeros, Archlabs, etc.) for the package info. (Also optional; package info can be turned off if desired.)
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
