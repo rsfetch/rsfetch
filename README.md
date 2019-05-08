@@ -15,7 +15,6 @@
 	* [Requirements](#requirements)
 	* [Installation](#installation)
 	* [Screenshots](#screenshots)
-	* [Amount of code. (According to tokei).](#amount-of-code-according-to-tokei)
     * [License](#license)
 
 **Why I made it:** I used to use neofetch, ufetch, and 
@@ -65,19 +64,6 @@ You can't see what options I choose because I aliased rsfetch to fetch. Here is 
 `rsfetch -C 0 -h false -i false -l false -u false`
 
 And yes, you saw right. Execution time was 0.012s! Crazy fast.
-
-### Amount of code. (According to tokei).
-
-```
--------------------------------------------------------------------------------
- Language            Files        Lines         Code     Comments       Blanks
--------------------------------------------------------------------------------
- Makefile                1           67           44            9           14
- Rust                    1          416          397            8           11
--------------------------------------------------------------------------------
- Total                   2          483          441           17           25
--------------------------------------------------------------------------------
-```
 
 ### License
 
