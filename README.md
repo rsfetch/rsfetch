@@ -10,8 +10,7 @@
 
 ### Table of Contents
 
-* [rsfetch](#rsfetch)
-	* [Help Wanted](#help-wanted)
+* [Table of Contents](#table-of-contents)
 	* [Things to Know](#things-to-know)
 	* [Requirements](#requirements)
 	* [Installation](#installation)
