@@ -47,10 +47,7 @@ enum Error {
 type Result<T, E = Error> = result::Result<T, E>;
 
 // escape character (U+001B)
-const E: char = '\x001B';
-
-// block character (U+25A0)
-const block_char: String = "\x250A".to_string();
+const E: char = '\x1B';
 
 // Function for making bold text.
 fn make_bold(text: &str) -> String {
@@ -365,7 +362,7 @@ fn main() {
     }
     let caps = matches.value_of("caps").unwrap_or("true");
     let abold = matches.value_of("bold").unwrap_or("true");
-    let corners = matches.value_of("corners").unwrap_or(block_char);
+    let corners = matches.value_of("corners").unwrap_or("■");
     let borders = matches.value_of("borders").unwrap_or("true");
     let user = matches.value_of("user").unwrap_or("true");
     let host = matches.value_of("host").unwrap_or("true");
