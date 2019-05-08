@@ -67,4 +67,4 @@ And yes, you saw right. Execution time was 0.012s! Crazy fast.
 
 ### License
 
-I have set my repo to "The Unlicense". Anyone can do anything they want, with anything in my repo.
+- License has been set to `Unlicense`. Anybody can do anything with this repository. [View license](https://raw.githubusercontent.com/rsfetch/rsfetch/master/LICENSE)
