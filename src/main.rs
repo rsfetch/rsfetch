@@ -57,20 +57,20 @@ fn make_bold(text: &str) -> String {
 // Function for adding rows to the table.
 fn add_row(
     mut table: Table,
-    abold: &str,
-    caps: &str,
-    border: &str,
+    abold: bool,
+    caps: bool,
+    border: bool,
     title: &str,
     value: &str,
 ) -> Table {
     let mut title_str = title.to_string();
-    if caps != "true" {
+    if caps != true {
         title_str = title_str.to_lowercase();
     }
-    if abold != "false" {
+    if abold != false {
         title_str = make_bold(&title_str);
     }
-    if border != "true" {
+    if border != true {
         table.add_row(row![title_str, value]);
     } else {
         table.add_row(row![title_str, "=", value]);
@@ -247,24 +247,21 @@ fn main() {
                         .value_name(" ")
                         .help("Links to those who helped make this, and thanks to others who've helped me.")
                         .takes_value(false))
-                    .arg(Arg::with_name("bold")
+                    .arg(Arg::with_name("no-bold")
                         .short("b")
-                        .long("bold")
-                        .value_name("BOOL")
+                        .long("no-bold")
                         .help("Turn bold for field titles off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("borders")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-borders")
                         .short("B")
-                        .long("borders")
-                        .value_name("BOOL")
+                        .long("no-borders")
                         .help("Turn borders off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("caps")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-caps")
                         .short("c")
-                        .long("caps")
-                        .value_name("BOOL")
+                        .long("no-caps")
                         .help("Turn all caps off.")
-                        .takes_value(true))
+                        .takes_value(false))
                     .arg(Arg::with_name("no-user")
                         .short("U")
                         .long("no-user")
@@ -290,9 +287,9 @@ fn main() {
                         .long("no-shell")
                         .help("Turn default shell name off.")
                         .takes_value(false))
-                    .arg(Arg::with_name("no-window_manager")
+                    .arg(Arg::with_name("no-window-manager")
                         .short("w")
-                        .long("no-window_manager")
+                        .long("no-window-manager")
                         .help("Turn window manager name on.")
                         .takes_value(false))
                     .arg(Arg::with_name("no-distro")
@@ -339,7 +336,6 @@ fn main() {
                         .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when corners are enabled.")
                         .takes_value(true))
                     .get_matches();
-    let current_user = Passwd::current_user();
     if matches.is_present("credits") {
         println!();
         println!("Main Developer:   valley  (Reddit: /u/Valley6660) (Github: Phate6660)");
@@ -349,17 +345,21 @@ fn main() {
         println!();
         return;
     }
-    
+    let current_user = if !matches.is_present("no-user") || !matches.is_present("no-shell") {
+        Passwd::current_user()
+    } else {
+        None
+    };
+    let abold = !matches.is_present("no-bold");
+    let caps = !matches.is_present("no-caps");
+    let borders = !matches.is_present("no-borders");
     // For the options that require bools or other input.
-    let caps = matches.value_of("caps").unwrap_or("true");
-    let abold = matches.value_of("bold").unwrap_or("true");
     let corners = matches.value_of("corners").unwrap_or("■");
-    let borders = matches.value_of("borders").unwrap_or("true");
     let music = matches.value_of("music").unwrap_or("no");
     let logofile = matches.value_of("logofile").unwrap_or("");
 
     println!(); // For a blank line before output.
-    // Determine the logo to use.
+                // Determine the logo to use.
     if matches.is_present("no-logo") {
         let _logo = "false";
     } else {
@@ -373,9 +373,8 @@ fn main() {
         println!(); // print a newline
     }
     let format;
-    
     // Determine if borders are used, and if they are, the style of the corners.
-    if borders == "true" {
+    if borders == true {
         if corners == "■" {
             format = format::FormatBuilder::new()
                 .column_separator(' ')
@@ -412,24 +411,18 @@ fn main() {
         table.set_format(format);
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-    if matches.is_present("no-user") {
-        let _user = "false";
-    } else {
+    if !matches.is_present("no-user") {
         if let Some(ref user) = current_user {
             table = add_row(table, abold, caps, borders, "USER", &user.name);
         }
     }
-    if matches.is_present("no-host") {
-        let _host = "false";
-    } else {
+    if !matches.is_present("no-host") {
         match get_device_name() {
             Ok(dev) => table = add_row(table, abold, caps, borders, "HOST", &dev),
             Err(e) => error!("{}", e),
         }
     }
-    if matches.is_present("no-uptime") {
-        let _uptime = "false";
-    } else {
+    if !matches.is_present("no-uptime") {
         if let Some(uptime) = uptime_lib::get()
             .ok()
             .and_then(|uptime| uptime.to_std().ok())
@@ -440,24 +433,18 @@ fn main() {
             }
         };
     }
-    if matches.is_present("no-distro") {
-        let _distro = "false";
-    } else {
+    if !matches.is_present("no-distro") {
         if let Ok(Some(dist)) = get_os_release() {
             table = add_row(table, abold, caps, borders, "DISTRO", &dist);
         }
     }
-    if matches.is_present("no-kernel") {
-        let _kernel = "false";
-    } else {
+    if !matches.is_present("no-kernel") {
         match get_kernel_version() {
             Ok(kern) => table = add_row(table, abold, caps, borders, "KERNEL", &kern),
             Err(e) => error!("{}", e),
         }
     }
-    if matches.is_present("no-window_manager") {
-        let _window_manager = "false";
-    } else {
+    if !matches.is_present("no-window-manager") {
         match get_window_manager() {
             Ok(wm) => table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm),
             Err(e) => error!("{}", e),
@@ -469,9 +456,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if matches.is_present("no-shell") {
-        let _shell = "false";
-    } else {
+    if !matches.is_present("no-shell") {
         if let Some(ref user) = current_user {
             if let Some(shell) = Path::new(&user.shell).file_name() {
                 table = add_row(
