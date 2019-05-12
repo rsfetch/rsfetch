@@ -1,5 +1,5 @@
 <h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/logo.jpg" alt="logo" height="100px"></h3>
-<p align="center">Fast (0.01s - 0.2s execution time) and somewhat(?) minimal fetch program written in Rust.</p>
+<p align="center">Fast (1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
 <p align="center">
 <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/rsfetch/rsfetch.svg">
@@ -56,14 +56,13 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 **Default Fetch**
 ![Default](Screenshots/default.png?raw=true "Default")
 
-**My Preference of Options + Execution Time**
-![Default](Screenshots/preference.png?raw=true "Default")
+**My Preference of Options**
+![Default](Screenshots/preference.png?raw=true "Preference")
 
-You can't see what options I choose because I aliased rsfetch to fetch. Here is the actual command ran.
+**Benchmark**
+![Benchmark](Screenshots/benchmark.png?raw=true "Benchmark")
 
-`rsfetch -C 0 -h false -i false -l false -u false`
-
-And yes, you saw right. Execution time was 0.012s! Crazy fast. I've even had the execution time be as low as 0.004s!
+And yes, you saw right. Execution time was 1ms on average! Crazy fast.
 
 ### License
 
