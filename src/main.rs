@@ -57,7 +57,7 @@ fn make_bold(text: &str) -> String {
 // Function for adding rows to the table.
 fn add_row(
     mut table: Table,
-    abold: bool,
+    bold: bool,
     caps: bool,
     border: bool,
     title: &str,
@@ -67,7 +67,7 @@ fn add_row(
     if caps != true {
         title_str = title_str.to_lowercase();
     }
-    if abold != false {
+    if bold {
         title_str = make_bold(&title_str);
     }
     if border != true {
@@ -240,7 +240,7 @@ fn main() {
     // Variables
     let mut table = Table::new();
     let matches = App::new("rsfetch")
-                    .version("1.6.0")
+                    .version("1.6.6")
                     .about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.")
                     .arg(Arg::with_name("credits")
                         .long("credits")
@@ -350,19 +350,16 @@ fn main() {
     } else {
         None
     };
-    let abold = !matches.is_present("no-bold");
+    let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
     // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
     let music = matches.value_of("music").unwrap_or("no");
     let logofile = matches.value_of("logofile").unwrap_or("");
-
     println!(); // For a blank line before output.
                 // Determine the logo to use.
-    if matches.is_present("no-logo") {
-        let _logo = "false";
-    } else {
+    if !matches.is_present("no-logo") {
         if !logofile.is_empty() {
             if let Err(e) = print_logo(logofile) {
                 error!("{}", e);
@@ -374,7 +371,7 @@ fn main() {
     }
     let format;
     // Determine if borders are used, and if they are, the style of the corners.
-    if borders == true {
+    if borders {
         if corners == "■" {
             format = format::FormatBuilder::new()
                 .column_separator(' ')
@@ -413,12 +410,12 @@ fn main() {
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
     if !matches.is_present("no-user") {
         if let Some(ref user) = current_user {
-            table = add_row(table, abold, caps, borders, "USER", &user.name);
+            table = add_row(table, bold, caps, borders, "USER", &user.name);
         }
     }
     if !matches.is_present("no-host") {
         match get_device_name() {
-            Ok(dev) => table = add_row(table, abold, caps, borders, "HOST", &dev),
+            Ok(dev) => table = add_row(table, bold, caps, borders, "HOST", &dev),
             Err(e) => error!("{}", e),
         }
     }
@@ -428,31 +425,31 @@ fn main() {
             .and_then(|uptime| uptime.to_std().ok())
         {
             match format_duration(uptime) {
-                Ok(uptime) => table = add_row(table, abold, caps, borders, "UPTIME", &uptime),
+                Ok(uptime) => table = add_row(table, bold, caps, borders, "UPTIME", &uptime),
                 Err(e) => error!("{}", e),
             }
         };
     }
     if !matches.is_present("no-distro") {
         if let Ok(Some(dist)) = get_os_release() {
-            table = add_row(table, abold, caps, borders, "DISTRO", &dist);
+            table = add_row(table, bold, caps, borders, "DISTRO", &dist);
         }
     }
     if !matches.is_present("no-kernel") {
         match get_kernel_version() {
-            Ok(kern) => table = add_row(table, abold, caps, borders, "KERNEL", &kern),
+            Ok(kern) => table = add_row(table, bold, caps, borders, "KERNEL", &kern),
             Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-window-manager") {
         match get_window_manager() {
-            Ok(wm) => table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm),
+            Ok(wm) => table = add_row(table, bold, caps, borders, "WINDOW MANAGER", &wm),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("editor") {
         match get_editor() {
-            Ok(ed) => table = add_row(table, abold, caps, borders, "EDITOR", &ed),
+            Ok(ed) => table = add_row(table, bold, caps, borders, "EDITOR", &ed),
             Err(e) => error!("{}", e),
         }
     }
@@ -461,32 +458,30 @@ fn main() {
             if let Some(shell) = Path::new(&user.shell).file_name() {
                 table = add_row(
                     table,
-                    abold,
+                    bold,
                     caps,
                     borders,
                     "SHELL",
                     shell.to_string_lossy().as_ref(),
                 );
-            } else {
-                table = add_row(table, abold, caps, borders, "SHELL", &user.shell);
             }
         }
     }
     if matches.is_present("ip_address") {
         match get_ip_address() {
-            Ok(ip) => table = add_row(table, abold, caps, borders, "IP ADDRESS", &ip),
+            Ok(ip) => table = add_row(table, bold, caps, borders, "IP ADDRESS", &ip),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("packages") {
         match get_package_count() {
-            Ok(pkg) => table = add_row(table, abold, caps, borders, "PACKAGES", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
             Err(e) => error!("{}", e),
         }
     }
     if music == "mpd" {
         match get_mpd_song() {
-            Ok(mus) => table = add_row(table, abold, caps, borders, "MUSIC (MPD)", &mus),
+            Ok(mus) => table = add_row(table, bold, caps, borders, "MUSIC (MPD)", &mus),
             Err(e) => error!("{}", e),
         }
     }
