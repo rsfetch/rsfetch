@@ -9,13 +9,11 @@
 </p>
 
 ### Table of Contents
-
-* [Table of Contents](#table-of-contents)
-	* [Things to Know](#things-to-know)
-	* [Requirements](#requirements)
-	* [Installation](#installation)
-	* [Screenshots](#screenshots)
-    * [License](#license)
+* [Things to Know](#things-to-know)
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Screenshots](#screenshots)
+* [License](#license)
 
 **Why I made it:** I used to use neofetch, ufetch, and 
 aurafetch a lot, but then that got me thinking. I have the skill to make
