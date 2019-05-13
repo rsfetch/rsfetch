@@ -36,8 +36,8 @@ enum Error {
     GuessWm,
     #[snafu(display("Could not determine editor"))]
     Editor { source: env::VarError },
-    #[snafu(display("Could not run curl"))]
-    Curl { source: io::Error },
+    #[snafu(display("Could not retrieve IP address: {}", source))]
+    Reqwest { source: reqwest::Error },
     #[snafu(display("Could not run pacman"))]
     Pacman { source: io::Error },
     #[snafu(display("Could not run mpc"))]
@@ -166,12 +166,10 @@ fn get_editor() -> Result<String> {
 }
 
 fn get_ip_address() -> Result<String> {
-    let curl = Command::new("curl")
-        .arg("--silent")
-        .arg("https://ipecho.net/plain")
-        .output()
-        .context(Curl)?;
-    let ip = String::from_utf8_lossy(&curl.stdout).into_owned();
+    let ip = reqwest::get("https://ipecho.net/plain")
+        .context(Reqwest)?
+        .text()
+        .context(Reqwest)?;
     Ok(ip)
 }
 
