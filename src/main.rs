@@ -246,8 +246,8 @@ fn main() {
     // Variables
     let mut table = Table::new();
     let matches = App::new("rsfetch")
-                    .version("1.6.6")
-                    .about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.")
+                    .version("1.7.0")
+                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
@@ -339,7 +339,7 @@ fn main() {
                         .short("C")
                         .long("corners")
                         .value_name("CHARACTER")
-                        .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when corners are enabled.")
+                        .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when borders are enabled.")
                         .takes_value(true))
                     .get_matches();
     if matches.is_present("credits") {
