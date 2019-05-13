@@ -138,6 +138,14 @@ fn get_kernel_version() -> Result<String> {
 }
 
 fn get_window_manager() -> Result<String> {
+    if let Some(de) = env::var_os("XDG_DESKTOP_SESSION")
+        .or_else(|| env::var_os("XDG_CURRENT_DESKTOP"))
+        .or_else(|| env::var_os("DESKTOP_SESSION"))
+        .map(|s| s.to_string_lossy().into_owned())
+    {
+        return Ok(de);
+    }
+
     let mut path = dirs::home_dir().context(HomeDir)?;
     path.push(".xinitrc");
     let file = File::open(path).context(OpenXInitRc)?;
