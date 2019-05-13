@@ -37,7 +37,7 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 
 1. Install rust and cargo.
 2. Clone the repository.
-3. `cd fetch; make; sudo make install`
+3. `cd rsfetch; make; sudo make install`
 
 Uninstall with `sudo make uninstall`.
 
