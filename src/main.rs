@@ -293,10 +293,10 @@ fn main() {
                         .long("no-shell")
                         .help("Turn default shell name off.")
                         .takes_value(false))
-                    .arg(Arg::with_name("no-window-manager")
+                    .arg(Arg::with_name("no-wm-de")
                         .short("w")
-                        .long("no-window-manager")
-                        .help("Turn window manager name on.")
+                        .long("no-wm-de")
+                        .help("Turn window manager or desktop environment name off.")
                         .takes_value(false))
                     .arg(Arg::with_name("no-distro")
                         .short("d")
@@ -447,9 +447,9 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-window-manager") {
+    if !matches.is_present("no-wm-de") {
         match get_window_manager() {
-            Ok(wm) => table = add_row(table, bold, caps, borders, "WINDOW MANAGER", &wm),
+            Ok(wm) => table = add_row(table, bold, caps, borders, "WM/DE", &wm),
             Err(e) => error!("{}", e),
         }
     }
