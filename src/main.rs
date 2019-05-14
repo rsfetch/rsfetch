@@ -38,8 +38,8 @@ enum Error {
     Editor { source: env::VarError },
     #[snafu(display("Could not retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
-    #[snafu(display("Could not run pacman"))]
-    Pacman { source: io::Error },
+    #[snafu(display("Could not retrieve package count. Perhaps you input the wrong package manager?"))]
+    Pkgcount { source: io::Error },
     #[snafu(display("Could not run mpc"))]
     Mpc { source: io::Error },
 }
@@ -173,9 +173,16 @@ fn get_ip_address() -> Result<String> {
     Ok(ip)
 }
 
-fn get_package_count() -> Result<String> {
-    let pacman = Command::new("pacman").arg("-Qq").output().context(Pacman)?;
+fn get_package_count_arch_based() -> Result<String> {
+    let pacman = Command::new("pacman").arg("-Qq").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pacman.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_debian_based() -> Result<String> {
+    let apt = Command::new("apt").arg("list").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&apt.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
@@ -316,8 +323,9 @@ fn main() {
                     .arg(Arg::with_name("packages")
                         .short("p")
                         .long("packages")
-                        .help("Turn total package count on.")
-                        .takes_value(false))
+                        .value_name("PKG MNGR")
+                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based.")
+                        .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
                         .long("music")
@@ -363,6 +371,7 @@ fn main() {
     let corners = matches.value_of("corners").unwrap_or("■");
     let music = matches.value_of("music").unwrap_or("no");
     let logofile = matches.value_of("logofile").unwrap_or("");
+    let packages = matches.value_of("packages");
     println!(); // For a blank line before output.
                 // Determine the logo to use.
     if !matches.is_present("no-logo") {
@@ -479,8 +488,13 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if matches.is_present("packages") {
-        match get_package_count() {
+    if packages == Some("pacman") {
+        match get_package_count_arch_based() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("apt") {
+        match get_package_count_debian_based() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
             Err(e) => error!("{}", e),
         }
