@@ -38,7 +38,7 @@ enum Error {
     Editor { source: env::VarError },
     #[snafu(display("Could not retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
-    #[snafu(display("Could not run pacman"))]
+    #[snafu(display("Could not retrieve package count. Perhaps you input the wrong package manager?"))]
     Pacman { source: io::Error },
     #[snafu(display("Could not run mpc"))]
     Mpc { source: io::Error },
@@ -173,8 +173,15 @@ fn get_ip_address() -> Result<String> {
     Ok(ip)
 }
 
-fn get_package_count() -> Result<String> {
+fn get_package_count_arch_based() -> Result<String> {
     let pacman = Command::new("pacman").arg("-Qq").output().context(Pacman)?;
+    let pkgs = bytecount::count(&pacman.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_debian_based() -> Result<String> {
+    let pacman = Command::new("apt").arg("list").output().context(Pacman)?;
     let pkgs = bytecount::count(&pacman.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
@@ -479,8 +486,13 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if matches.is_present("packages") {
-        match get_package_count() {
+    if packages == Some("pacman") {
+        match get_package_count_arch_based() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("apt") {
+        match get_package_count_debian_based() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
             Err(e) => error!("{}", e),
         }
