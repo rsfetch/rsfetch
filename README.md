@@ -9,6 +9,7 @@
 </p>
 
 ### Table of Contents
+* [Preface](#preface)
 * [Things to Know](#things-to-know)
 * [Requirements](#requirements)
 * [Installation](#installation)
@@ -16,13 +17,22 @@
 * [Benchmarks](#benchmarks)
 * [License](#license)
 
-**Why I made it:** I used to use neofetch, ufetch, and 
+### Preface
+
+**Why I originally made it:** I used to use neofetch, ufetch, and 
 aurafetch a lot, but then that got me thinking. I have the skill to make
  my own script, so why not? At first, it was just a simple BASH script. 
 Then I decided I wanted to try my hand at Rust, as it has interested me 
 for a while. So... here's the end result. I am open to any criticisms 
 you have. After all, I wish to make this better (as well as improve my 
 Rust skills).
+
+**Why I want to continue improving this:** When this first started out, it 
+was a simple pet project for learning how to code in Rust. Now that I have
+people helping me with this project, I would love to see this turn into a
+worthy alternative to neofetch/ufetch/screenfetch. Please, if there's anything 
+that you feel is missing from this, open an issue. I would love to hear people's
+thoughts on how this is.
 
 ### Things to Know
 
