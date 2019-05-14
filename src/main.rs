@@ -370,6 +370,7 @@ fn main() {
     let corners = matches.value_of("corners").unwrap_or("■");
     let music = matches.value_of("music").unwrap_or("no");
     let logofile = matches.value_of("logofile").unwrap_or("");
+    let packages = matches.value_of("packages");
     println!(); // For a blank line before output.
                 // Determine the logo to use.
     if !matches.is_present("no-logo") {
