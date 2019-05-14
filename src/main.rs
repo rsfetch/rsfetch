@@ -498,17 +498,17 @@ fn main() {
     }
     if packages == Some("pacman") {
         match get_package_count_arch_based() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (pacman)", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
             Err(e) => error!("{}", e),
         }
     } else if packages == Some("apt") {
         match get_package_count_debian_based() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (apt)", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
             Err(e) => error!("{}", e),
         }
     } else if packages == Some("pip") {
         match get_package_count_pip() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (pip)", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
             Err(e) => error!("{}", e),
         }
     }
