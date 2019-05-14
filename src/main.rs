@@ -39,7 +39,7 @@ enum Error {
     #[snafu(display("Could not retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
     #[snafu(display("Could not retrieve package count. Perhaps you input the wrong package manager?"))]
-    Pacman { source: io::Error },
+    Pkgcount { source: io::Error },
     #[snafu(display("Could not run mpc"))]
     Mpc { source: io::Error },
 }
@@ -174,15 +174,15 @@ fn get_ip_address() -> Result<String> {
 }
 
 fn get_package_count_arch_based() -> Result<String> {
-    let pacman = Command::new("pacman").arg("-Qq").output().context(Pacman)?;
+    let pacman = Command::new("pacman").arg("-Qq").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pacman.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_debian_based() -> Result<String> {
-    let pacman = Command::new("apt").arg("list").output().context(Pacman)?;
-    let pkgs = bytecount::count(&pacman.stdout, b'\n');
+    let apt = Command::new("apt").arg("list").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&apt.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
