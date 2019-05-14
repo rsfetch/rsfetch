@@ -13,6 +13,7 @@
 * [Requirements](#requirements)
 * [Installation](#installation)
 * [Screenshots](#screenshots)
+* [Benchmarks](#benchmarks)
 * [License](#license)
 
 **Why I made it:** I used to use neofetch, ufetch, and 
