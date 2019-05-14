@@ -36,8 +36,8 @@ enum Error {
     GuessWm,
     #[snafu(display("Could not determine editor"))]
     Editor { source: env::VarError },
-    #[snafu(display("Could not run curl"))]
-    Curl { source: io::Error },
+    #[snafu(display("Could not retrieve IP address: {}", source))]
+    Reqwest { source: reqwest::Error },
     #[snafu(display("Could not run pacman"))]
     Pacman { source: io::Error },
     #[snafu(display("Could not run mpc"))]
@@ -57,20 +57,20 @@ fn make_bold(text: &str) -> String {
 // Function for adding rows to the table.
 fn add_row(
     mut table: Table,
-    abold: &str,
-    caps: &str,
-    border: &str,
+    bold: bool,
+    caps: bool,
+    border: bool,
     title: &str,
     value: &str,
 ) -> Table {
     let mut title_str = title.to_string();
-    if caps != "true" {
+    if caps != true {
         title_str = title_str.to_lowercase();
     }
-    if abold != "false" {
+    if bold {
         title_str = make_bold(&title_str);
     }
-    if border != "true" {
+    if border != true {
         table.add_row(row![title_str, value]);
     } else {
         table.add_row(row![title_str, "=", value]);
@@ -138,6 +138,14 @@ fn get_kernel_version() -> Result<String> {
 }
 
 fn get_window_manager() -> Result<String> {
+    if let Some(de) = env::var_os("XDG_DESKTOP_SESSION")
+        .or_else(|| env::var_os("XDG_CURRENT_DESKTOP"))
+        .or_else(|| env::var_os("DESKTOP_SESSION"))
+        .map(|s| s.to_string_lossy().into_owned())
+    {
+        return Ok(de);
+    }
+
     let mut path = dirs::home_dir().context(HomeDir)?;
     path.push(".xinitrc");
     let file = File::open(path).context(OpenXInitRc)?;
@@ -158,12 +166,10 @@ fn get_editor() -> Result<String> {
 }
 
 fn get_ip_address() -> Result<String> {
-    let curl = Command::new("curl")
-        .arg("--silent")
-        .arg("https://ipecho.net/plain")
-        .output()
-        .context(Curl)?;
-    let ip = String::from_utf8_lossy(&curl.stdout).into_owned();
+    let ip = reqwest::get("https://ipecho.net/plain")
+        .context(Reqwest)?
+        .text()
+        .context(Reqwest)?;
     Ok(ip)
 }
 
@@ -237,118 +243,103 @@ fn format_duration(duration: Duration) -> Result<String> {
 // Main function
 fn main() {
     pretty_env_logger::init();
-
     // Variables
     let mut table = Table::new();
     let matches = App::new("rsfetch")
-                    .version("1.5.0")
-                    .about("\nMy info fetch tool for Linux. Fast (0.01s - 0.2s execution time) and somewhat(?) minimal.\nAll \"BOOL\" options default to \"true\" (with the exception of editor, window manager, and ip address), and \"SOURCE\" defaults to no.")
+                    .version("1.7.0")
+                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
-                        .help("Links to those who helped make this, and thanks to others who've helped me with my struggles.")
+                        .help("Links to those who helped make this, and thanks to others who've helped me.")
                         .takes_value(false))
-                    .arg(Arg::with_name("bold")
+                    .arg(Arg::with_name("no-bold")
                         .short("b")
-                        .long("bold")
-                        .value_name("BOOL")
-                        .help("Turn bold for field titles on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("borders")
+                        .long("no-bold")
+                        .help("Turn bold for field titles off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-borders")
                         .short("B")
-                        .long("borders")
-                        .value_name("BOOL")
-                        .help("Turn borders on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("caps")
+                        .long("no-borders")
+                        .help("Turn borders off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-caps")
                         .short("c")
-                        .long("caps")
-                        .value_name("BOOL")
-                        .help("Turn all caps on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("user")
+                        .long("no-caps")
+                        .help("Turn all caps off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-user")
                         .short("U")
-                        .long("user")
-                        .value_name("BOOL")
-                        .help("Turn user name on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("host")
+                        .long("no-user")
+                        .help("Turn user name off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-host")
                         .short("h")
-                        .long("host")
-                        .value_name("BOOL")
-                        .help("Turn device name on or off.")
-                        .takes_value(true))
+                        .long("no-host")
+                        .help("Turn device name off.")
+                        .takes_value(false))
                     .arg(Arg::with_name("ip_address")
                         .short("i")
                         .long("ip_address")
-                        .value_name("BOOL")
-                        .help("Turn ip address display on or off.")
-                        .takes_value(true))
+                        .help("Turn ip address display on.")
+                        .takes_value(false))
                     .arg(Arg::with_name("editor")
                         .short("e")
                         .long("editor")
-                        .value_name("BOOL")
-                        .help("Turn default editor name on or off. (Must have $EDITOR variable set.).")
-                        .takes_value(true))
-                    .arg(Arg::with_name("shell")
+                        .help("Turn default editor name on. (Must have $EDITOR variable set.).")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-shell")
                         .short("s")
-                        .long("shell")
-                        .value_name("BOOL")
-                        .help("Turn default shell name on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("window_manager")
+                        .long("no-shell")
+                        .help("Turn default shell name off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-wm-de")
                         .short("w")
-                        .long("window_manager")
-                        .value_name("BOOL")
-                        .help("Turn window manager name on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("distro")
+                        .long("no-wm-de")
+                        .help("Turn window manager or desktop environment name off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-distro")
                         .short("d")
-                        .long("distro")
-                        .value_name("BOOL")
-                        .help("Turn distro name on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("kernel")
+                        .long("no-distro")
+                        .help("Turn distro name off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-kernel")
                         .short("k")
-                        .long("kernel")
-                        .value_name("BOOL")
-                        .help("Turn kernel info on or off.")
-                        .takes_value(true))
-                    .arg(Arg::with_name("uptime")
+                        .long("no-kernel")
+                        .help("Turn kernel version off.")
+                        .takes_value(false))
+                    .arg(Arg::with_name("no-uptime")
                         .short("u")
-                        .long("uptime")
-                        .value_name("BOOL")
-                        .help("Turn uptime info on or off.")
-                        .takes_value(true))
+                        .long("no-uptime")
+                        .help("Turn uptime info off.")
+                        .takes_value(false))
                     .arg(Arg::with_name("packages")
                         .short("p")
                         .long("packages")
-                        .value_name("BOOL")
-                        .help("Turn total package count on or off.")
-                        .takes_value(true))
+                        .help("Turn total package count on.")
+                        .takes_value(false))
                     .arg(Arg::with_name("music")
                         .short("m")
                         .long("music")
                         .value_name("SOURCE")
                         .help("Choose where to get music info. Supported options are \"mpd\" (mpc) and no (none).\n")
                         .takes_value(true))
-                    .arg(Arg::with_name("logo")
+                    .arg(Arg::with_name("no-logo")
                         .short("l")
-                        .long("logo")
-                        .value_name("BOOL")
-                        .help("Turn the logo (VALLEY) on or off.")
-                        .takes_value(true))
+                        .long("no-logo")
+                        .help("Turn the logo or ascii art off.")
+                        .takes_value(false))
                     .arg(Arg::with_name("logofile")
                         .short("L")
                         .long("logofile")
                         .value_name("FILE")
-                        .help("Specifies the file from which to read a custom ASCII logo.")
+                        .help("Specify the file from which to read a custom ASCII logo.")
                         .takes_value(true))
                     .arg(Arg::with_name("corners")
                         .short("C")
                         .long("corners")
                         .value_name("CHARACTER")
-                        .help("Specifies the corner style. Choose either \"■\" or \"0\".")
+                        .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when borders are enabled.")
                         .takes_value(true))
                     .get_matches();
     if matches.is_present("credits") {
@@ -360,27 +351,21 @@ fn main() {
         println!();
         return;
     }
-    let caps = matches.value_of("caps").unwrap_or("true");
-    let abold = matches.value_of("bold").unwrap_or("true");
+    let current_user = if !matches.is_present("no-user") || !matches.is_present("no-shell") {
+        Passwd::current_user()
+    } else {
+        None
+    };
+    let bold = !matches.is_present("no-bold");
+    let caps = !matches.is_present("no-caps");
+    let borders = !matches.is_present("no-borders");
+    // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
-    let borders = matches.value_of("borders").unwrap_or("true");
-    let user = matches.value_of("user").unwrap_or("true");
-    let host = matches.value_of("host").unwrap_or("true");
-    let ip_address = matches.value_of("ip_address").unwrap_or("false");
-    let editor = matches.value_of("editor").unwrap_or("false");
-    let shell = matches.value_of("shell").unwrap_or("true");
-    let window_manager = matches.value_of("window_manager").unwrap_or("false");
-    let distro = matches.value_of("distro").unwrap_or("true");
-    let kernel = matches.value_of("kernel").unwrap_or("true");
-    let uptime = matches.value_of("uptime").unwrap_or("true");
-    let packages = matches.value_of("packages").unwrap_or("true");
     let music = matches.value_of("music").unwrap_or("no");
-    let logo = matches.value_of("logo").unwrap_or("true");
     let logofile = matches.value_of("logofile").unwrap_or("");
-
-    // Determine the logo to use.
     println!(); // For a blank line before output.
-    if logo == "true" {
+                // Determine the logo to use.
+    if !matches.is_present("no-logo") {
         if !logofile.is_empty() {
             if let Err(e) = print_logo(logofile) {
                 error!("{}", e);
@@ -391,9 +376,8 @@ fn main() {
         println!(); // print a newline
     }
     let format;
-
     // Determine if borders are used, and if they are, the style of the corners.
-    if borders == "true" {
+    if borders {
         if corners == "■" {
             format = format::FormatBuilder::new()
                 .column_separator(' ')
@@ -430,87 +414,80 @@ fn main() {
         table.set_format(format);
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-    let current_user = if user == "true" || shell == "true" {
-        Passwd::current_user()
-    } else {
-        None
-    };
-    if user == "true" {
+    if !matches.is_present("no-user") {
         if let Some(ref user) = current_user {
-            table = add_row(table, abold, caps, borders, "USER", &user.name);
+            table = add_row(table, bold, caps, borders, "USER", &user.name);
         }
     }
-    if host == "true" {
+    if !matches.is_present("no-host") {
         match get_device_name() {
-            Ok(dev) => table = add_row(table, abold, caps, borders, "HOST", &dev),
+            Ok(dev) => table = add_row(table, bold, caps, borders, "HOST", &dev),
             Err(e) => error!("{}", e),
         }
     }
-    if uptime == "true" {
+    if !matches.is_present("no-uptime") {
         if let Some(uptime) = uptime_lib::get()
             .ok()
             .and_then(|uptime| uptime.to_std().ok())
         {
             match format_duration(uptime) {
-                Ok(uptime) => table = add_row(table, abold, caps, borders, "UPTIME", &uptime),
+                Ok(uptime) => table = add_row(table, bold, caps, borders, "UPTIME", &uptime),
                 Err(e) => error!("{}", e),
             }
         };
     }
-    if distro == "true" {
+    if !matches.is_present("no-distro") {
         if let Ok(Some(dist)) = get_os_release() {
-            table = add_row(table, abold, caps, borders, "DISTRO", &dist);
+            table = add_row(table, bold, caps, borders, "DISTRO", &dist);
         }
     }
-    if kernel == "true" {
+    if !matches.is_present("no-kernel") {
         match get_kernel_version() {
-            Ok(kern) => table = add_row(table, abold, caps, borders, "KERNEL", &kern),
+            Ok(kern) => table = add_row(table, bold, caps, borders, "KERNEL", &kern),
             Err(e) => error!("{}", e),
         }
     }
-    if window_manager == "true" {
+    if !matches.is_present("no-wm-de") {
         match get_window_manager() {
-            Ok(wm) => table = add_row(table, abold, caps, borders, "WINDOW MANAGER", &wm),
+            Ok(wm) => table = add_row(table, bold, caps, borders, "WM/DE", &wm),
             Err(e) => error!("{}", e),
         }
     }
-    if editor == "true" {
+    if matches.is_present("editor") {
         match get_editor() {
-            Ok(ed) => table = add_row(table, abold, caps, borders, "EDITOR", &ed),
+            Ok(ed) => table = add_row(table, bold, caps, borders, "EDITOR", &ed),
             Err(e) => error!("{}", e),
         }
     }
-    if shell == "true" {
+    if !matches.is_present("no-shell") {
         if let Some(ref user) = current_user {
             if let Some(shell) = Path::new(&user.shell).file_name() {
                 table = add_row(
                     table,
-                    abold,
+                    bold,
                     caps,
                     borders,
                     "SHELL",
                     shell.to_string_lossy().as_ref(),
                 );
-            } else {
-                table = add_row(table, abold, caps, borders, "SHELL", &user.shell);
             }
         }
     }
-    if ip_address == "true" {
+    if matches.is_present("ip_address") {
         match get_ip_address() {
-            Ok(ip) => table = add_row(table, abold, caps, borders, "IP ADDRESS", &ip),
+            Ok(ip) => table = add_row(table, bold, caps, borders, "IP ADDRESS", &ip),
             Err(e) => error!("{}", e),
         }
     }
-    if packages == "true" {
+    if matches.is_present("packages") {
         match get_package_count() {
-            Ok(pkg) => table = add_row(table, abold, caps, borders, "PACKAGES", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
             Err(e) => error!("{}", e),
         }
     }
     if music == "mpd" {
         match get_mpd_song() {
-            Ok(mus) => table = add_row(table, abold, caps, borders, "MUSIC (MPD)", &mus),
+            Ok(mus) => table = add_row(table, bold, caps, borders, "MUSIC (MPD)", &mus),
             Err(e) => error!("{}", e),
         }
     }
