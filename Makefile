@@ -8,7 +8,7 @@ RBIN = ./target/release/rsfetch
 PREFIX = /usr/local
 
 # flags
-DFLAGS = --quiet --color always
+DFLAGS = --color always
 RFLAGS = ${DFLAGS} --release
 
 # run args
