@@ -57,12 +57,9 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 **My Preference of Options**
 ![Default](Screenshots/preference.png?raw=true "Preference")
 
-**Benchmark**
-![Benchmark](Screenshots/benchmark.png?raw=true "Benchmark")
+### Benchmarks
 
-And yes, you saw right. Execution time was 1ms on average! Crazy fast.
-
-Here's a more detailed benchmark, with rsfetch versus Neofetch, ScreenFetch, ufetch, kfetch, aurafetch, and pfetch:
+Here's a detailed benchmark, with rsfetch versus Neofetch, ScreenFetch, ufetch, kfetch, aurafetch, and pfetch:
 ```
 +kiedtl ~ (master +?) % hyperfine 'pfetch' 'kfetch' 'ufetch' 'rsfetch' 'aura' 'neofetch' 'screenfetch'
 Benchmark #1: pfetch
@@ -103,6 +100,8 @@ Summary
   304.07 ± 114.47 times faster than 'screenfetch'
 ```
 As you can see, rsfetch is the clear winner with pfetch and kfetch trailing behind.  
+
+And yes, you saw right. Execution time was 1ms on average! Crazy fast.
 
 ### License
 
