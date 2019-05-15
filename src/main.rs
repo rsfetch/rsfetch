@@ -197,7 +197,7 @@ fn get_package_count_void() -> Result<String> {
 fn get_package_count_fedora() -> Result<String> {
     let dnf = Command::new("dnf").arg("list").arg("--installed").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&dnf.stdout, b'\n');
-    let pkgs = pkgs as u32 - 1;
+    let pkgs = pkgs - 1;
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
@@ -205,7 +205,7 @@ fn get_package_count_fedora() -> Result<String> {
 fn get_package_count_pip() -> Result<String> {
     let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pip.stdout, b'\n');
-    let pkgs = pkgs as u32 - 2;
+    let pkgs = pkgs - 2;
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
