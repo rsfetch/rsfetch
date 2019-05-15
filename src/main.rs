@@ -347,7 +347,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based, \"xbps\" if on Void, \"dnf\" if on Fedora, or \"pip\" if you want to see how many pip packages are installed.")
+                        .help("Turn total package count on. Accepted values are \"pacman\", \"apt\", \"xbps\", \"dnf\", and \"pip\".")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
