@@ -187,6 +187,29 @@ fn get_package_count_debian_based() -> Result<String> {
     Ok(pkg)
 }
 
+fn get_package_count_void() -> Result<String> {
+    let xbps = Command::new("xbps-query").arg("-l").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&xbps.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_fedora() -> Result<String> {
+    let dnf = Command::new("dnf").arg("list").arg("--installed").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&dnf.stdout, b'\n');
+    let pkgs = pkgs - 1;
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_pip() -> Result<String> {
+    let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&pip.stdout, b'\n');
+    let pkgs = pkgs - 2;
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
 fn get_mpd_song() -> Result<String> {
     let mpc = Command::new("mpc")
         .arg("current")
@@ -324,7 +347,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based.")
+                        .help("Turn total package count on. Accepted values are \"pacman\", \"apt\", \"xbps\", \"dnf\", and \"pip\".")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
@@ -490,12 +513,27 @@ fn main() {
     }
     if packages == Some("pacman") {
         match get_package_count_arch_based() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
             Err(e) => error!("{}", e),
         }
     } else if packages == Some("apt") {
         match get_package_count_debian_based() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES", &pkg),
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("xbps") {
+        match get_package_count_void() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("dnf") {
+        match get_package_count_fedora() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pip") {
+        match get_package_count_pip() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
             Err(e) => error!("{}", e),
         }
     }
