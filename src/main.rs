@@ -194,6 +194,14 @@ fn get_package_count_void() -> Result<String> {
     Ok(pkg)
 }
 
+fn get_package_count_fedora() -> Result<String> {
+    let dnf = Command::new("dnf").arg("list").arg("--installed").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&dnf.stdout, b'\n');
+    let pkgs = pkgs as u32 - 1;
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
 fn get_package_count_pip() -> Result<String> {
     let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pip.stdout, b'\n');
@@ -339,7 +347,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based, \"xbps\" if on Void, or \"pip\" if you want to see how many pip packages are installed.")
+                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based, \"xbps\" if on Void, \"dnf\" if on Fedora, or \"pip\" if you want to see how many pip packages are installed.")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
@@ -516,6 +524,11 @@ fn main() {
     } else if packages == Some("xbps") {
         match get_package_count_void() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("dnf") {
+        match get_package_count_fedora() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
             Err(e) => error!("{}", e),
         }
     } else if packages == Some("pip") {
