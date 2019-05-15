@@ -194,14 +194,6 @@ fn get_package_count_void() -> Result<String> {
     Ok(pkg)
 }
 
-fn get_package_count_pip() -> Result<String> {
-    let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&pip.stdout, b'\n');
-    let pkgs = pkgs as u32 - 2;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
 fn get_mpd_song() -> Result<String> {
     let mpc = Command::new("mpc")
         .arg("current")
@@ -339,7 +331,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based, \"xbps\" if on Void, or \"pip\" if you want to see how many pip packages are installed.")
+                        .help("Turn total package count on. Input \"pacman\" if on Arch-based, \"apt\" if on Debian/Ubuntu-based, or \"xbps\" if on Void.")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
@@ -516,11 +508,6 @@ fn main() {
     } else if packages == Some("xbps") {
         match get_package_count_void() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-    } else if packages == Some("pip") {
-        match get_package_count_pip() {
-            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
             Err(e) => error!("{}", e),
         }
     }
