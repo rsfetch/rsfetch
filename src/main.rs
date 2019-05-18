@@ -202,6 +202,27 @@ fn get_package_count_fedora() -> Result<String> {
     Ok(pkg)
 }
 
+fn get_package_count_bsd() -> Result<String> {
+    let bpkg = Command::new("pkg").arg("info").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&bpkg.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_solus() -> Result<String> {
+    let eopkg = Command::new("eopkg").arg("list-installed").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&eopkg.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
+fn get_package_count_suse() -> Result<String> {
+    let rpm = Command::new("rpm").arg("-qa").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&rpm.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
 fn get_package_count_pip() -> Result<String> {
     let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pip.stdout, b'\n');
@@ -347,7 +368,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Accepted values are \"pacman\", \"apt\", \"xbps\", \"dnf\", and \"pip\".")
+                        .help("Turn total package count on. Accepted values are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", and \"pip\".")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
@@ -529,6 +550,21 @@ fn main() {
     } else if packages == Some("dnf") {
         match get_package_count_fedora() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pkg") {
+        match get_package_count_bsd() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("eopkg") {
+        match get_package_count_solus() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("rpm") {
+        match get_package_count_suse() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
             Err(e) => error!("{}", e),
         }
     } else if packages == Some("pip") {
