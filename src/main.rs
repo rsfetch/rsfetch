@@ -38,7 +38,9 @@ enum Error {
     Editor { source: env::VarError },
     #[snafu(display("Could not retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
-    #[snafu(display("Could not retrieve package count. Perhaps you input the wrong package manager?"))]
+    #[snafu(display(
+        "Could not retrieve package count. Perhaps you input the wrong package manager?"
+    ))]
     Pkgcount { source: io::Error },
     #[snafu(display("Could not run mpc"))]
     Mpc { source: io::Error },
@@ -174,7 +176,10 @@ fn get_ip_address() -> Result<String> {
 }
 
 fn get_package_count_arch_based() -> Result<String> {
-    let pacman = Command::new("pacman").arg("-Qq").output().context(Pkgcount)?;
+    let pacman = Command::new("pacman")
+        .arg("-Qq")
+        .output()
+        .context(Pkgcount)?;
     let pkgs = bytecount::count(&pacman.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
@@ -188,14 +193,21 @@ fn get_package_count_debian_based() -> Result<String> {
 }
 
 fn get_package_count_void() -> Result<String> {
-    let xbps = Command::new("xbps-query").arg("-l").output().context(Pkgcount)?;
+    let xbps = Command::new("xbps-query")
+        .arg("-l")
+        .output()
+        .context(Pkgcount)?;
     let pkgs = bytecount::count(&xbps.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_fedora() -> Result<String> {
-    let dnf = Command::new("dnf").arg("list").arg("--installed").output().context(Pkgcount)?;
+    let dnf = Command::new("dnf")
+        .arg("list")
+        .arg("--installed")
+        .output()
+        .context(Pkgcount)?;
     let pkgs = bytecount::count(&dnf.stdout, b'\n');
     let pkgs = pkgs - 1;
     let pkg = format!("{}", pkgs);
@@ -210,7 +222,10 @@ fn get_package_count_bsd() -> Result<String> {
 }
 
 fn get_package_count_solus() -> Result<String> {
-    let eopkg = Command::new("eopkg").arg("list-installed").output().context(Pkgcount)?;
+    let eopkg = Command::new("eopkg")
+        .arg("list-installed")
+        .output()
+        .context(Pkgcount)?;
     let pkgs = bytecount::count(&eopkg.stdout, b'\n');
     let pkg = format!("{}", pkgs);
     Ok(pkg)
