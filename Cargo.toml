@@ -3,6 +3,7 @@ name = "rsfetch"
 version = "1.7.0"
 authors = ["Phate6660 <ValleyKnight@protonmail.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 bytecount = "0.5"
