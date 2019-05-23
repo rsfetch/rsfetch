@@ -72,6 +72,8 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 
 Here's a detailed benchmark, with rsfetch versus Neofetch, ScreenFetch, and ufetch:
 
+Note: All programs are using default options, no flags or config files were used.
+
 $ `hyperfine "./target/release/rsfetch" "neofetch" "screenfetch" "ufetch"`
 
 ```
