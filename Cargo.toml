@@ -1,6 +1,6 @@
 [package]
 name = "rsfetch"
-version = "1.7.0"
+version = "1.8.0"
 authors = ["Phate6660 <ValleyKnight@protonmail.com>"]
 edition = "2018"
 license = "MIT"
