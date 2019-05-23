@@ -103,4 +103,4 @@ And yes, you saw right. Execution time was 1ms on average! Crazy fast.
 
 ### License
 
-- License has been set to "The Unlicense". Anybody can do anything with this repository. [View license](https://raw.githubusercontent.com/rsfetch/rsfetch/master/LICENSE)
+- License has been set to "MIT". Anybody can do anything with this repository, provided that they include the license if they choose to redistribute. [View license](https://raw.githubusercontent.com/rsfetch/rsfetch/master/LICENSE)
