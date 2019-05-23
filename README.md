@@ -76,30 +76,30 @@ $ `hyperfine "./target/release/rsfetch" "neofetch" "screenfetch" "ufetch"`
 
 ```
 Benchmark #1: ./target/release/rsfetch
-  Time (mean ± σ):       1.7 ms ±   0.5 ms    [User: 1.2 ms, System: 1.3 ms]
-  Range (min … max):     1.3 ms …   4.6 ms    728 runs
+  Time (mean ± σ):       1.7 ms ±   0.6 ms    [User: 1.3 ms, System: 1.2 ms]
+  Range (min … max):     1.4 ms …   5.0 ms    453 runs
  
 Benchmark #2: neofetch
-  Time (mean ± σ):     200.7 ms ±   7.0 ms    [User: 143.1 ms, System: 63.5 ms]
-  Range (min … max):   191.7 ms … 219.8 ms    13 runs
+  Time (mean ± σ):     228.2 ms ±  39.5 ms    [User: 150.5 ms, System: 81.0 ms]
+  Range (min … max):   201.3 ms … 337.9 ms    10 runs
  
 Benchmark #3: screenfetch
-  Time (mean ± σ):     416.4 ms ±  12.6 ms    [User: 254.6 ms, System: 186.3 ms]
-  Range (min … max):   402.9 ms … 446.0 ms    10 runs
+  Time (mean ± σ):     750.3 ms ±  35.0 ms    [User: 389.1 ms, System: 383.1 ms]
+  Range (min … max):   725.3 ms … 848.0 ms    10 runs
  
 Benchmark #4: ufetch
-  Time (mean ± σ):      32.1 ms ±   2.6 ms    [User: 25.9 ms, System: 9.5 ms]
-  Range (min … max):    24.4 ms …  38.5 ms    79 runs
+  Time (mean ± σ):      35.3 ms ±   3.6 ms    [User: 28.4 ms, System: 11.4 ms]
+  Range (min … max):    25.4 ms …  43.5 ms    83 runs
  
 Summary
   './target/release/rsfetch' ran
-   19.23 ± 5.77 times faster than 'ufetch'
-  120.23 ± 34.97 times faster than 'neofetch'
-  249.48 ± 72.45 times faster than 'screenfetch'
+   20.81 ± 7.62 times faster than 'ufetch'
+  134.58 ± 52.77 times faster than 'neofetch'
+  442.39 ± 157.04 times faster than 'screenfetch'
 ```
 As you can see, `rsfetch` is the clear winner with `ufetch` trailing slightly behind.  
 
-And yes, you saw right. Execution time was 1ms on average! Crazy fast.
+And yes, you saw right. Execution time was ~1ms on average! Crazy fast.
 
 ### License
 
