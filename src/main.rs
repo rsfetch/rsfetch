@@ -321,7 +321,7 @@ fn main() {
     let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.8.0")
-                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\n Accepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"pip\", and\"cargo\".")
+                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\n Accepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"pip\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
