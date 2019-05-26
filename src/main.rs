@@ -66,18 +66,18 @@ fn add_row(
     value: &str,
 ) -> Table {
     let mut title_str = title.to_string();
-    if caps != true {
+    if !caps {
         title_str = title_str.to_lowercase();
     }
     if bold {
         title_str = make_bold(&title_str);
     }
-    if border != true {
+    if !border {
         table.add_row(row![title_str, value]);
     } else {
         table.add_row(row![title_str, "=", value]);
     }
-    return table;
+    table
 }
 
 // For custom art.
@@ -246,6 +246,14 @@ fn get_package_count_pip() -> Result<String> {
     Ok(pkg)
 }
 
+fn get_package_count_cargo() -> Result<String> {
+    let cargo = Command::new("cargo").arg("list").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&cargo.stdout, b'\n');
+    let pkgs = pkgs - 1;
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
 fn get_mpd_song() -> Result<String> {
     let mpc = Command::new("mpc")
         .arg("current")
@@ -313,7 +321,7 @@ fn main() {
     let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.8.0")
-                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.")
+                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"pip\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
@@ -383,7 +391,7 @@ fn main() {
                         .short("p")
                         .long("packages")
                         .value_name("PKG MNGR")
-                        .help("Turn total package count on. Accepted values are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", and \"pip\".")
+                        .help("Turn total package count on.")
                         .takes_value(true))
                     .arg(Arg::with_name("music")
                         .short("m")
@@ -585,6 +593,11 @@ fn main() {
     } else if packages == Some("pip") {
         match get_package_count_pip() {
             Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("cargo") {
+        match get_package_count_cargo() {
+            Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
             Err(e) => error!("{}", e),
         }
     }
