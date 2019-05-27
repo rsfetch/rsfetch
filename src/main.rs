@@ -57,14 +57,7 @@ fn make_bold(text: &str) -> String {
 }
 
 // Function for adding rows to the table.
-fn add_row(
-    table: &mut Table,
-    bold: bool,
-    caps: bool,
-    border: bool,
-    title: &str,
-    value: &str,
-) {
+fn add_row(table: &mut Table, bold: bool, caps: bool, border: bool, title: &str, value: &str) {
     let mut title_str = title.to_string();
     if !caps {
         title_str = title_str.to_lowercase();
@@ -253,7 +246,10 @@ fn get_package_count_pip() -> Result<String> {
 }
 
 fn get_package_count_cargo() -> Result<String> {
-    let cargo = Command::new("cargo").arg("list").output().context(Pkgcount)?;
+    let cargo = Command::new("cargo")
+        .arg("list")
+        .output()
+        .context(Pkgcount)?;
     let pkgs = bytecount::count(&cargo.stdout, b'\n');
     let pkgs = pkgs - 1;
     let pkg = format!("{}", pkgs);
@@ -320,7 +316,7 @@ fn format_duration(duration: Duration) -> Result<String> {
     Ok(s)
 }
 
-fn get_packages (packages: &str, table: &mut Table, bold: bool, caps: bool, borders: bool) {
+fn get_packages(packages: &str, table: &mut Table, bold: bool, caps: bool, borders: bool) {
     match packages {
         "pacman" => match get_package_count_arch_based() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
@@ -366,7 +362,7 @@ fn get_packages (packages: &str, table: &mut Table, bold: bool, caps: bool, bord
     }
 }
 
-fn get_packages_minimal (packages: &str) {
+fn get_packages_minimal(packages: &str) {
     match packages {
         "pacman" => match get_package_count_arch_based() {
             Ok(pkg) => println!("{}", &pkg),
@@ -581,8 +577,8 @@ fn main() {
         }
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-    println!(""); // Print blank line before output.
-    // Determine the logo to use.
+    println!(); // Print blank line before output.
+                  // Determine the logo to use.
     if !matches.is_present("minimal") {
         if !matches.is_present("no-logo") {
             if !logofile.is_empty() {
@@ -729,7 +725,7 @@ fn main() {
     }
     if matches.is_present("minimal") {
         if let Some(packages) = packages {
-            get_packages_minimal (packages);
+            get_packages_minimal(packages);
         }
     } else if !matches.is_present("minimal") {
         if let Some(packages) = packages {
@@ -752,5 +748,5 @@ fn main() {
     if !matches.is_present("minimal") {
         table.printstd(); // After collecting data for variables and adding the rows, print the final output into a custom table.
     }
-    println!(""); // Print blank line after output.
+    println!(); // Print blank line after output.
 }
