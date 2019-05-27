@@ -320,106 +320,95 @@ fn format_duration(duration: Duration) -> Result<String> {
     Ok(s)
 }
 
-fn get_packages (packages: Option<&str>, table: &mut Table, bold: bool, caps: bool, borders: bool) {
-    if packages == Some("pacman") {
-        match get_package_count_arch_based() {
+fn get_packages (packages: &str, table: &mut Table, bold: bool, caps: bool, borders: bool) {
+    match packages {
+        "pacman" => match get_package_count_arch_based() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("apt") {
-        match get_package_count_debian_based() {
+        "apt" => match get_package_count_debian_based() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("xbps") {
-        match get_package_count_void() {
+        "xbps" => match get_package_count_void() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("dnf") {
-        match get_package_count_fedora() {
+        "dnf" => match get_package_count_fedora() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("pkg") {
-        match get_package_count_bsd() {
+        "pkg" => match get_package_count_bsd() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("eopkg") {
-        match get_package_count_solus() {
+        "eopkg" => match get_package_count_solus() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("rpm") {
-        match get_package_count_suse() {
+        "rpm" => match get_package_count_suse() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("pip") {
-        match get_package_count_pip() {
+        "apk" => match get_package_count_alpine() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APK)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+        "pip" => match get_package_count_pip() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("cargo") {
-        match get_package_count_cargo() {
+        "cargo" => match get_package_count_cargo() {
             Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
             Err(e) => error!("{}", e),
         }
+        &_ => println!("ERROR > Could not retrieve package count. Perhaps you input the wrong package manager?"),
     }
 }
 
-fn get_packages_minimal (packages: Option<&str>) {
-    if packages == Some("pacman") {
-        match get_package_count_arch_based() {
+fn get_packages_minimal (packages: &str) {
+    match packages {
+        "pacman" => match get_package_count_arch_based() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("apt") {
-        match get_package_count_debian_based() {
+        "apt" => match get_package_count_debian_based() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("xbps") {
-        match get_package_count_void() {
+        "xbps" => match get_package_count_void() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("dnf") {
-        match get_package_count_fedora() {
+        "dnf" => match get_package_count_fedora() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("pkg") {
-        match get_package_count_bsd() {
+        "pkg" => match get_package_count_bsd() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("eopkg") {
-        match get_package_count_solus() {
+        "eopkg" => match get_package_count_solus() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("rpm") {
-        match get_package_count_suse() {
+        "rpm" => match get_package_count_suse() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("apk") {
-        match get_package_count_alpine() {
+        "apk" => match get_package_count_alpine() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("pip") {
-        match get_package_count_pip() {
+        "pip" => match get_package_count_pip() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
-    } else if packages == Some("cargo") {
-        match get_package_count_cargo() {
+        "cargo" => match get_package_count_cargo() {
             Ok(pkg) => println!("{}", &pkg),
             Err(e) => error!("{}", e),
         }
+        &_ => println!("ERROR > Could not retrieve package count. Perhaps you input the wrong package manager?"),
     }
 }
 
@@ -736,10 +725,12 @@ fn main() {
             }
         }
     }
-    if matches.is_present("packages") {
-        if matches.is_present("minimal") {
+    if matches.is_present("minimal") {
+        if let Some(packages) = packages {
             get_packages_minimal (packages);
-        } else {
+        }
+    } else if !matches.is_present("minimal") {
+        if let Some(packages) = packages {
             get_packages(packages, &mut table, bold, caps, borders);
         }
     }
