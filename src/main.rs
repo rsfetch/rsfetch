@@ -316,95 +316,19 @@ fn format_duration(duration: Duration) -> Result<String> {
     Ok(s)
 }
 
-fn get_packages(packages: &str, table: &mut Table, bold: bool, caps: bool, borders: bool) {
+fn get_packages(packages: &str) -> Result<String> {
     match packages {
-        "pacman" => match get_package_count_arch_based() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "apt" => match get_package_count_debian_based() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "xbps" => match get_package_count_void() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "dnf" => match get_package_count_fedora() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "pkg" => match get_package_count_bsd() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "eopkg" => match get_package_count_solus() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "rpm" => match get_package_count_suse() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "apk" => match get_package_count_alpine() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APK)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "pip" => match get_package_count_pip() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "cargo" => match get_package_count_cargo() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        &_ => println!("ERROR > Could not retrieve package count. Perhaps you input the wrong package manager?"),
-    }
-}
-
-fn get_packages_minimal(packages: &str) {
-    match packages {
-        "pacman" => match get_package_count_arch_based() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "apt" => match get_package_count_debian_based() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "xbps" => match get_package_count_void() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "dnf" => match get_package_count_fedora() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "pkg" => match get_package_count_bsd() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "eopkg" => match get_package_count_solus() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "rpm" => match get_package_count_suse() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "apk" => match get_package_count_alpine() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "pip" => match get_package_count_pip() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        "cargo" => match get_package_count_cargo() {
-            Ok(pkg) => println!("{}", &pkg),
-            Err(e) => error!("{}", e),
-        }
-        &_ => println!("ERROR > Could not retrieve package count. Perhaps you input the wrong package manager?"),
+        "pacman" => get_package_count_arch_based(),
+        "apt" => get_package_count_debian_based(),
+        "xbps" => get_package_count_void(),
+        "dnf" => get_package_count_fedora(),
+        "pkg" => get_package_count_bsd(),
+        "eopkg" => get_package_count_solus(),
+        "rpm" => get_package_count_suse(),
+        "apk" => get_package_count_alpine(),
+        "pip" => get_package_count_pip(),
+        "cargo" => get_package_count_cargo(),
+        _ => unreachable!(),
     }
 }
 
@@ -578,7 +502,7 @@ fn main() {
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
     println!(); // Print blank line before output.
-                  // Determine the logo to use.
+                // Determine the logo to use.
     if !matches.is_present("minimal") {
         if !matches.is_present("no-logo") {
             if !logofile.is_empty() {
@@ -723,13 +647,23 @@ fn main() {
             }
         }
     }
-    if matches.is_present("minimal") {
-        if let Some(packages) = packages {
-            get_packages_minimal(packages);
-        }
-    } else if !matches.is_present("minimal") {
-        if let Some(packages) = packages {
-            get_packages(packages, &mut table, bold, caps, borders);
+    if let Some(packages) = packages {
+        match get_packages(packages) {
+            Ok(pkg) => {
+                if matches.is_present("minimal") {
+                    println!("{}", &pkg);
+                } else {
+                    add_row(
+                        &mut table,
+                        bold,
+                        caps,
+                        borders,
+                        &format!("PACKAGES ({})", packages.to_ascii_uppercase()),
+                        &pkg,
+                    );
+                }
+            }
+            Err(e) => error!("{}", e),
         }
     }
     if music == "mpd" {
