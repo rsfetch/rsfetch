@@ -58,13 +58,13 @@ fn make_bold(text: &str) -> String {
 
 // Function for adding rows to the table.
 fn add_row(
-    mut table: Table,
+    table: &mut Table,
     bold: bool,
     caps: bool,
     border: bool,
     title: &str,
     value: &str,
-) -> Table {
+) {
     let mut title_str = title.to_string();
     if !caps {
         title_str = title_str.to_lowercase();
@@ -77,7 +77,6 @@ fn add_row(
     } else {
         table.add_row(row![title_str, "=", value]);
     }
-    table
 }
 
 // For custom art.
@@ -321,6 +320,109 @@ fn format_duration(duration: Duration) -> Result<String> {
     Ok(s)
 }
 
+fn get_packages (packages: Option<&str>, table: &mut Table, bold: bool, caps: bool, borders: bool) {
+    if packages == Some("pacman") {
+        match get_package_count_arch_based() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("apt") {
+        match get_package_count_debian_based() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("xbps") {
+        match get_package_count_void() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("dnf") {
+        match get_package_count_fedora() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pkg") {
+        match get_package_count_bsd() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("eopkg") {
+        match get_package_count_solus() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("rpm") {
+        match get_package_count_suse() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pip") {
+        match get_package_count_pip() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("cargo") {
+        match get_package_count_cargo() {
+            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    }
+}
+
+fn get_packages_minimal (packages: Option<&str>) {
+    if packages == Some("pacman") {
+        match get_package_count_arch_based() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("apt") {
+        match get_package_count_debian_based() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("xbps") {
+        match get_package_count_void() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("dnf") {
+        match get_package_count_fedora() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pkg") {
+        match get_package_count_bsd() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("eopkg") {
+        match get_package_count_solus() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("rpm") {
+        match get_package_count_suse() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("apk") {
+        match get_package_count_alpine() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("pip") {
+        match get_package_count_pip() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    } else if packages == Some("cargo") {
+        match get_package_count_cargo() {
+            Ok(pkg) => println!("{}", &pkg),
+            Err(e) => error!("{}", e),
+        }
+    }
+}
+
 // Main function
 fn main() {
     pretty_env_logger::init();
@@ -550,57 +652,7 @@ fn main() {
                 Err(e) => error!("{}", e),
             }
         }
-        if packages == Some("pacman") {
-            match get_package_count_arch_based() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("apt") {
-            match get_package_count_debian_based() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("xbps") {
-            match get_package_count_void() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("dnf") {
-            match get_package_count_fedora() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("pkg") {
-            match get_package_count_bsd() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("eopkg") {
-            match get_package_count_solus() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("rpm") {
-            match get_package_count_suse() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("apk") {
-            match get_package_count_alpine() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("pip") {
-            match get_package_count_pip() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("cargo") {
-            match get_package_count_cargo() {
-                Ok(pkg) => println!("{}", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        }
+        get_packages_minimal (packages);
         if music == "mpd" {
             match get_mpd_song() {
                 Ok(mus) => println!("{}", &mus),
@@ -621,12 +673,12 @@ fn main() {
         }
         if !matches.is_present("no-user") {
             if let Some(ref user) = current_user {
-                table = add_row(table, bold, caps, borders, "USER", &user.name);
+                add_row(&mut table, bold, caps, borders, "USER", &user.name);
             }
         }
         if !matches.is_present("no-host") {
             match get_device_name() {
-                Ok(dev) => table = add_row(table, bold, caps, borders, "HOST", &dev),
+                Ok(dev) => add_row(&mut table, bold, caps, borders, "HOST", &dev),
                 Err(e) => error!("{}", e),
             }
         }
@@ -636,39 +688,39 @@ fn main() {
                 .and_then(|uptime| uptime.to_std().ok())
             {
                 match format_duration(uptime) {
-                    Ok(uptime) => table = add_row(table, bold, caps, borders, "UPTIME", &uptime),
+                    Ok(uptime) => add_row(&mut table, bold, caps, borders, "UPTIME", &uptime),
                     Err(e) => error!("{}", e),
                 }
             };
         }
         if !matches.is_present("no-distro") {
             if let Ok(Some(dist)) = get_os_release() {
-                table = add_row(table, bold, caps, borders, "DISTRO", &dist);
+                add_row(&mut table, bold, caps, borders, "DISTRO", &dist);
             }
         }
         if !matches.is_present("no-kernel") {
             match get_kernel_version() {
-                Ok(kern) => table = add_row(table, bold, caps, borders, "KERNEL", &kern),
+                Ok(kern) => add_row(&mut table, bold, caps, borders, "KERNEL", &kern),
                 Err(e) => error!("{}", e),
             }
         }
         if !matches.is_present("no-wm-de") {
             match get_window_manager() {
-                Ok(wm) => table = add_row(table, bold, caps, borders, "WM/DE", &wm),
+                Ok(wm) => add_row(&mut table, bold, caps, borders, "WM/DE", &wm),
                 Err(e) => error!("{}", e),
             }
         }
         if matches.is_present("editor") {
             match get_editor() {
-                Ok(ed) => table = add_row(table, bold, caps, borders, "EDITOR", &ed),
+                Ok(ed) => add_row(&mut table, bold, caps, borders, "EDITOR", &ed),
                 Err(e) => error!("{}", e),
             }
         }
         if !matches.is_present("no-shell") {
             if let Some(ref user) = current_user {
                 if let Some(shell) = Path::new(&user.shell).file_name() {
-                    table = add_row(
-                        table,
+                    add_row(
+                        &mut table,
                         bold,
                         caps,
                         borders,
@@ -680,64 +732,14 @@ fn main() {
         }
         if matches.is_present("ip_address") {
             match get_ip_address() {
-                Ok(ip) => table = add_row(table, bold, caps, borders, "IP ADDRESS", &ip),
+                Ok(ip) => add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip),
                 Err(e) => error!("{}", e),
             }
         }
-        if packages == Some("pacman") {
-            match get_package_count_arch_based() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("apt") {
-            match get_package_count_debian_based() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("xbps") {
-            match get_package_count_void() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("dnf") {
-            match get_package_count_fedora() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("pkg") {
-            match get_package_count_bsd() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("eopkg") {
-            match get_package_count_solus() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("rpm") {
-            match get_package_count_suse() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("apk") {
-            match get_package_count_alpine() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (APK)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("pip") {
-            match get_package_count_pip() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        } else if packages == Some("cargo") {
-            match get_package_count_cargo() {
-                Ok(pkg) => table = add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
-                Err(e) => error!("{}", e),
-            }
-        }
+        get_packages(packages, &mut table, bold, caps, borders);
         if music == "mpd" {
             match get_mpd_song() {
-                Ok(mus) => table = add_row(table, bold, caps, borders, "MUSIC (MPD)", &mus),
+                Ok(mus) => add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mus),
                 Err(e) => error!("{}", e),
             }
         }
