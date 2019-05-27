@@ -65,6 +65,9 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 **Default Fetch**
 ![Default](Screenshots/default.png?raw=true "Default")
 
+**Default (Minimal Mode) Fetch**
+![Default](Screenshots/default-minimal.png?raw=true "Default")
+
 **My Preference of Options**
 ![Default](Screenshots/preference.png?raw=true "Preference")
 
@@ -78,26 +81,26 @@ $ `hyperfine "./target/release/rsfetch" "neofetch" "screenfetch" "ufetch"`
 
 ```
 Benchmark #1: ./target/release/rsfetch
-  Time (mean ± σ):       1.7 ms ±   0.6 ms    [User: 1.3 ms, System: 1.2 ms]
-  Range (min … max):     1.4 ms …   5.0 ms    453 runs
+  Time (mean ± σ):       1.7 ms ±   0.5 ms    [User: 1.4 ms, System: 1.1 ms]
+  Range (min … max):     1.3 ms …   4.8 ms    602 runs
  
 Benchmark #2: neofetch
-  Time (mean ± σ):     228.2 ms ±  39.5 ms    [User: 150.5 ms, System: 81.0 ms]
-  Range (min … max):   201.3 ms … 337.9 ms    10 runs
+  Time (mean ± σ):     209.1 ms ±  17.2 ms    [User: 147.3 ms, System: 67.0 ms]
+  Range (min … max):   193.8 ms … 259.4 ms    11 runs
  
 Benchmark #3: screenfetch
-  Time (mean ± σ):     750.3 ms ±  35.0 ms    [User: 389.1 ms, System: 383.1 ms]
-  Range (min … max):   725.3 ms … 848.0 ms    10 runs
+  Time (mean ± σ):     688.3 ms ±  24.0 ms    [User: 358.7 ms, System: 350.5 ms]
+  Range (min … max):   669.6 ms … 754.0 ms    10 runs
  
 Benchmark #4: ufetch
-  Time (mean ± σ):      35.3 ms ±   3.6 ms    [User: 28.4 ms, System: 11.4 ms]
-  Range (min … max):    25.4 ms …  43.5 ms    83 runs
+  Time (mean ± σ):      31.9 ms ±   2.8 ms    [User: 25.2 ms, System: 10.1 ms]
+  Range (min … max):    26.6 ms …  41.6 ms    68 runs
  
 Summary
   './target/release/rsfetch' ran
-   20.81 ± 7.62 times faster than 'ufetch'
-  134.58 ± 52.77 times faster than 'neofetch'
-  442.39 ± 157.04 times faster than 'screenfetch'
+   18.36 ± 5.09 times faster than 'ufetch'
+  120.35 ± 33.23 times faster than 'neofetch'
+  396.21 ± 105.30 times faster than 'screenfetch'
 ```
 As you can see, `rsfetch` is the clear winner with `ufetch` trailing slightly behind.  
 

@@ -583,15 +583,17 @@ fn main() {
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
     println!(""); // Print blank line before output.
     // Determine the logo to use.
-    if !matches.is_present("no-logo") {
-        if !logofile.is_empty() {
-            if let Err(e) = print_logo(logofile) {
-                error!("{}", e);
+    if !matches.is_present("minimal") {
+        if !matches.is_present("no-logo") {
+            if !logofile.is_empty() {
+                if let Err(e) = print_logo(logofile) {
+                    error!("{}", e);
+                }
+            } else {
+                print_default_logo()
             }
-        } else {
-            print_default_logo()
+            println!(); // print a newline
         }
-        println!(); // print a newline
     }
     if !matches.is_present("no-user") {
         if matches.is_present("minimal") {
