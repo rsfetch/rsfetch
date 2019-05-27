@@ -36,7 +36,7 @@ thoughts on how this is.
 
 ### Things to Know
 
-1. ~~The packages section only works for Arch (or Arch-based) distros as it uses pacman.~~ Supports Arch-based (pacman), Debian/Ubuntu-based (apt), Void (xbps), Fedora (dnf), Solus (eopkg), BSD (pkg), OpenSUSE (rpm), Rust (cargo), and Python (pip).
+1. ~~The packages section only works for Arch (or Arch-based) distros as it uses pacman.~~ Supports Arch-based (pacman), Debian/Ubuntu-based (apt), Void (xbps), Fedora (dnf), Solus (eopkg), BSD (pkg), OpenSUSE (rpm), Alpine (apk), Rust (cargo), and Python (pip).
 
 2. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).
 
