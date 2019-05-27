@@ -555,7 +555,18 @@ fn main() {
     let packages = matches.value_of("packages");
     let format;
     // Determine if borders are used, and if they are, the style of the corners.
-    if borders {
+    if matches.is_present("minimal") {
+        format = format::FormatBuilder::new()
+            .column_separator(' ')
+            .borders(' ')
+            .separators(
+                &[format::LinePosition::Top, format::LinePosition::Bottom],
+                format::LineSeparator::new(' ', ' ', ' ', ' '),
+            )
+            .padding(0, 0)
+            .build();
+        table.set_format(format);
+    } else if borders {
         if corners == "■" {
             format = format::FormatBuilder::new()
                 .column_separator(' ')
@@ -579,33 +590,46 @@ fn main() {
                 .build();
             table.set_format(format);
         }
-    } else {
-        format = format::FormatBuilder::new()
-            .column_separator(' ')
-            .borders(' ')
-            .separators(
-                &[format::LinePosition::Top, format::LinePosition::Bottom],
-                format::LineSeparator::new(' ', ' ', ' ', ' '),
-            )
-            .padding(1, 1)
-            .build();
-        table.set_format(format);
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-    println!(); // For a blank line before output.
-    if matches.is_present("minimal") {
-        if !matches.is_present("no-user") {
+    println!(""); // Print blank line before output.
+    // Determine the logo to use.
+    if !matches.is_present("no-logo") {
+        if !logofile.is_empty() {
+            if let Err(e) = print_logo(logofile) {
+                error!("{}", e);
+            }
+        } else {
+            print_default_logo()
+        }
+        println!(); // print a newline
+    }
+    if !matches.is_present("no-user") {
+        if matches.is_present("minimal") {
             if let Some(ref user) = current_user {
                 println!("{}", &user.name);
             }
+        } else {
+            if let Some(ref user) = current_user {
+                add_row(&mut table, bold, caps, borders, "USER", &user.name);
+            }
         }
-        if !matches.is_present("no-host") {
+    }
+    if !matches.is_present("no-host") {
+        if matches.is_present("minimal") {
             match get_device_name() {
                 Ok(dev) => println!("{}", &dev),
                 Err(e) => error!("{}", e),
             }
+        } else {
+            match get_device_name() {
+                Ok(dev) => add_row(&mut table, bold, caps, borders, "HOST", &dev),
+                Err(e) => error!("{}", e),
+            }
         }
-        if !matches.is_present("no-uptime") {
+    }
+    if !matches.is_present("no-uptime") {
+        if matches.is_present("minimal") {
             if let Some(uptime) = uptime_lib::get()
                 .ok()
                 .and_then(|uptime| uptime.to_std().ok())
@@ -615,74 +639,7 @@ fn main() {
                     Err(e) => error!("{}", e),
                 }
             };
-        }
-        if !matches.is_present("no-distro") {
-            if let Ok(Some(dist)) = get_os_release() {
-                println!("{}", &dist);
-            }
-        }
-        if !matches.is_present("no-kernel") {
-            match get_kernel_version() {
-                Ok(kern) => println!("{}", &kern),
-                Err(e) => error!("{}", e),
-            }
-        }
-        if !matches.is_present("no-wm-de") {
-            match get_window_manager() {
-                Ok(wm) => println!("{}", &wm),
-                Err(e) => error!("{}", e),
-            }
-        }
-        if matches.is_present("editor") {
-            match get_editor() {
-                Ok(ed) => println!("{}", &ed),
-                Err(e) => error!("{}", e),
-            }
-        }
-        if !matches.is_present("no-shell") {
-            if let Some(ref user) = current_user {
-                if let Some(shell) = Path::new(&user.shell).file_name() {
-                    println!("{}", shell.to_string_lossy().as_ref());
-                }
-            }
-        }
-        if matches.is_present("ip_address") {
-            match get_ip_address() {
-                Ok(ip) => println!("{}", &ip),
-                Err(e) => error!("{}", e),
-            }
-        }
-        get_packages_minimal (packages);
-        if music == "mpd" {
-            match get_mpd_song() {
-                Ok(mus) => println!("{}", &mus),
-                Err(e) => error!("{}", e),
-            }
-        }
-    } else {
-        // Determine the logo to use.
-        if !matches.is_present("no-logo") {
-            if !logofile.is_empty() {
-                if let Err(e) = print_logo(logofile) {
-                    error!("{}", e);
-                }
-            } else {
-                print_default_logo()
-            }
-            println!(); // print a newline
-        }
-        if !matches.is_present("no-user") {
-            if let Some(ref user) = current_user {
-                add_row(&mut table, bold, caps, borders, "USER", &user.name);
-            }
-        }
-        if !matches.is_present("no-host") {
-            match get_device_name() {
-                Ok(dev) => add_row(&mut table, bold, caps, borders, "HOST", &dev),
-                Err(e) => error!("{}", e),
-            }
-        }
-        if !matches.is_present("no-uptime") {
+        } else {
             if let Some(uptime) = uptime_lib::get()
                 .ok()
                 .and_then(|uptime| uptime.to_std().ok())
@@ -693,30 +650,65 @@ fn main() {
                 }
             };
         }
-        if !matches.is_present("no-distro") {
+    }
+    if !matches.is_present("no-distro") {
+        if matches.is_present("minimal") {
+            if let Ok(Some(dist)) = get_os_release() {
+                println!("{}", &dist);
+            }
+        } else {
             if let Ok(Some(dist)) = get_os_release() {
                 add_row(&mut table, bold, caps, borders, "DISTRO", &dist);
             }
         }
-        if !matches.is_present("no-kernel") {
+    }
+    if !matches.is_present("no-kernel") {
+        if matches.is_present("minimal") {
+            match get_kernel_version() {
+                Ok(kern) => println!("{}", &kern),
+                Err(e) => error!("{}", e),
+            }
+        } else {
             match get_kernel_version() {
                 Ok(kern) => add_row(&mut table, bold, caps, borders, "KERNEL", &kern),
                 Err(e) => error!("{}", e),
             }
         }
-        if !matches.is_present("no-wm-de") {
+    }
+    if !matches.is_present("no-wm-de") {
+        if matches.is_present("minimal") {
+            match get_window_manager() {
+                Ok(wm) => println!("{}", &wm),
+                Err(e) => error!("{}", e),
+            }
+        } else {
             match get_window_manager() {
                 Ok(wm) => add_row(&mut table, bold, caps, borders, "WM/DE", &wm),
                 Err(e) => error!("{}", e),
             }
         }
-        if matches.is_present("editor") {
+    }
+    if matches.is_present("editor") {
+        if matches.is_present("minimal") {
+            match get_editor() {
+                Ok(ed) => println!("{}", &ed),
+                Err(e) => error!("{}", e),
+            }
+        } else {
             match get_editor() {
                 Ok(ed) => add_row(&mut table, bold, caps, borders, "EDITOR", &ed),
                 Err(e) => error!("{}", e),
             }
         }
-        if !matches.is_present("no-shell") {
+    }
+    if !matches.is_present("no-shell") {
+        if matches.is_present("minimal") {
+            if let Some(ref user) = current_user {
+                if let Some(shell) = Path::new(&user.shell).file_name() {
+                    println!("{}", shell.to_string_lossy().as_ref());
+                }
+            }
+        } else {
             if let Some(ref user) = current_user {
                 if let Some(shell) = Path::new(&user.shell).file_name() {
                     add_row(
@@ -730,20 +722,42 @@ fn main() {
                 }
             }
         }
-        if matches.is_present("ip_address") {
+    }
+    if matches.is_present("ip_address") {
+        if matches.is_present("minimal") {
+            match get_ip_address() {
+                Ok(ip) => println!("{}", &ip),
+                Err(e) => error!("{}", e),
+            }
+        } else {
             match get_ip_address() {
                 Ok(ip) => add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip),
                 Err(e) => error!("{}", e),
             }
         }
-        get_packages(packages, &mut table, bold, caps, borders);
-        if music == "mpd" {
+    }
+    if matches.is_present("packages") {
+        if matches.is_present("minimal") {
+            get_packages_minimal (packages);
+        } else {
+            get_packages(packages, &mut table, bold, caps, borders);
+        }
+    }
+    if music == "mpd" {
+        if matches.is_present("minimal") {
+            match get_mpd_song() {
+                Ok(mus) => println!("{}", &mus),
+                Err(e) => error!("{}", e),
+            }
+        } else {
             match get_mpd_song() {
                 Ok(mus) => add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mus),
                 Err(e) => error!("{}", e),
             }
         }
+    }
+    if !matches.is_present("minimal") {
         table.printstd(); // After collecting data for variables and adding the rows, print the final output into a custom table.
     }
-    println!(); // For a blank line after output.
+    println!(""); // Print blank line after output.
 }
