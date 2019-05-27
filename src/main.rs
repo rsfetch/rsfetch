@@ -316,50 +316,57 @@ fn format_duration(duration: Duration) -> Result<String> {
     Ok(s)
 }
 
-fn get_packages(packages: &str, table: &mut Table, bold: bool, caps: bool, borders: bool) {
+fn get_packages(
+    packages: &str,
+    table: &mut Table,
+    bold: bool,
+    caps: bool,
+    borders: bool,
+) -> Result<()> {
     match packages {
-        "pacman" => match get_package_count_arch_based() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg),
-            Err(e) => error!("{}", e),
+        "pacman" => {
+            let pkg = get_package_count_arch_based()?;
+            add_row(table, bold, caps, borders, "PACKAGES (PACMAN)", &pkg);
         }
-        "apt" => match get_package_count_debian_based() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg),
-            Err(e) => error!("{}", e),
+        "apt" => {
+            let pkg = get_package_count_debian_based()?;
+            add_row(table, bold, caps, borders, "PACKAGES (APT)", &pkg);
         }
-        "xbps" => match get_package_count_void() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg),
-            Err(e) => error!("{}", e),
+        "xbps" => {
+            let pkg = get_package_count_void()?;
+            add_row(table, bold, caps, borders, "PACKAGES (XBPS)", &pkg);
         }
-        "dnf" => match get_package_count_fedora() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg),
-            Err(e) => error!("{}", e),
+        "dnf" => {
+            let pkg = get_package_count_fedora()?;
+            add_row(table, bold, caps, borders, "PACKAGES (DNF)", &pkg);
         }
-        "pkg" => match get_package_count_bsd() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg),
-            Err(e) => error!("{}", e),
+        "pkg" => {
+            let pkg = get_package_count_bsd()?;
+            add_row(table, bold, caps, borders, "PACKAGES (PKG)", &pkg);
         }
-        "eopkg" => match get_package_count_solus() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg),
-            Err(e) => error!("{}", e),
+        "eopkg" => {
+            let pkg = get_package_count_solus()?;
+            add_row(table, bold, caps, borders, "PACKAGES (EOPKG)", &pkg);
         }
-        "rpm" => match get_package_count_suse() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg),
-            Err(e) => error!("{}", e),
+        "rpm" => {
+            let pkg = get_package_count_suse()?;
+            add_row(table, bold, caps, borders, "PACKAGES (RPM)", &pkg);
         }
-        "apk" => match get_package_count_alpine() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (APK)", &pkg),
-            Err(e) => error!("{}", e),
+        "apk" => {
+            let pkg = get_package_count_alpine()?;
+            add_row(table, bold, caps, borders, "PACKAGES (APK)", &pkg);
         }
-        "pip" => match get_package_count_pip() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg),
-            Err(e) => error!("{}", e),
+        "pip" => {
+            let pkg = get_package_count_pip()?;
+            add_row(table, bold, caps, borders, "PACKAGES (PIP)", &pkg);
         }
-        "cargo" => match get_package_count_cargo() {
-            Ok(pkg) => add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg),
-            Err(e) => error!("{}", e),
+        "cargo" => {
+            let pkg = get_package_count_cargo()?;
+            add_row(table, bold, caps, borders, "PACKAGES (CARGO)", &pkg);
         }
         &_ => println!("ERROR > Could not retrieve package count. Perhaps you input the wrong package manager?"),
-    }
+    };
+    Ok(())
 }
 
 fn get_packages_minimal(packages: &str) {
@@ -578,7 +585,7 @@ fn main() {
     }
     // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
     println!(); // Print blank line before output.
-                  // Determine the logo to use.
+                // Determine the logo to use.
     if !matches.is_present("minimal") {
         if !matches.is_present("no-logo") {
             if !logofile.is_empty() {
@@ -729,7 +736,9 @@ fn main() {
         }
     } else if !matches.is_present("minimal") {
         if let Some(packages) = packages {
-            get_packages(packages, &mut table, bold, caps, borders);
+            if let Err(e) = get_packages(packages, &mut table, bold, caps, borders) {
+                error!("{}", e);
+            }
         }
     }
     if music == "mpd" {
