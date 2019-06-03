@@ -237,6 +237,13 @@ fn get_package_count_alpine() -> Result<String> {
     Ok(pkg)
 }
 
+fn get_package_count_gentoo() -> Result<String> {
+    let qlist = Command::new("qlist").arg("-I").output().context(Pkgcount)?;
+    let pkgs = bytecount::count(&qlist.stdout, b'\n');
+    let pkg = format!("{}", pkgs);
+    Ok(pkg)
+}
+
 fn get_package_count_pip() -> Result<String> {
     let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
     let pkgs = bytecount::count(&pip.stdout, b'\n');
@@ -326,6 +333,7 @@ fn get_packages(packages: &str) -> Result<String> {
         "eopkg" => get_package_count_solus(),
         "rpm" => get_package_count_suse(),
         "apk" => get_package_count_alpine(),
+        "portage" => get_package_count_gentoo(),
         "pip" => get_package_count_pip(),
         "cargo" => get_package_count_cargo(),
         _ => unreachable!(),
@@ -339,7 +347,7 @@ fn main() {
     let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.9.0")
-                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", and \"cargo\".")
+                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
