@@ -11,7 +11,6 @@
 ### Table of Contents
 * [Preface](#preface)
 * [Things to Know](#things-to-know)
-* [Requirements](#requirements)
 * [Installation](#installation)
 * [Screenshots](#screenshots)
 * [Benchmarks](#benchmarks)
@@ -36,12 +35,22 @@ thoughts on how this is.
 
 ### Things to Know
 
-1. ~~The packages section only works for Arch (or Arch-based) distros as it uses pacman.~~ Supports Arch-based (pacman), Debian/Ubuntu-based (apt), Void (xbps), Fedora (dnf), Solus (eopkg), BSD (pkg), OpenSUSE (rpm), Alpine (apk), Gentoo (portage) (note: requires portage-utils to be installed as it uses qlist), Rust (cargo), and Python (pip).
+1. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).
 
-2. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).
+2. These are the current package managers supported. I missed any, please report it in [this](https://github.com/rsfetch/rsfetch/issues/28) issue.
+    - pacman
+    - apt
+    - xbps
+    - dnf
+    - eopkg
+    - pkg
+    - rpm
+    - apk
+    - portage (note: requires portage-utils to be installed as it uses qlist)
+    - cargo
+    - pip
 
-### Requirements
-- `mpd + mpc` for the music info. (Completely optional, as music info is turned off by default.)
+3. The music info obtains the info from a locally running `mpd` server using `mpc`. If you want more music sources supported, let me know by opening up an issue.
 
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
@@ -56,6 +65,9 @@ Uninstall with `sudo make uninstall`.
 Optionally, if you use a Arch-based distro, you can use either of the following AUR packages:
 - [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (This requires Rust as it builds from source.)
 - [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs the latest binary from releases.)
+
+#### ebuild
+I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)
 
 ### Screenshots
 
