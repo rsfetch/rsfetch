@@ -1,5 +1,5 @@
 <h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/logo.jpg" alt="logo" height="100px"></h3>
-<p align="center">Fast (1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
+<p align="center">Fast (<1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
 <p align="center">
 <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/rsfetch/rsfetch.svg">
@@ -85,38 +85,33 @@ I just switched over to Gentoo a few days ago, so whenever I figure out how to m
 
 ### Benchmarks
 
-Here's a detailed benchmark, with rsfetch versus Neofetch, ScreenFetch, and ufetch:
+Here's a detailed benchmark, with rsfetch versus Neofetch and ScreenFetch:
 
 Note: All programs are using default options, no flags or config files were used.
 
-$ `hyperfine "./target/release/rsfetch" "neofetch" "screenfetch" "ufetch"`
+$ `hyperfine "rsfetch" "neofetch" "screenfetch"`
 
 ```
-Benchmark #1: ./target/release/rsfetch
-  Time (mean ± σ):       1.7 ms ±   0.5 ms    [User: 1.4 ms, System: 1.1 ms]
-  Range (min … max):     1.3 ms …   4.8 ms    602 runs
+Benchmark #1: rsfetch
+  Time (mean ± σ):       1.3 ms ±   0.0 ms    [User: 0.6 ms, System: 0.9 ms]
+  Range (min … max):     1.2 ms …   1.6 ms    1314 runs
  
 Benchmark #2: neofetch
-  Time (mean ± σ):     209.1 ms ±  17.2 ms    [User: 147.3 ms, System: 67.0 ms]
-  Range (min … max):   193.8 ms … 259.4 ms    11 runs
+  Time (mean ± σ):     125.1 ms ±   2.2 ms    [User: 84.7 ms, System: 45.8 ms]
+  Range (min … max):   123.4 ms … 134.4 ms    22 runs
  
 Benchmark #3: screenfetch
-  Time (mean ± σ):     688.3 ms ±  24.0 ms    [User: 358.7 ms, System: 350.5 ms]
-  Range (min … max):   669.6 ms … 754.0 ms    10 runs
- 
-Benchmark #4: ufetch
-  Time (mean ± σ):      31.9 ms ±   2.8 ms    [User: 25.2 ms, System: 10.1 ms]
-  Range (min … max):    26.6 ms …  41.6 ms    68 runs
+  Time (mean ± σ):     141.4 ms ±   1.3 ms    [User: 87.3 ms, System: 65.0 ms]
+  Range (min … max):   139.2 ms … 145.2 ms    21 runs
  
 Summary
-  './target/release/rsfetch' ran
-   18.36 ± 5.09 times faster than 'ufetch'
-  120.35 ± 33.23 times faster than 'neofetch'
-  396.21 ± 105.30 times faster than 'screenfetch'
+  'rsfetch' ran
+   96.09 ± 3.77 times faster than 'neofetch'
+  108.56 ± 3.93 times faster than 'screenfetch'
 ```
-As you can see, `rsfetch` is the clear winner with `ufetch` trailing slightly behind.  
+As you can see, `rsfetch` is the clear winner.  
 
-And yes, you saw right. Execution time was ~1ms on average! Crazy fast.
+And yes, you saw right. Execution time was <1ms on average! Crazy fast.
 
 ### License
 
