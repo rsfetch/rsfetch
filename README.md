@@ -16,6 +16,7 @@
 * [Screenshots](#screenshots)
 * [Benchmarks](#benchmarks)
 * [License](#license)
+* [Changelog](#changelog)
 
 ### Preface
 
@@ -120,3 +121,8 @@ And yes, you saw right. Execution time was <1ms on average! Crazy fast.
 ### License
 
 - License has been set to "MIT". Anybody can do anything with this repository, provided that they include the license if they choose to redistribute. [View license](https://raw.githubusercontent.com/rsfetch/rsfetch/master/LICENSE)
+
+### Changelog
+
+- Changelog was generated (because I'm too lazy) by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)
+[View changelog](https://raw.githubusercontent.com/rsfetch/rsfetch/master/CHANGELOG.md)
