@@ -37,7 +37,7 @@ thoughts on how this is.
 
 ### Things to Know
 
-1. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).
+1. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. ~~Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).~~
 
 2. These are the current package managers supported. If I missed any, please report it in [this](https://github.com/rsfetch/rsfetch/issues/28) issue.
     - pacman
