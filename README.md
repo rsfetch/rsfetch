@@ -124,6 +124,4 @@ And yes, you saw right. Execution time was <1ms on average! Crazy fast.
 
 ### Changelog
 
-- Changelog was generated (because I'm too lazy) by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)
-
-[View changelog](https://raw.githubusercontent.com/rsfetch/rsfetch/master/CHANGELOG.md)
+- Changelog was generated (because I'm too lazy) by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator). [View changelog](https://raw.githubusercontent.com/rsfetch/rsfetch/master/CHANGELOG.md)
