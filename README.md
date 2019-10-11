@@ -94,25 +94,28 @@ Here's a detailed benchmark, with rsfetch versus Neofetch and ScreenFetch:
 
 Note: All programs are using default options, no flags or config files were used.
 
-$ `hyperfine "rsfetch" "neofetch" "screenfetch"`
+$ `hyperfine "\rsfetch" "neofetch --config none" "screenfetch"`
 
 ```
-Benchmark #1: rsfetch
-  Time (mean ± σ):       1.3 ms ±   0.0 ms    [User: 0.6 ms, System: 0.9 ms]
-  Range (min … max):     1.2 ms …   1.6 ms    1314 runs
+Benchmark #1: \rsfetch
+  Time (mean ± σ):       1.5 ms ±   0.3 ms    [User: 0.7 ms, System: 1.0 ms]
+  Range (min … max):     1.2 ms …   3.4 ms    870 runs
  
-Benchmark #2: neofetch
-  Time (mean ± σ):     125.1 ms ±   2.2 ms    [User: 84.7 ms, System: 45.8 ms]
-  Range (min … max):   123.4 ms … 134.4 ms    22 runs
+  Warning: Command took less than 5 ms to complete. Results might be inaccurate.
+  Warning: Statistical outliers were detected. Consider re-running this benchmark on a quiet PC without any interferences from other programs. It might help to use the '--warmup' or '--prepare' options.
+ 
+Benchmark #2: neofetch --config none
+  Time (mean ± σ):     224.9 ms ±   4.4 ms    [User: 127.1 ms, System: 108.1 ms]
+  Range (min … max):   215.2 ms … 229.5 ms    13 runs
  
 Benchmark #3: screenfetch
-  Time (mean ± σ):     141.4 ms ±   1.3 ms    [User: 87.3 ms, System: 65.0 ms]
-  Range (min … max):   139.2 ms … 145.2 ms    21 runs
+  Time (mean ± σ):     385.8 ms ±  20.7 ms    [User: 167.2 ms, System: 240.7 ms]
+  Range (min … max):   368.9 ms … 438.9 ms    10 runs
  
 Summary
-  'rsfetch' ran
-   96.09 ± 3.77 times faster than 'neofetch'
-  108.56 ± 3.93 times faster than 'screenfetch'
+  '\rsfetch' ran
+  145.68 ± 28.89 times faster than 'neofetch --config none'
+  249.92 ± 51.13 times faster than 'screenfetch'
 ```
 As you can see, `rsfetch` is the clear winner.  
 
