@@ -94,29 +94,32 @@ Here's a detailed benchmark, with rsfetch versus Neofetch and ScreenFetch:
 
 Note: All programs are using default options, no flags or config files were used.
 
-$ `hyperfine "\rsfetch" "neofetch --config none" "screenfetch"`
+$ `hyperfine "\rsfetch" "pfetch" "neofetch --config none" "screenfetch"`
 
 ```
 Benchmark #1: \rsfetch
-  Time (mean ± σ):       1.5 ms ±   0.3 ms    [User: 0.7 ms, System: 1.0 ms]
-  Range (min … max):     1.2 ms …   3.4 ms    870 runs
+  Time (mean ± σ):       1.4 ms ±   0.3 ms    [User: 0.6 ms, System: 1.0 ms]
+  Range (min … max):     1.2 ms …   3.2 ms    1084 runs
  
-  Warning: Command took less than 5 ms to complete. Results might be inaccurate.
-  Warning: Statistical outliers were detected. Consider re-running this benchmark on a quiet PC without any interferences from other programs. It might help to use the '--warmup' or '--prepare' options.
+Benchmark #2: pfetch
+  Time (mean ± σ):      41.4 ms ±   2.8 ms    [User: 27.2 ms, System: 18.6 ms]
+  Range (min … max):    36.3 ms …  47.4 ms    75 runs
  
-Benchmark #2: neofetch --config none
-  Time (mean ± σ):     224.9 ms ±   4.4 ms    [User: 127.1 ms, System: 108.1 ms]
-  Range (min … max):   215.2 ms … 229.5 ms    13 runs
+Benchmark #3: neofetch --config none
+  Time (mean ± σ):     228.1 ms ±   4.6 ms    [User: 124.7 ms, System: 114.9 ms]
+  Range (min … max):   220.7 ms … 238.7 ms    12 runs
  
-Benchmark #3: screenfetch
-  Time (mean ± σ):     385.8 ms ±  20.7 ms    [User: 167.2 ms, System: 240.7 ms]
-  Range (min … max):   368.9 ms … 438.9 ms    10 runs
+Benchmark #4: screenfetch
+  Time (mean ± σ):     392.0 ms ±   8.4 ms    [User: 170.3 ms, System: 250.6 ms]
+  Range (min … max):   382.3 ms … 406.9 ms    10 runs
  
 Summary
   '\rsfetch' ran
-  145.68 ± 28.89 times faster than 'neofetch --config none'
-  249.92 ± 51.13 times faster than 'screenfetch'
+   28.58 ± 5.69 times faster than 'pfetch'
+  157.65 ± 29.70 times faster than 'neofetch --config none'
+  270.96 ± 51.09 times faster than 'screenfetch'
 ```
+
 As you can see, `rsfetch` is the clear winner.  
 
 And yes, you saw right. Execution time was <1ms on average! Crazy fast.
