@@ -34,36 +34,31 @@ opt:
 	@echo "RUNARGS   = ${RUN_ARGS}"
 
 debug:
-	@${CC} build ${DFLAGS}
+	${CC} build ${DFLAGS}
 
 run: debug
-	@${DBIN} ${RUN_ARGS}
+	${DBIN} ${RUN_ARGS}
 
 build:
-	@echo :: CARGO BUILD
-	@${CC} build ${RFLAGS}
+	${CC} build ${RFLAGS}
 
 clean:
-	@echo :: CLEANING
-	@rm -rf ./target/
-	@rm -f rsfetch.tar.gz
+	rm -rf ./target/
+	rm -f rsfetch.tar.gz
 
 dist: options clean build
-	@echo :: CREATING TARBALL
-	@mkdir -p rsfetch-tmp
-	@cp -f ${RBIN} ./rsfetch-tmp/ 
-	@tar -cf rsfetch.tar rsfetch-tmp
-	@gzip rsfetch.tar
-	@rm -rf rsfetch
+	mkdir -p rsfetch-tmp
+	cp -f ${RBIN} ./rsfetch-tmp/ 
+	tar -cf rsfetch.tar rsfetch-tmp
+	gzip rsfetch.tar
+	rm -rf rsfetch
 
 install: build
-	@echo :: INSTALLING TO ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${PREFIX}/bin
-	@cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
-	@chmod 755 ${DESTDIR}${PREFIX}/bin/rsfetch
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
+	chmod 755 ${DESTDIR}${PREFIX}/bin/rsfetch
 
 uninstall:
-	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
-	@rm -f ${DESTDIR}${PREFIX}/bin/rsfetch
+	rm -f ${DESTDIR}${PREFIX}/bin/rsfetch
 
 .PHONY: all options run clean dist install uninstall
