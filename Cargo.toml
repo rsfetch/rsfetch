@@ -8,7 +8,6 @@ license = "MIT"
 [dependencies]
 clap = "2.33"
 dirs = "1.0"
-itoa = "0.4"
 log = "0.4"
 pretty_env_logger = "0.3"
 prettytable-rs = "0.8"
