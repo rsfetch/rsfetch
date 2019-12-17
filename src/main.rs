@@ -1,7 +1,11 @@
+// TODO: refactor this hairy mess into multiple files,
+// with structures and `impl`s.
+// ALSO TODO: replace reqwest with a lighter crate :(
+// -- kiedtl
+
 use clap::{App, Arg};
 use log::error;
 use prettytable::{cell, format, row, Table};
-use pwd::Passwd;
 use snafu::{OptionExt, ResultExt, Snafu};
 use std::env;
 use std::fmt;
@@ -10,7 +14,6 @@ use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 use std::process::Command;
 use std::result;
-use std::time::Duration;
 
 #[derive(Debug, Snafu)]
 enum Error {
@@ -100,6 +103,30 @@ fn get_value(key: &str, line: &str) -> Option<String> {
     }
 }
 
+fn get_uptime() -> String {
+    let mut proc_uptime: &str = &*std::fs::read_to_string("/proc/uptime").unwrap();
+    
+    // right now, proc_uptime looks like this:
+    // 98798798.98 12897928l.12
+    // we need to trim off everything after the first dot
+    proc_uptime = proc_uptime.split(".").collect::<Vec<&str>>()[0];
+
+    // convert proc_uptime (a string) to usize
+    let seconds: i32 = proc_uptime.parse::<i32>().unwrap();
+
+    // convert seconds to days, hours, and minutes
+    let mut uptime = "".to_owned();
+    let days: i32 = seconds / 60 / 60 / 24;
+    let hours: i32 = (seconds / 60 / 60) % 24; // only 24 hours in a day!
+    let minutes: i32 = (seconds / 60) % 60; // only 60 minutes in an hour!
+
+    if days > 0 { uptime = format!("{}d ", days); }
+    if hours > 0 { uptime = format!("{}{}h ", uptime, hours); }
+    if minutes > 0 { uptime = format!("{}{}m ", uptime, minutes); }
+
+    uptime
+}
+
 fn get_device_name() -> Result<String> {
     let contents =
         fs::read_to_string("/sys/devices/virtual/dmi/id/product_name").context(DeviceName)?;
@@ -129,6 +156,19 @@ fn get_kernel_version() -> Result<String> {
     let contents = fs::read_to_string("/proc/sys/kernel/osrelease").context(KernelVersion)?;
     let kern = contents.trim_end().to_string();
     Ok(kern)
+}
+
+fn count_lines(data: Vec<u8>) -> usize {
+    let mut count: usize = 0;
+
+    // convert srcs from Vec<u8> to String
+    let mut src = "".to_owned();
+    for byte in data {
+        src = format!("{}{}", src, byte as char);
+    }
+
+    let _ = src.split("\n").map(|_| count += 1).collect::<()>();
+    count
 }
 
 fn get_window_manager() -> Result<String> {
@@ -172,14 +212,14 @@ fn get_package_count_arch_based() -> Result<String> {
         .arg("-Qq")
         .output()
         .context(Pkgcount)?;
-    let pkgs = bytecount::count(&pacman.stdout, b'\n');
+    let pkgs = count_lines(pacman.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_debian_based() -> Result<String> {
     let apt = Command::new("apt").arg("list").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&apt.stdout, b'\n');
+    let pkgs = count_lines(apt.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
@@ -189,7 +229,7 @@ fn get_package_count_void() -> Result<String> {
         .arg("-l")
         .output()
         .context(Pkgcount)?;
-    let pkgs = bytecount::count(&xbps.stdout, b'\n');
+    let pkgs = count_lines(xbps.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
@@ -200,7 +240,7 @@ fn get_package_count_fedora() -> Result<String> {
         .arg("--installed")
         .output()
         .context(Pkgcount)?;
-    let pkgs = bytecount::count(&dnf.stdout, b'\n');
+    let pkgs = count_lines(dnf.stdout);
     let pkgs = pkgs - 1;
     let pkg = format!("{}", pkgs);
     Ok(pkg)
@@ -208,7 +248,7 @@ fn get_package_count_fedora() -> Result<String> {
 
 fn get_package_count_bsd() -> Result<String> {
     let bpkg = Command::new("pkg").arg("info").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&bpkg.stdout, b'\n');
+    let pkgs = count_lines(bpkg.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
@@ -218,35 +258,35 @@ fn get_package_count_solus() -> Result<String> {
         .arg("list-installed")
         .output()
         .context(Pkgcount)?;
-    let pkgs = bytecount::count(&eopkg.stdout, b'\n');
+    let pkgs = count_lines(eopkg.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_suse() -> Result<String> {
     let rpm = Command::new("rpm").arg("-qa").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&rpm.stdout, b'\n');
+    let pkgs = count_lines(rpm.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_alpine() -> Result<String> {
     let apk = Command::new("apk").arg("info").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&apk.stdout, b'\n');
+    let pkgs = count_lines(apk.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_gentoo() -> Result<String> {
     let qlist = Command::new("qlist").arg("-I").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&qlist.stdout, b'\n');
+    let pkgs = count_lines(qlist.stdout);
     let pkg = format!("{}", pkgs);
     Ok(pkg)
 }
 
 fn get_package_count_pip() -> Result<String> {
     let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
-    let pkgs = bytecount::count(&pip.stdout, b'\n');
+    let pkgs = count_lines(pip.stdout);
     let pkgs = pkgs - 2;
     let pkg = format!("{}", pkgs);
     Ok(pkg)
@@ -257,7 +297,7 @@ fn get_package_count_cargo() -> Result<String> {
         .arg("list")
         .output()
         .context(Pkgcount)?;
-    let pkgs = bytecount::count(&cargo.stdout, b'\n');
+    let pkgs = count_lines(cargo.stdout);
     let pkgs = pkgs - 1;
     let pkg = format!("{}", pkgs);
     Ok(pkg)
@@ -275,53 +315,53 @@ fn get_mpd_song() -> Result<String> {
     Ok(mus)
 }
 
-fn format_duration(duration: Duration) -> Result<String> {
-    let mut duration = duration.as_secs();
-    if duration < 60 {
-        let s = if duration == 1 {
-            String::from("1 second")
-        } else {
-            format!("{} seconds", duration)
-        };
-        return Ok(s);
-    }
-
-    duration /= 60;
-    let minutes = duration % 60;
-    duration /= 60;
-    let hours = duration % 24;
-    duration /= 24;
-    let days = duration % 7;
-    let weeks = (duration / 7) % 52;
-    duration /= 365;
-    let years = duration % 10;
-    let decades = duration / 10;
-
-    let mut s = String::new();
-    let mut comma = false;
-    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) -> Result<()> {
-        if value > 0 {
-            if *comma {
-                s.push_str(", ");
-            }
-            itoa::fmt(&mut s, value).context(FormatUptime)?;
-            s.push(' ');
-            s.push_str(name);
-            if value > 1 {
-                s.push('s');
-            }
-            *comma = true;
-        }
-        Ok(())
-    }
-    add_part(&mut comma, &mut s, "decade", decades)?;
-    add_part(&mut comma, &mut s, "year", years)?;
-    add_part(&mut comma, &mut s, "week", weeks)?;
-    add_part(&mut comma, &mut s, "day", days)?;
-    add_part(&mut comma, &mut s, "hour", hours)?;
-    add_part(&mut comma, &mut s, "minute", minutes)?;
-    Ok(s)
-}
+//fn format_duration(duration: Duration) -> Result<String> {
+//    let mut duration = duration.as_secs();
+//    if duration < 60 {
+//       let s = if duration == 1 {
+//            String::from("1 second")
+//        } else {
+//            format!("{} seconds", duration)
+//        };
+//        return Ok(s);
+//    }
+//
+//    duration /= 60;
+//    let minutes = duration % 60;
+//    duration /= 60;
+//    let hours = duration % 24;
+//    duration /= 24;
+//    let days = duration % 7;
+//    let weeks = (duration / 7) % 52;
+//    duration /= 365;
+//    let years = duration % 10;
+//    let decades = duration / 10;
+//
+//    let mut s = String::new();
+//    let mut comma = false;
+//    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) -> Result<()> {
+//        if value > 0 {
+//            if *comma {
+//                s.push_str(", ");
+//            }
+//            itoa::fmt(&mut s, value).context(FormatUptime)?;
+//            s.push(' ');
+//            s.push_str(name);
+//            if value > 1 {
+//                s.push('s');
+//            }
+//            *comma = true;
+//        }
+//        Ok(())
+//    }
+//    add_part(&mut comma, &mut s, "decade", decades)?;
+//    add_part(&mut comma, &mut s, "year", years)?;
+//    add_part(&mut comma, &mut s, "week", weeks)?;
+//    add_part(&mut comma, &mut s, "day", days)?;
+//    add_part(&mut comma, &mut s, "hour", hours)?;
+//    add_part(&mut comma, &mut s, "minute", minutes)?;
+//    Ok(s)
+//}
 
 fn get_packages(packages: &str) -> Result<String> {
     match packages {
@@ -458,7 +498,7 @@ fn main() {
         return;
     }
     let current_user = if !matches.is_present("no-user") || !matches.is_present("no-shell") {
-        Passwd::current_user()
+        Some(env::var("USER")) //Passwd::current_user()
     } else {
         None
     };
@@ -526,11 +566,11 @@ fn main() {
     if !matches.is_present("no-user") {
         if matches.is_present("minimal") {
             if let Some(ref user) = current_user {
-                println!("{}", &user.name);
+                println!("{}", user.as_ref().unwrap());
             }
         } else {
             if let Some(ref user) = current_user {
-                add_row(&mut table, bold, caps, borders, "USER", &user.name);
+                add_row(&mut table, bold, caps, borders, "USER", &user.as_ref().unwrap());
             }
         }
     }
@@ -549,25 +589,11 @@ fn main() {
     }
     if !matches.is_present("no-uptime") {
         if matches.is_present("minimal") {
-            if let Some(uptime) = uptime_lib::get()
-                .ok()
-                .and_then(|uptime| uptime.to_std().ok())
-            {
-                match format_duration(uptime) {
-                    Ok(uptime) => println!("{}", &uptime),
-                    Err(e) => error!("{}", e),
-                }
-            };
+            let uptime = get_uptime();
+            println!("{}", &uptime);
         } else {
-            if let Some(uptime) = uptime_lib::get()
-                .ok()
-                .and_then(|uptime| uptime.to_std().ok())
-            {
-                match format_duration(uptime) {
-                    Ok(uptime) => add_row(&mut table, bold, caps, borders, "UPTIME", &uptime),
-                    Err(e) => error!("{}", e),
-                }
-            };
+            let uptime = get_uptime();
+            add_row(&mut table, bold, caps, borders, "UPTIME", &uptime);
         }
     }
     if !matches.is_present("no-distro") {
@@ -622,14 +648,11 @@ fn main() {
     }
     if !matches.is_present("no-shell") {
         if matches.is_present("minimal") {
-            if let Some(ref user) = current_user {
-                if let Some(shell) = Path::new(&user.shell).file_name() {
+                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
                     println!("{}", shell.to_string_lossy().as_ref());
                 }
-            }
         } else {
-            if let Some(ref user) = current_user {
-                if let Some(shell) = Path::new(&user.shell).file_name() {
+                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
                     add_row(
                         &mut table,
                         bold,
@@ -639,7 +662,6 @@ fn main() {
                         shell.to_string_lossy().as_ref(),
                     );
                 }
-            }
         }
     }
     if matches.is_present("ip_address") {
