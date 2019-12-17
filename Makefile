@@ -7,9 +7,11 @@ DBIN = ./target/debug/rsfetch
 RBIN = ./target/release/rsfetch
 PREFIX = /usr/local
 
+JOBS  ?= 1
+
 # flags
-DFLAGS = --color always
-RFLAGS = ${DFLAGS} --release
+DFLAGS = --color always -j$(JOBS)
+RFLAGS = ${DFLAGS} --release -j$(JOBS)
 
 # run args
 ifeq (run,$(firstword $(MAKECMDGOALS)))
