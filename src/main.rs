@@ -6,6 +6,8 @@
 mod cpu;
 mod uptime;
 mod device;
+mod distro;
+mod kernel;
 
 use clap::{App, Arg};
 use log::error;
@@ -22,6 +24,8 @@ use std::result;
 use crate::cpu::*;
 use crate::uptime::*;
 use crate::device::*;
+use crate::distro::*;
+use crate::kernel::*;
 
 #[derive(Debug, Snafu)]
 enum Error {
@@ -97,12 +101,6 @@ fn print_default_logo() {
     println!("{}", make_bold(" \\    / /\\   |    |    |--- \\   /"));
     println!("{}", make_bold("  \\  / /__\\  |    |    |---  \\ /"));
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
-}
-
-fn get_kernel_version() -> Result<String> {
-    let contents = fs::read_to_string("/proc/sys/kernel/osrelease").context(KernelVersion)?;
-    let kern = contents.trim_end().to_string();
-    Ok(kern)
 }
 
 fn count_lines(data: Vec<u8>) -> usize {
@@ -511,16 +509,14 @@ fn main() {
         }
     }
     if !matches.is_present("no-kernel") {
-        if matches.is_present("minimal") {
-            match get_kernel_version() {
-                Ok(kern) => println!("{}", &kern),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_kernel_version() {
-                Ok(kern) => add_row(&mut table, bold, caps, borders, "KERNEL", &kern),
-                Err(e) => error!("{}", e),
-            }
+        let kernel = KernelInfo::new();
+        match kernel.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", kernel.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "KERNEL", &kernel.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-wm-de") {
