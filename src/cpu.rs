@@ -31,7 +31,7 @@ impl CPUInfo {
 
         // frequency
         self.freq = (fs::read_to_string("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")?
-            .parse::<usize>().unwrap()) / 1000;
+            .trim_end().parse::<usize>().unwrap()) / 1000000;
 
         Ok(())
     }
