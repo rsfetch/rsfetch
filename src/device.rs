@@ -18,5 +18,5 @@ impl DeviceInfo {
     }
 
     // format it
-    pub fn format(&self) -> String { self.model }
+    pub fn format(&self) -> String { self.model.clone() }
 }

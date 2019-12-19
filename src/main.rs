@@ -1,6 +1,4 @@
-// TODO: refactor this hairy mess into multiple files,
-// with structures and `impl`s.
-// ALSO TODO: replace reqwest with a lighter crate :(
+// TODO: replace reqwest with a lighter crate :(
 // -- kiedtl
 
 mod cpu;
@@ -15,7 +13,7 @@ use prettytable::{cell, format, row, Table};
 use snafu::{OptionExt, ResultExt, Snafu};
 use std::env;
 use std::fmt;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::path::Path;
 use std::process::Command;
@@ -476,7 +474,7 @@ fn main() {
         }
     }
     if !matches.is_present("no-host") {
-        let device = DeviceInfo::new();
+        let mut device = DeviceInfo::new();
         match device.get() {
             Ok(()) => if matches.is_present("minimal") {
                 println!("{}", device.format());
@@ -498,7 +496,7 @@ fn main() {
         }
     }
     if !matches.is_present("no-distro") {
-        let distro = DistroInfo::new();
+        let mut distro = DistroInfo::new();
         match distro.get() {
             Ok(()) => if matches.is_present("minimal") {
                 println!("{}", distro.format());
@@ -509,7 +507,7 @@ fn main() {
         }
     }
     if !matches.is_present("no-kernel") {
-        let kernel = KernelInfo::new();
+        let mut kernel = KernelInfo::new();
         match kernel.get() {
             Ok(()) => if matches.is_present("minimal") {
                 println!("{}", kernel.format());

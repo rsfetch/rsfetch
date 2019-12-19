@@ -18,5 +18,5 @@ impl KernelInfo {
     }
 
     // format it
-    pub fn format(&self) -> String { self.version }
+    pub fn format(&self) -> String { self.version.clone() }
 }

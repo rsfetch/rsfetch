@@ -18,22 +18,23 @@ impl DistroInfo {
         }
     }
 
-    // TODO: support for distros like CRUX, which
+    // TODO: support for non-standard distros like CRUX, which
     // typically don't have an /etc/os-release file.
     pub fn get(&mut self) -> Result<(), std::io::Error> {
-        let values = fs::read_to_string("/etc/os-release")?
-            .split("\n").collect::<Vec<&str>>();
+        let file = fs::read_to_string("/etc/os-release")?;
+        let values = file.split("\n").collect::<Vec<&str>>();
 
         for value in values {
             let key = value.split("=").collect::<Vec<&str>>()[0].trim();
             let val = value.split("=").collect::<Vec<&str>>()[1].trim()
-                .trim_matches("\"");
+                .trim_matches('"');
 
             match key {
                 "NAME"        => self.name = val.to_string(),
                 "ID"          => self.id   = val.to_string(),
                 "DISTRIB_ID"  => self.distrib_id = val.to_string(),
                 "PRETTY_NAME" => self.pretty_name = val.to_string(),
+                &_ => (),
             }
         }
 
@@ -41,6 +42,10 @@ impl DistroInfo {
     }
 
     pub fn format(&self) -> String {
-        self.pretty_name.or(self.name)
+        if self.pretty_name != "" {
+            return self.pretty_name.clone();
+        } else {
+            return self.name.clone();
+        }
     }
 }

@@ -40,7 +40,7 @@ impl UptimeInfo {
     }
 
     pub fn format(&self) -> String {
-        let uptime = "".to_owned();
+        let mut uptime = "".to_owned();
 
         if self.days    > 0 { uptime = format!("{}d ", self.days);              }
         if self.hours   > 0 { uptime = format!("{}{}h ", uptime, self.hours);   }
