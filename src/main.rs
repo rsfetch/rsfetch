@@ -1,11 +1,13 @@
 // TODO: replace reqwest with a lighter crate :(
 // -- kiedtl
 
+mod env;
 mod cpu;
 mod uptime;
 mod device;
 mod distro;
 mod kernel;
+mod network;
 
 use clap::{App, Arg};
 use log::error;
@@ -15,10 +17,10 @@ use std::env;
 use std::fmt;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use std::path::Path;
 use std::process::Command;
 use std::result;
 
+use crate::env::*;
 use crate::cpu::*;
 use crate::uptime::*;
 use crate::device::*;
@@ -135,14 +137,6 @@ fn get_window_manager() -> Result<String> {
     let space = last_line.find(' ').context(GuessWm)?;
     let wm = last_line[space + 1..].to_string();
     Ok(wm)
-}
-
-fn get_ip_address() -> Result<String> {
-    let ip = reqwest::get("https://ipecho.net/plain")
-        .context(Reqwest)?
-        .text()
-        .context(Reqwest)?;
-    Ok(ip)
 }
 
 fn get_package_count_arch_based() -> Result<String> {
@@ -555,19 +549,19 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
+
     if matches.is_present("ip_address") {
-        if matches.is_present("minimal") {
-            match get_ip_address() {
-                Ok(ip) => println!("{}", &ip),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_ip_address() {
-                Ok(ip) => add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip),
-                Err(e) => error!("{}", e),
-            }
+        let mut ip = NetworkInfo::new();
+        match ip.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", ip.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
+
     if let Some(packages) = packages {
         match get_packages(packages) {
             Ok(pkg) => {
