@@ -35,4 +35,9 @@ impl CPUInfo {
 
         Ok(())
     }
+
+    // format it
+    pub fn format(&self) -> String {
+        format!("{} ({}) @ {}GHz", self.model, self.cores, self.freq)
+    }
 }

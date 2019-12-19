@@ -3,6 +3,9 @@
 // ALSO TODO: replace reqwest with a lighter crate :(
 // -- kiedtl
 
+mod cpu;
+mod uptime;
+
 use clap::{App, Arg};
 use log::error;
 use prettytable::{cell, format, row, Table};
@@ -15,8 +18,8 @@ use std::path::Path;
 use std::process::Command;
 use std::result;
 
-mod cpu;
 use crate::cpu::*;
+use crate::uptime::*;
 
 #[derive(Debug, Snafu)]
 enum Error {
@@ -104,30 +107,6 @@ fn get_value(key: &str, line: &str) -> Option<String> {
     } else {
         None
     }
-}
-
-fn get_uptime() -> String {
-    let mut proc_uptime: &str = &*std::fs::read_to_string("/proc/uptime").unwrap();
-    
-    // right now, proc_uptime looks like this:
-    // 98798798.98 12897928l.12
-    // we need to trim off everything after the first dot
-    proc_uptime = proc_uptime.split(".").collect::<Vec<&str>>()[0];
-
-    // convert proc_uptime (a string) to usize
-    let seconds: i32 = proc_uptime.parse::<i32>().unwrap();
-
-    // convert seconds to days, hours, and minutes
-    let mut uptime = "".to_owned();
-    let days: i32 = seconds / 60 / 60 / 24;
-    let hours: i32 = (seconds / 60 / 60) % 24; // only 24 hours in a day!
-    let minutes: i32 = (seconds / 60) % 60; // only 60 minutes in an hour!
-
-    if days > 0 { uptime = format!("{}d ", days); }
-    if hours > 0 { uptime = format!("{}{}h ", uptime, hours); }
-    if minutes > 0 { uptime = format!("{}{}m ", uptime, minutes); }
-
-    uptime
 }
 
 fn get_device_name() -> Result<String> {
@@ -595,12 +574,14 @@ fn main() {
         }
     }
     if !matches.is_present("no-uptime") {
-        if matches.is_present("minimal") {
-            let uptime = get_uptime();
-            println!("{}", &uptime);
-        } else {
-            let uptime = get_uptime();
-            add_row(&mut table, bold, caps, borders, "UPTIME", &uptime);
+        let mut uptime = UptimeInfo::new();
+        match uptime.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", uptime.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "UPTIME", &uptime.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-distro") {
@@ -675,10 +656,9 @@ fn main() {
         let mut cpu = CPUInfo::new();
         match cpu.get() {
             Ok(()) => if matches.is_present("minimal") {
-                println!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq);
+                println!("{}", cpu.format());
             } else {
-                add_row(&mut table, bold, caps, borders, "CPU", 
-                        &format!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq));
+                add_row(&mut table, bold, caps, borders, "CPU", &cpu.format());
             },
             Err(e) => error!("{}", e),
         }
