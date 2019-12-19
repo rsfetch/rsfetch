@@ -25,8 +25,8 @@ impl DistroInfo {
             .split("\n").collect::<Vec<&str>>();
 
         for value in values {
-            let key = value.split("=")[0].trim();
-            let val = value.split("=")[1].trim()
+            let key = value.split("=").collect::<Vec<&str>>()[0].trim();
+            let val = value.split("=").collect::<Vec<&str>>()[1].trim()
                 .trim_matches("\"");
 
             match key {
