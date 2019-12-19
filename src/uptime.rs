@@ -16,7 +16,6 @@ impl UptimeInfo {
         }
     }
 
-    // retrieve model, cores, and frequency
     pub fn get(&mut self) -> Result<(), std::io::Error> {
         let mut proc_uptime: &str = &*std::fs::read_to_string("/proc/uptime")?;
 

@@ -5,6 +5,7 @@
 
 mod cpu;
 mod uptime;
+mod device;
 
 use clap::{App, Arg};
 use log::error;
@@ -20,6 +21,7 @@ use std::result;
 
 use crate::cpu::*;
 use crate::uptime::*;
+use crate::device::*;
 
 #[derive(Debug, Snafu)]
 enum Error {
@@ -107,13 +109,6 @@ fn get_value(key: &str, line: &str) -> Option<String> {
     } else {
         None
     }
-}
-
-fn get_device_name() -> Result<String> {
-    let contents =
-        fs::read_to_string("/sys/devices/virtual/dmi/id/product_name").context(DeviceName)?;
-    let dev = contents.trim_end().to_string();
-    Ok(dev)
 }
 
 fn get_os_release() -> Result<Option<String>> {
@@ -561,16 +556,14 @@ fn main() {
         }
     }
     if !matches.is_present("no-host") {
-        if matches.is_present("minimal") {
-            match get_device_name() {
-                Ok(dev) => println!("{}", &dev),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_device_name() {
-                Ok(dev) => add_row(&mut table, bold, caps, borders, "HOST", &dev),
-                Err(e) => error!("{}", e),
-            }
+        let device = DeviceInfo::new();
+        match device.get() {
+            Ok(()) => if !matches.is_present("minimal") {
+                println!("{}", device.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "HOST", &device.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-uptime") {
