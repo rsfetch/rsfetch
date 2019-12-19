@@ -412,7 +412,6 @@ fn main() {
                         .help("Turn all caps off.")
                         .takes_value(false))
                     .arg(Arg::with_name("cpu")
-                         .short("C")
                          .long("cpu")
                          .help("Turn CPU information (model, frequency, and processor count) on.")
                          .takes_value(false))
