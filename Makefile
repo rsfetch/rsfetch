@@ -11,7 +11,7 @@ JOBS  ?= 1
 
 # flags
 DFLAGS = --color always -j$(JOBS)
-RFLAGS = ${DFLAGS} --release -j$(JOBS)
+RFLAGS = ${DFLAGS} --release
 
 # run args
 ifeq (run,$(firstword $(MAKECMDGOALS)))

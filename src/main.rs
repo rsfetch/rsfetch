@@ -15,6 +15,9 @@ use std::path::Path;
 use std::process::Command;
 use std::result;
 
+mod cpu;
+use crate::cpu::*;
+
 #[derive(Debug, Snafu)]
 enum Error {
     #[snafu(display("Could not retrieve device name: {}", source))]
@@ -408,6 +411,10 @@ fn main() {
                         .long("no-caps")
                         .help("Turn all caps off.")
                         .takes_value(false))
+                    .arg(Arg::with_name("cpu")
+                         .long("cpu")
+                         .help("Turn CPU information (model, frequency, and processor count) on.")
+                         .takes_value(false))
                     .arg(Arg::with_name("no-user")
                         .short("U")
                         .long("no-user")
@@ -662,6 +669,18 @@ fn main() {
                         shell.to_string_lossy().as_ref(),
                     );
                 }
+        }
+    }
+    if matches.is_present("cpu") {
+        let mut cpu = CPUInfo::new();
+        match cpu.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq);
+            } else {
+                add_row(&mut table, bold, caps, borders, "CPU", 
+                        &format!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq));
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("ip_address") {
