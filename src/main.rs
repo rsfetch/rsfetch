@@ -99,36 +99,6 @@ fn print_default_logo() {
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
 }
 
-fn get_value(key: &str, line: &str) -> Option<String> {
-    if line.starts_with(key) {
-        Some(
-            line[key.len() + 1..line.len() - 1]
-                .trim_matches('"')
-                .to_string(),
-        )
-    } else {
-        None
-    }
-}
-
-fn get_os_release() -> Result<Option<String>> {
-    let file = File::open("/etc/os-release").context(OsRelease)?;
-    let mut reader = BufReader::new(file);
-    let mut line = String::new();
-    let mut name = None;
-    let mut pretty_name = None;
-    while reader.read_line(&mut line).context(OsRelease)? > 0 {
-        if let Some(val) = get_value("NAME", &line) {
-            name = Some(val);
-        } else if let Some(val) = get_value("PRETTY_NAME", &line) {
-            pretty_name = Some(val);
-            break;
-        }
-        line.clear();
-    }
-    Ok(pretty_name.or(name))
-}
-
 fn get_kernel_version() -> Result<String> {
     let contents = fs::read_to_string("/proc/sys/kernel/osrelease").context(KernelVersion)?;
     let kern = contents.trim_end().to_string();
@@ -291,54 +261,6 @@ fn get_mpd_song() -> Result<String> {
     mus.pop();
     Ok(mus)
 }
-
-//fn format_duration(duration: Duration) -> Result<String> {
-//    let mut duration = duration.as_secs();
-//    if duration < 60 {
-//       let s = if duration == 1 {
-//            String::from("1 second")
-//        } else {
-//            format!("{} seconds", duration)
-//        };
-//        return Ok(s);
-//    }
-//
-//    duration /= 60;
-//    let minutes = duration % 60;
-//    duration /= 60;
-//    let hours = duration % 24;
-//    duration /= 24;
-//    let days = duration % 7;
-//    let weeks = (duration / 7) % 52;
-//    duration /= 365;
-//    let years = duration % 10;
-//    let decades = duration / 10;
-//
-//    let mut s = String::new();
-//    let mut comma = false;
-//    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) -> Result<()> {
-//        if value > 0 {
-//            if *comma {
-//                s.push_str(", ");
-//            }
-//            itoa::fmt(&mut s, value).context(FormatUptime)?;
-//            s.push(' ');
-//            s.push_str(name);
-//            if value > 1 {
-//                s.push('s');
-//            }
-//            *comma = true;
-//        }
-//        Ok(())
-//    }
-//    add_part(&mut comma, &mut s, "decade", decades)?;
-//    add_part(&mut comma, &mut s, "year", years)?;
-//    add_part(&mut comma, &mut s, "week", weeks)?;
-//    add_part(&mut comma, &mut s, "day", days)?;
-//    add_part(&mut comma, &mut s, "hour", hours)?;
-//    add_part(&mut comma, &mut s, "minute", minutes)?;
-//    Ok(s)
-//}
 
 fn get_packages(packages: &str) -> Result<String> {
     match packages {
@@ -558,7 +480,7 @@ fn main() {
     if !matches.is_present("no-host") {
         let device = DeviceInfo::new();
         match device.get() {
-            Ok(()) => if !matches.is_present("minimal") {
+            Ok(()) => if matches.is_present("minimal") {
                 println!("{}", device.format());
             } else {
                 add_row(&mut table, bold, caps, borders, "HOST", &device.format());
@@ -578,14 +500,14 @@ fn main() {
         }
     }
     if !matches.is_present("no-distro") {
-        if matches.is_present("minimal") {
-            if let Ok(Some(dist)) = get_os_release() {
-                println!("{}", &dist);
-            }
-        } else {
-            if let Ok(Some(dist)) = get_os_release() {
-                add_row(&mut table, bold, caps, borders, "DISTRO", &dist);
-            }
+        let distro = DistroInfo::new();
+        match distro.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", distro.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "DISTRO", &distro.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-kernel") {
@@ -702,7 +624,7 @@ fn main() {
         }
     }
     if !matches.is_present("minimal") {
-        table.printstd(); // After collecting data for variables and adding the rows, print the final output into a custom table.
+        table.printstd();
     }
     println!(); // Print blank line after output.
 }
