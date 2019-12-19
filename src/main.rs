@@ -137,11 +137,6 @@ fn get_window_manager() -> Result<String> {
     Ok(wm)
 }
 
-fn get_editor() -> Result<String> {
-    let ed = env::var("EDITOR").context(Editor)?.to_string();
-    Ok(ed)
-}
-
 fn get_ip_address() -> Result<String> {
     let ip = reqwest::get("https://ipecho.net/plain")
         .context(Reqwest)?
@@ -396,11 +391,6 @@ fn main() {
         println!();
         return;
     }
-    let current_user = if !matches.is_present("no-user") || !matches.is_present("no-shell") {
-        Some(env::var("USER")) //Passwd::current_user()
-    } else {
-        None
-    };
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
@@ -410,6 +400,10 @@ fn main() {
     let logofile = matches.value_of("logofile").unwrap_or("");
     let packages = matches.value_of("packages");
     let format;
+   
+    // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
+    let env = EnvInfo::new();
+    
     // Determine if borders are used, and if they are, the style of the corners.
     if matches.is_present("minimal") {
         format = format::FormatBuilder::new()
@@ -462,15 +456,15 @@ fn main() {
             println!(); // print a newline
         }
     }
+
     if !matches.is_present("no-user") {
-        if matches.is_present("minimal") {
-            if let Some(ref user) = current_user {
-                println!("{}", user.as_ref().unwrap());
-            }
-        } else {
-            if let Some(ref user) = current_user {
-                add_row(&mut table, bold, caps, borders, "USER", &user.as_ref().unwrap());
-            }
+        match env.get(EnvItem::User) {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", env.format(EnvItem::User));
+            } else {
+                add_row(&mut table, bold, caps, borders, "USER", env.format(EnvItem::User));
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-host") {
@@ -531,34 +525,23 @@ fn main() {
         }
     }
     if matches.is_present("editor") {
-        if matches.is_present("minimal") {
-            match get_editor() {
-                Ok(ed) => println!("{}", &ed),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_editor() {
-                Ok(ed) => add_row(&mut table, bold, caps, borders, "EDITOR", &ed),
-                Err(e) => error!("{}", e),
-            }
+        match env.get(EnvItem::Editor) {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", env.format(EnvItem::Editor));
+            } else {
+                add_row(&mut table, bold, caps, borders, "EDITOR", env.format(EnvItem::Editor));
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("no-shell") {
-        if matches.is_present("minimal") {
-                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
-                    println!("{}", shell.to_string_lossy().as_ref());
-                }
-        } else {
-                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
-                    add_row(
-                        &mut table,
-                        bold,
-                        caps,
-                        borders,
-                        "SHELL",
-                        shell.to_string_lossy().as_ref(),
-                    );
-                }
+        match env.get(EnvItem::Shell) {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", env.format(EnvItem::Shell));
+            } else {
+                add_row(&mut table, bold, caps, borders, "SHELL", env.format(EnvItem::Shell));
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("cpu") {
@@ -620,5 +603,6 @@ fn main() {
     if !matches.is_present("minimal") {
         table.printstd();
     }
-    println!(); // Print blank line after output.
+
+    print!("\n"); // blank line
 }
