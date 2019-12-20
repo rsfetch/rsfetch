@@ -17,7 +17,7 @@ impl NetworkInfo {
     }
 
     pub fn get(&mut self) -> Result<(), reqwest::Error> {
-        self.ip_address = request::get("https://ipecho.net/plain")?.text()?;
+        self.ip_address = reqwest::get("https://ipecho.net/plain")?.text()?;
         Ok(())
     }
 

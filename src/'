@@ -50,7 +50,7 @@ enum Error {
     #[snafu(display("Could not guess window manager"))]
     GuessWm,
     #[snafu(display("Could not determine editor"))]
-    Editor { source: std::env::VarError },
+    Editor { source: env::VarError },
     #[snafu(display("Could not retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
     #[snafu(display(
@@ -396,7 +396,7 @@ fn main() {
     let format;
    
     // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
-    let mut env = EnvInfo::new();
+    let env = EnvInfo::new();
     
     // Determine if borders are used, and if they are, the style of the corners.
     if matches.is_present("minimal") {

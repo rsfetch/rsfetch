@@ -1,7 +1,6 @@
-use std::env;
 use std::result::Result;
 
-pub EnvItem {
+pub enum EnvItem {
     User,
     Shell,
     Editor,
@@ -22,16 +21,20 @@ impl EnvInfo {
         }
     }
 
-    pub fn get(&mut self, item: EnvItem) -> Result<(), env::VarError> {
+    pub fn get(&mut self, item: EnvItem) -> Result<(), std::env::VarError> {
         match item {
-            EnvItem::User  => self.user  = env::var("USER")?.to_string(),
-            EnvItem::Shell => self.shell = Path::new(env::var("SHELL")?).file_name(),
+            EnvItem::User  => self.user  = std::env::var("USER")?.to_string(),
+            EnvItem::Shell => self.shell = {
+                let sh = std::env::var("SHELL")?;
+                let sh_pieces = sh.split("/").collect::<Vec<&str>>();
+                sh_pieces[sh_pieces.len() - 1].to_string()
+            },
 
             // fallback to $env:SHELL
-            match env::var("VISUAL") {
+            EnvItem::Editor => match std::env::var("VISUAL") {
                Ok(v)  => self.editor = v.to_string(),
-               Err(e) => self.editor = env::var("EDITOR")?.to_string(),
-            }
+               Err(_) => self.editor = std::env::var("EDITOR")?.to_string(),
+            },
         }
 
         Ok(())
@@ -43,7 +46,6 @@ impl EnvInfo {
             EnvItem::User   => return self.user.clone(),
             EnvItem::Shell  => return self.shell.clone(),
             EnvItem::Editor => return self.editor.clone(),
-            _ => (),
         }
     }
 }
