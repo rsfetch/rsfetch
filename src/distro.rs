@@ -22,19 +22,22 @@ impl DistroInfo {
     // typically don't have an /etc/os-release file.
     pub fn get(&mut self) -> Result<(), std::io::Error> {
         let file = fs::read_to_string("/etc/os-release")?;
-        let values = file.split("\n").collect::<Vec<&str>>();
 
-        for value in values {
-            let key = value.split("=").collect::<Vec<&str>>()[0].trim();
-            let val = value.split("=").collect::<Vec<&str>>()[1].trim()
-                .trim_matches('"');
+        for value in file.split("\n") {
+            let keyval = value.split("=").collect::<Vec<&str>>();
+            if keyval.len() < 2 {
+                continue;
+            }
+
+            let key = keyval[0].trim();
+            let val = keyval[1].trim().trim_matches('"');
 
             match key {
                 "NAME"        => self.name = val.to_string(),
                 "ID"          => self.id   = val.to_string(),
                 "DISTRIB_ID"  => self.distrib_id = val.to_string(),
                 "PRETTY_NAME" => self.pretty_name = val.to_string(),
-                &_ => (),
+                &_            => (),
             }
         }
 

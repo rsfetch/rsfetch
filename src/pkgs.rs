@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 use crate::*;
 use std::vec::Vec;
 use std::process::Command;
@@ -18,11 +20,11 @@ pub enum PkgManager {
     Unknown,
 
     // TODO
-    CRUX,
-    KISS,
-    Slackware,
-    NixOS,
-    Bedrock,
+    //CRUX,
+    //KISS,
+    //Slackware,
+    //NixOS,
+    //Bedrock,
 }
 
 pub struct PkgInfo {

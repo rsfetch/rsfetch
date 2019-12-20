@@ -14,13 +14,17 @@ impl WMDEInfo {
         }
     }
 
-    pub fn get(&mut self) -> Result<(), Error> {
+    pub fn get(&mut self) -> Result<()> {
         let de = env::var("XDG_DESKTOP_SESSION")
             .or_else(|_| env::var("XDG_CURRENT_DESKTOP"))
             .or_else(|_| env::var("DESKTOP_SESSION"));
-        self.de = de.unwrap();
 
-        let path = format!("{}.xinitrc", dirs::home_dir()
+        match de {
+            Ok(de) => self.de = de,
+            Err(_) => (),
+        }
+
+        let path = format!("{}/.xinitrc", dirs::home_dir()
                            .context(HomeDir)?
                            .to_str()
                            .unwrap());
