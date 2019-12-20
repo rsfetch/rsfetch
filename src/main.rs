@@ -239,7 +239,7 @@ fn main() {
     let mut env = EnvInfo::new();
     
     // Determine if borders are used, and if they are, the style of the corners.
-    if matches.is_present("minimal") {
+    if matches.is_present("minimal") || ! borders {
         format = format::FormatBuilder::new()
             .column_separator(' ')
             .borders(' ')
@@ -275,9 +275,12 @@ fn main() {
             table.set_format(format);
         }
     }
-    // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
+
+    // output
+    // TODO: refactor
     println!(); // Print blank line before output.
-                // Determine the logo to use.
+    
+    // Determine the logo to use.
     if !matches.is_present("minimal") {
         if !matches.is_present("no-logo") {
             if !logofile.is_empty() {
