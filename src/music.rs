@@ -18,7 +18,8 @@ impl MusicInfo {
             .arg("%artist% - (%date%) %album% - %title%")
             .output().context(Mpc)?;
         self.data = String::from_utf8_lossy(&data.stdout)
-            .into_owned().pop();
+            .into_owned();
+        self.data.pop();
 
         Ok(())
     }

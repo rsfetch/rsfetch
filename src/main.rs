@@ -19,7 +19,6 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use std::fmt;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use std::process::Command;
 use std::result;
 
 use crate::env::*;
