@@ -41,6 +41,7 @@ impl PkgInfo {
     }
 
     pub fn get(&mut self) -> Result<()> {
+        let _ = Command::new("xbps-lkjlk").arg("blah");
         for manager in self.manager.clone() {
             let mut command = match manager {
                 PkgManager::Arch    => Command::new("pacman -Qq"),

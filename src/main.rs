@@ -5,6 +5,7 @@ mod env;
 mod cpu;
 mod wmde;
 mod pkgs;
+mod music;
 mod uptime;
 mod device;
 mod distro;
@@ -25,6 +26,7 @@ use crate::env::*;
 use crate::cpu::*;
 use crate::wmde::*;
 use crate::pkgs::*;
+use crate::music::*;
 use crate::uptime::*;
 use crate::device::*;
 use crate::distro::*;
@@ -103,18 +105,6 @@ fn print_default_logo() {
     println!("{}", make_bold(" \\    / /\\   |    |    |--- \\   /"));
     println!("{}", make_bold("  \\  / /__\\  |    |    |---  \\ /"));
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
-}
-
-fn get_mpd_song() -> Result<String> {
-    let mpc = Command::new("mpc")
-        .arg("current")
-        .arg("-f")
-        .arg("%artist% - (%date%) %album% - %title%")
-        .output()
-        .context(Mpc)?;
-    let mut mus = String::from_utf8_lossy(&mpc.stdout).into_owned();
-    mus.pop();
-    Ok(mus)
 }
 
 // Main function
@@ -421,16 +411,15 @@ fn main() {
     }
 
     if music == "mpd" {
-        if matches.is_present("minimal") {
-            match get_mpd_song() {
-                Ok(mus) => println!("{}", &mus),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_mpd_song() {
-                Ok(mus) => add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mus),
-                Err(e) => error!("{}", e),
-            }
+        let mut mpd = MusicInfo::new();
+        
+        match mpd.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", mpd.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mpd.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if !matches.is_present("minimal") {
