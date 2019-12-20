@@ -251,24 +251,25 @@ fn main() {
             .build();
         table.set_format(format);
     } else if borders {
-        if corners == "■" {
+        if corners != "" {
+            let corner = corners.chars().collect::<Vec<char>>()[0];
+            format = format::FormatBuilder::new()
+                .column_separator(' ')
+                .borders('│')
+                .separators(
+                    &[format::LinePosition::Top, format::LinePosition::Bottom],
+                    format::LineSeparator::new('─', '─', corner, corner),
+                )
+                .padding(1, 1)
+                .build();
+            table.set_format(format);
+        } else { //if corners == "■" {
             format = format::FormatBuilder::new()
                 .column_separator(' ')
                 .borders('│')
                 .separators(
                     &[format::LinePosition::Top, format::LinePosition::Bottom],
                     format::LineSeparator::new('─', '─', '■', '■'),
-                )
-                .padding(1, 1)
-                .build();
-            table.set_format(format);
-        } else if corners == "0" {
-            format = format::FormatBuilder::new()
-                .column_separator(' ')
-                .borders('│')
-                .separators(
-                    &[format::LinePosition::Top, format::LinePosition::Bottom],
-                    format::LineSeparator::new('─', '─', '0', '0'),
                 )
                 .padding(1, 1)
                 .build();
