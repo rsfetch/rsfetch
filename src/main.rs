@@ -217,7 +217,8 @@ fn main() {
         println!();
         println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
         println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
-        println!("Contributor:      Laurentiu Nicola                           (Github: lnicola)\n");
+        println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
+            std::char::from_u32(539 as u32).unwrap());
         println!("With thanks to:   \"/r/rust\" and the tool \"neofetch\" for giving the inspiration to create this.");
         println!();
         return;
