@@ -41,33 +41,44 @@ impl PkgInfo {
     }
 
     pub fn get(&mut self) -> Result<()> {
-        let _ = Command::new("xbps-lkjlk").arg("blah");
         for manager in self.manager.clone() {
-            let mut command = match manager {
-                PkgManager::Arch    => Command::new("pacman -Qq"),
-                PkgManager::Debian  => Command::new("apt list"),
-                PkgManager::Void    => Command::new("xbps-query -l"),
-                PkgManager::Fedora  => Command::new("dnf list --installed"),
-                PkgManager::BSD     => Command::new("pkg info"),
-                PkgManager::Suse    => Command::new("rpm -qa"),
-                PkgManager::Solus   => Command::new("eopkg list-installed"),
-                PkgManager::Alpine  => Command::new("apk info"),
-                PkgManager::Gentoo  => Command::new("qlist -I"),
-                PkgManager::Pip     => Command::new("pip list"),
-                PkgManager::Cargo   => Command::new("cargo list"),
-                PkgManager::Unknown => Command::new("echo -n ''"), // dummy
-                //_                   => Command::new("echo -n ''"),
+            let output = match manager {
+                PkgManager::Arch    => Command::new("pacman").arg("-Qq")
+                    .output().context(Pkgcount)?,
+                PkgManager::Debian  => Command::new("apt").arg("list")
+                    .output().context(Pkgcount)?,
+                PkgManager::Void    => Command::new("xbps-query").arg("-l")
+                    .output().context(Pkgcount)?,
+                PkgManager::Fedora  => Command::new("dnf").arg("list --installed")
+                    .output().context(Pkgcount)?,
+                PkgManager::BSD     => Command::new("pkg").arg("info")
+                    .output().context(Pkgcount)?,
+                PkgManager::Suse    => Command::new("rpm").arg("-qa")
+                    .output().context(Pkgcount)?,
+                PkgManager::Solus   => Command::new("eopkg").arg("list-installed")
+                    .output().context(Pkgcount)?,
+                PkgManager::Alpine  => Command::new("apk").arg("info")
+                    .output().context(Pkgcount)?,
+                PkgManager::Gentoo  => Command::new("qlist").arg("-I")
+                    .output().context(Pkgcount)?,
+                PkgManager::Pip     => Command::new("pip").arg("list")
+                    .output().context(Pkgcount)?,
+                PkgManager::Cargo   => Command::new("cargo").arg("list")
+                    .output().context(Pkgcount)?,
+                PkgManager::Unknown => Command::new("echo").arg("-n ''") // dummy
+                    .output().context(Pkgcount)?,
+                //_                 => Command::new("echo -n ''"),
             };
 
-            let stdout = command.output().context(Pkgcount)?.stdout;
+            // count lines in stdout
             let mut count: usize = 0;
-    
-            let mut dest = "".to_owned();
-            for byte in stdout {
-                dest = format!("{}{}", dest, byte as char);
-            }
+            let _ = output.stdout.iter()
+                .map(|b| {
+                    if (*b as usize) == 10 {
+                        count += 1;
+                    }
+                }).collect::<()>();
 
-            let _ = dest.split("\n").map(|_| count += 1).collect::<()>();
             self.count += count;
         }
 
