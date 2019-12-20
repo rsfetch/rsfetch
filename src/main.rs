@@ -131,14 +131,14 @@ fn main() {
                         .help("Turn all caps off."))
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
-                         .help("Turn CPU information (model, frequency, and processor count) on."))
-                    .arg(Arg::with_name("no-user")
+                         .help("Turn CPU information on."))
+                    .arg(Arg::with_name("user")
                         .short("U")
-                        .long("no-user")
+                        .long("user")
                         .help("Turn user name off."))
-                    .arg(Arg::with_name("no-host")
+                    .arg(Arg::with_name("host")
                         .short("h")
-                        .long("no-host")
+                        .long("host")
                         .help("Turn device name off."))
                     .arg(Arg::with_name("ip_address")
                         .short("i")
@@ -148,25 +148,25 @@ fn main() {
                         .short("e")
                         .long("editor")
                         .help("Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)"))
-                    .arg(Arg::with_name("no-shell")
+                    .arg(Arg::with_name("shell")
                         .short("s")
-                        .long("no-shell")
+                        .long("shell")
                         .help("Turn default shell name off."))
-                    .arg(Arg::with_name("no-wm-de")
+                    .arg(Arg::with_name("wm")
                         .short("w")
-                        .long("no-wm-de")
+                        .long("wm")
                         .help("Turn WM or DE name off."))
-                    .arg(Arg::with_name("no-distro")
+                    .arg(Arg::with_name("distro")
                         .short("d")
-                        .long("no-distro")
+                        .long("distro")
                         .help("Turn distro name off."))
-                    .arg(Arg::with_name("no-kernel")
+                    .arg(Arg::with_name("kernel")
                         .short("k")
-                        .long("no-kernel")
+                        .long("kernel")
                         .help("Turn kernel version off."))
-                    .arg(Arg::with_name("no-uptime")
+                    .arg(Arg::with_name("uptime")
                         .short("u")
-                        .long("no-uptime")
+                        .long("uptime")
                         .help("Turn uptime info off."))
                     .arg(Arg::with_name("minimal")
                         .short("M")
@@ -184,9 +184,9 @@ fn main() {
                         .value_name("SOURCE")
                         .help("Choose where to get music info. The only supported options is \"mpd\".\n")
                         .takes_value(true))
-                    .arg(Arg::with_name("no-logo")
+                    .arg(Arg::with_name("logo")
                         .short("l")
-                        .long("no-logo")
+                        .long("logo")
                         .help("Turn the logo or ascii art off."))
                     .arg(Arg::with_name("logofile")
                         .short("L")
@@ -219,7 +219,7 @@ fn main() {
 
     // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
-    let music = matches.value_of("music").unwrap_or("no");
+    let music = matches.value_of("music").unwrap_or("");
     let logofile = matches.value_of("logofile").unwrap_or("");
     let packages = matches.value_of("packages");
     let format;
@@ -271,20 +271,18 @@ fn main() {
     println!(); // Print blank line before output.
     
     // Determine the logo to use.
-    if !matches.is_present("minimal") {
-        if !matches.is_present("no-logo") {
-            if !logofile.is_empty() {
-                if let Err(e) = print_logo(logofile) {
-                    error!("{}", e);
-                }
-            } else {
-                print_default_logo()
+    if matches.is_present("logo") {
+        if !logofile.is_empty() {
+            if let Err(e) = print_logo(logofile) {
+                error!("{}", e);
             }
-            println!(); // print a newline
+        } else {
+            print_default_logo()
         }
+        println!(); // print a newline
     }
 
-    if !matches.is_present("no-user") {
+    if matches.is_present("user") {
         match env.get(EnvItem::User) {
             Ok(()) => if matches.is_present("minimal") {
                 println!("{}", env.format(EnvItem::User));
@@ -294,7 +292,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-host") {
+    if matches.is_present("host") {
         let mut device = DeviceInfo::new();
         match device.get() {
             Ok(()) => if matches.is_present("minimal") {
@@ -305,7 +303,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-uptime") {
+    if matches.is_present("uptime") {
         let mut uptime = UptimeInfo::new();
         match uptime.get() {
             Ok(()) => if matches.is_present("minimal") {
@@ -316,7 +314,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-distro") {
+    if matches.is_present("distro") {
         let mut distro = DistroInfo::new();
         match distro.get() {
             Ok(()) => if matches.is_present("minimal") {
@@ -327,7 +325,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-kernel") {
+    if matches.is_present("kernel") {
         let mut kernel = KernelInfo::new();
         match kernel.get() {
             Ok(()) => if matches.is_present("minimal") {
@@ -338,7 +336,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-wm-de") {
+    if matches.is_present("wm") {
         let mut wmde = WMDEInfo::new();
         match wmde.get() {
             Ok(()) => if matches.is_present("minimal") {
@@ -359,7 +357,7 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-shell") {
+    if matches.is_present("shell") {
         match env.get(EnvItem::Shell) {
             Ok(()) => if matches.is_present("minimal") {
                 println!("{}", env.format(EnvItem::Shell));
