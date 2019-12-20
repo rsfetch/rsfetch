@@ -127,7 +127,7 @@ fn main() {
                     .about("\nAn fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
-                        .help("Links to past and current contributors for this project."))
+                        .help("List of past and current contributors for this project."))
                     .arg(Arg::with_name("no-bold")
                         .short("b")
                         .long("no-bold")
