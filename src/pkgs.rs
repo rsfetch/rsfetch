@@ -55,7 +55,7 @@ impl PkgInfo {
                 PkgManager::Pip     => Command::new("pip list"),
                 PkgManager::Cargo   => Command::new("cargo list"),
                 PkgManager::Unknown => Command::new("echo -n ''"), // dummy
-                _                   => Command::new("echo -n ''"),
+                //_                   => Command::new("echo -n ''"),
             };
 
             let stdout = command.output().context(Pkgcount)?.stdout;
