@@ -267,7 +267,13 @@ fn main() {
     }
 
     // output
-    // TODO: refactor
+    
+    // if there aren't any options, then no information fields
+    // will be enabled, which means we may as well exit now
+    if std::env::args().collect::<Vec<String>>().len() < 1 {
+        std::process::exit(0); // get the hell outta here!
+    }
+
     println!(); // Print blank line before output.
     
     // Determine the logo to use.
