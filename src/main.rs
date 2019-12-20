@@ -3,6 +3,8 @@
 
 mod env;
 mod cpu;
+mod wmde;
+mod pkgs;
 mod uptime;
 mod device;
 mod distro;
@@ -21,6 +23,8 @@ use std::result;
 
 use crate::env::*;
 use crate::cpu::*;
+use crate::wmde::*;
+use crate::pkgs::*;
 use crate::uptime::*;
 use crate::device::*;
 use crate::distro::*;
@@ -28,7 +32,7 @@ use crate::kernel::*;
 use crate::network::*;
 
 #[derive(Debug, Snafu)]
-enum Error {
+pub enum Error {
     #[snafu(display("Could not retrieve device name: {}", source))]
     DeviceName { source: io::Error },
     #[snafu(display("Could not read the OS release: {}", source))]
@@ -103,138 +107,6 @@ fn print_default_logo() {
     println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
 }
 
-fn count_lines(data: Vec<u8>) -> usize {
-    let mut count: usize = 0;
-
-    // convert srcs from Vec<u8> to String
-    let mut src = "".to_owned();
-    for byte in data {
-        src = format!("{}{}", src, byte as char);
-    }
-
-    let _ = src.split("\n").map(|_| count += 1).collect::<()>();
-    count
-}
-
-fn get_window_manager() -> Result<String> {
-    if let Some(de) = std::env::var_os("XDG_DESKTOP_SESSION")
-        .or_else(|| std::env::var_os("XDG_CURRENT_DESKTOP"))
-        .or_else(|| std::env::var_os("DESKTOP_SESSION"))
-        .map(|s| s.to_string_lossy().into_owned())
-    {
-        return Ok(de);
-    }
-
-    let mut path = dirs::home_dir().context(HomeDir)?;
-    path.push(".xinitrc");
-    let file = File::open(path).context(OpenXInitRc)?;
-    let reader = BufReader::new(file);
-    let last_line = reader
-        .lines()
-        .last()
-        .context(EmptyXInitRc)?
-        .context(ReadXInitRc)?;
-    let space = last_line.find(' ').context(GuessWm)?;
-    let wm = last_line[space + 1..].to_string();
-    Ok(wm)
-}
-
-fn get_package_count_arch_based() -> Result<String> {
-    let pacman = Command::new("pacman")
-        .arg("-Qq")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(pacman.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_debian_based() -> Result<String> {
-    let apt = Command::new("apt").arg("list").output().context(Pkgcount)?;
-    let pkgs = count_lines(apt.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_void() -> Result<String> {
-    let xbps = Command::new("xbps-query")
-        .arg("-l")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(xbps.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_fedora() -> Result<String> {
-    let dnf = Command::new("dnf")
-        .arg("list")
-        .arg("--installed")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(dnf.stdout);
-    let pkgs = pkgs - 1;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_bsd() -> Result<String> {
-    let bpkg = Command::new("pkg").arg("info").output().context(Pkgcount)?;
-    let pkgs = count_lines(bpkg.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_solus() -> Result<String> {
-    let eopkg = Command::new("eopkg")
-        .arg("list-installed")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(eopkg.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_suse() -> Result<String> {
-    let rpm = Command::new("rpm").arg("-qa").output().context(Pkgcount)?;
-    let pkgs = count_lines(rpm.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_alpine() -> Result<String> {
-    let apk = Command::new("apk").arg("info").output().context(Pkgcount)?;
-    let pkgs = count_lines(apk.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_gentoo() -> Result<String> {
-    let qlist = Command::new("qlist").arg("-I").output().context(Pkgcount)?;
-    let pkgs = count_lines(qlist.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_pip() -> Result<String> {
-    let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
-    let pkgs = count_lines(pip.stdout);
-    let pkgs = pkgs - 2;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_cargo() -> Result<String> {
-    let cargo = Command::new("cargo")
-        .arg("list")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(cargo.stdout);
-    let pkgs = pkgs - 1;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
 fn get_mpd_song() -> Result<String> {
     let mpc = Command::new("mpc")
         .arg("current")
@@ -245,23 +117,6 @@ fn get_mpd_song() -> Result<String> {
     let mut mus = String::from_utf8_lossy(&mpc.stdout).into_owned();
     mus.pop();
     Ok(mus)
-}
-
-fn get_packages(packages: &str) -> Result<String> {
-    match packages {
-        "pacman" => get_package_count_arch_based(),
-        "apt" => get_package_count_debian_based(),
-        "xbps" => get_package_count_void(),
-        "dnf" => get_package_count_fedora(),
-        "pkg" => get_package_count_bsd(),
-        "eopkg" => get_package_count_solus(),
-        "rpm" => get_package_count_suse(),
-        "apk" => get_package_count_alpine(),
-        "portage" => get_package_count_gentoo(),
-        "pip" => get_package_count_pip(),
-        "cargo" => get_package_count_cargo(),
-        _ => unreachable!(),
-    }
 }
 
 // Main function
@@ -506,16 +361,14 @@ fn main() {
         }
     }
     if !matches.is_present("no-wm-de") {
-        if matches.is_present("minimal") {
-            match get_window_manager() {
-                Ok(wm) => println!("{}", &wm),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_window_manager() {
-                Ok(wm) => add_row(&mut table, bold, caps, borders, "WM/DE", &wm),
-                Err(e) => error!("{}", e),
-            }
+        let mut wmde = WMDEInfo::new();
+        match wmde.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", wmde.format());
+            } else {
+                add_row(&mut table, bold, caps, borders, "WM/DE", &wmde.format());
+            },
+            Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("editor") {
@@ -563,24 +416,21 @@ fn main() {
     }
 
     if let Some(packages) = packages {
-        match get_packages(packages) {
-            Ok(pkg) => {
-                if matches.is_present("minimal") {
-                    println!("{}", &pkg);
-                } else {
-                    add_row(
-                        &mut table,
-                        bold,
-                        caps,
-                        borders,
-                        &format!("PACKAGES ({})", packages.to_ascii_uppercase()),
-                        &pkg,
-                    );
-                }
-            }
+        let pkgs = PkgInfo::new();
+        pkgs.set_manager(packages);
+        
+        match pkgs.get() {
+            Ok(()) => if matches.is_present("minimal") {
+                println!("{}", pkgs.format());
+            } else {
+                add_row(&mut table, bold, caps, borders,
+                        &format("PACKAGES ({})", packages.to_ascii_uppercase()),
+                        &pkgs.format());
+            },
             Err(e) => error!("{}", e),
         }
     }
+
     if music == "mpd" {
         if matches.is_present("minimal") {
             match get_mpd_song() {
