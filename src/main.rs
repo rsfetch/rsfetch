@@ -405,7 +405,7 @@ fn main() {
     }
 
     if let Some(packages) = packages {
-        let pkgs = PkgInfo::new();
+        let mut pkgs = PkgInfo::new();
         pkgs.set_manager(packages);
         
         match pkgs.get() {
@@ -413,7 +413,7 @@ fn main() {
                 println!("{}", pkgs.format());
             } else {
                 add_row(&mut table, bold, caps, borders,
-                        &format("PACKAGES ({})", packages.to_ascii_uppercase()),
+                        &format!("PACKAGES ({})", packages.to_ascii_uppercase()),
                         &pkgs.format());
             },
             Err(e) => error!("{}", e),

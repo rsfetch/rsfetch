@@ -1,8 +1,8 @@
-use crate::util::*;
-use crate::Error;
+use crate::*;
 use std::vec::Vec;
-use std::result::Result;
+use std::process::Command;
 
+#[derive(Clone, Debug)]
 pub enum PkgManager {
     Arch,
     Debian,
@@ -13,16 +13,16 @@ pub enum PkgManager {
     Suse,
     Alpine,
     Gentoo,
-
-    //CRUX,
-    //KISS,
-    //Slackware,
-    //NixOS,
-    //Bedrock,
-
     Pip,
     Cargo,
     Unknown,
+
+    // TODO
+    CRUX,
+    KISS,
+    Slackware,
+    NixOS,
+    Bedrock,
 }
 
 pub struct PkgInfo {
@@ -38,37 +38,34 @@ impl PkgInfo {
         }
     }
 
-    fn count_lines(data: Vec<u8>) -> usize {
-        let mut count: usize = 0;
-
-        // convert srcs from Vec<u8> to String
-        let mut src = "".to_owned();
-        for byte in data {
-            src = format!("{}{}", src, byte as char);
-        }
-
-        let _ = src.split("\n").map(|_| count += 1).collect::<()>();
-        count
-    }
-
-    pub fn get(&mut self) -> Result<(), Error> {
-        for manager in self.manager {
-            let command = match manager {
-                Arch    => Command::new("pacman").arg("-Qq"),
-                Debian  => Command::new("apt").arg("list"),
-                Void    => Command::new("xbps-query").arg("-l"),
-                Fedora  => Command::new("dnf").arg("list --installed"),
-                BSD     => Command::new("pkg").arg("info"),
-                Solus   => Command::new("eopkg").arg("list-installed"),
-                Alpine  => Command::new("apk").arg("info"),
-                Gentoo  => Command::new("qlist").arg("-I"),
-                Pip     => Command::new("pip").arg("list"),
-                Cargo   => Command::new("cargo").arg("list"),
-                Unknown => Command::new("echo").arg("-n"), // dummy
+    pub fn get(&mut self) -> Result<()> {
+        for manager in self.manager.clone() {
+            let mut command = match manager {
+                PkgManager::Arch    => Command::new("pacman -Qq"),
+                PkgManager::Debian  => Command::new("apt list"),
+                PkgManager::Void    => Command::new("xbps-query -l"),
+                PkgManager::Fedora  => Command::new("dnf list --installed"),
+                PkgManager::BSD     => Command::new("pkg info"),
+                PkgManager::Suse    => Command::new("rpm -qa"),
+                PkgManager::Solus   => Command::new("eopkg list-installed"),
+                PkgManager::Alpine  => Command::new("apk info"),
+                PkgManager::Gentoo  => Command::new("qlist -I"),
+                PkgManager::Pip     => Command::new("pip list"),
+                PkgManager::Cargo   => Command::new("cargo list"),
+                PkgManager::Unknown => Command::new("echo -n ''"), // dummy
+                _                   => Command::new("echo -n ''"),
             };
 
-            let stdout = command.output().context(Pkgcount)?;
-            self.count += count_lines(stdout);
+            let stdout = command.output().context(Pkgcount)?.stdout;
+            let mut count: usize = 0;
+    
+            let mut dest = "".to_owned();
+            for byte in stdout {
+                dest = format!("{}{}", dest, byte as char);
+            }
+
+            let _ = dest.split("\n").map(|_| count += 1).collect::<()>();
+            self.count += count;
         }
 
         Ok(())
@@ -76,19 +73,19 @@ impl PkgInfo {
 
     pub fn set_manager(&mut self, manager: &str) {
         let mngr: PkgManager = match manager {
-            "pacman"  => Arch,
-            "apt"     => Debian,
-            "xbps"    => Void,
-            "dnf"     => Fedora,
-            "pkg"     => BSD,
-            "eopkg"   => Solus,
-            "rpm"     => Suse,
-            "apk"     => Alpine,
-            "portage" => Gentoo,
-            "pip"     => Pip,
-            "cargo"   => Cargo,
-            _ => Unknown,
-        }
+            "pacman"  => PkgManager::Arch,
+            "apt"     => PkgManager::Debian,
+            "xbps"    => PkgManager::Void,
+            "dnf"     => PkgManager::Fedora,
+            "pkg"     => PkgManager::BSD,
+            "eopkg"   => PkgManager::Solus,
+            "rpm"     => PkgManager::Suse,
+            "apk"     => PkgManager::Alpine,
+            "portage" => PkgManager::Gentoo,
+            "pip"     => PkgManager::Pip,
+            "cargo"   => PkgManager::Cargo,
+            _         => PkgManager::Unknown,
+        };
 
         self.manager.push(mngr);
     }
@@ -96,9 +93,9 @@ impl PkgInfo {
     // format it
     pub fn format(&self) -> String {
         if self.count > 0 {
-            format!("{}", self.count);
+            return format!("{}", self.count);
         } else {
-            "nah!".to_owned()
+            return "nah!".to_owned();
         }
     }
 }
