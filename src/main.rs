@@ -219,7 +219,7 @@ fn main() {
         println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
         println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
             std::char::from_u32(539 as u32).unwrap());
-        println!("With thanks to:   \"/r/rust\" and the tool \"neofetch\" for giving the inspiration to create this.");
+        println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\", for their contributions, and the tool \"neofetch\" for giving the inspiration to create this.");
         println!();
         return;
     }

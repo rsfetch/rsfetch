@@ -75,18 +75,19 @@ impl PkgInfo {
 
     pub fn set_manager(&mut self, manager: &str) {
         let mngr: PkgManager = match manager {
-            "pacman"  => PkgManager::Arch,
-            "apt"     => PkgManager::Debian,
-            "xbps"    => PkgManager::Void,
-            "dnf"     => PkgManager::Fedora,
-            "pkg"     => PkgManager::BSD,
-            "eopkg"   => PkgManager::Solus,
-            "rpm"     => PkgManager::Suse,
-            "apk"     => PkgManager::Alpine,
-            "portage" => PkgManager::Gentoo,
-            "pip"     => PkgManager::Pip,
-            "cargo"   => PkgManager::Cargo,
-            _         => PkgManager::Unknown,
+            "pacman"     => PkgManager::Arch,
+            "apt"        => PkgManager::Debian,
+            "xbps"       => PkgManager::Void,
+            "xbps-query" => PkgManager::Void,
+            "dnf"        => PkgManager::Fedora,
+            "pkg"        => PkgManager::BSD,
+            "eopkg"      => PkgManager::Solus,
+            "rpm"        => PkgManager::Suse,
+            "apk"        => PkgManager::Alpine,
+            "portage"    => PkgManager::Gentoo,
+            "pip"        => PkgManager::Pip,
+            "cargo"      => PkgManager::Cargo,
+            _            => PkgManager::Unknown,
         };
 
         self.manager.push(mngr);
