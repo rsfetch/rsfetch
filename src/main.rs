@@ -33,35 +33,33 @@ use crate::network::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Could not retrieve device name: {}", source))]
+    #[snafu(display("Unable to retrieve device name: {}", source))]
     DeviceName { source: io::Error },
-    #[snafu(display("Could not read the OS release: {}", source))]
+    #[snafu(display("Unable to read the OS release: {}", source))]
     OsRelease { source: io::Error },
-    #[snafu(display("Could not read the kernel version: {}", source))]
+    #[snafu(display("Unable to read the kernel version: {}", source))]
     KernelVersion { source: io::Error },
-    #[snafu(display("Could not read the logo file: {}", source))]
+    #[snafu(display("Unable to read the logo file: {}", source))]
     ReadLogo { source: io::Error },
-    #[snafu(display("Could not format uptime: {}", source))]
+    #[snafu(display("Unable to format uptime: {}", source))]
     FormatUptime { source: fmt::Error },
-    #[snafu(display("Could not determine home directory"))]
+    #[snafu(display("Unable to determine home directory"))]
     HomeDir,
-    #[snafu(display("Could not open .xinitrc: {}", source))]
+    #[snafu(display("Unable to open .xinitrc: {}", source))]
     OpenXInitRc { source: io::Error },
     #[snafu(display("Empty .xinitrc"))]
     EmptyXInitRc,
-    #[snafu(display("Could not read .xinitrc: {}", source))]
+    #[snafu(display("Unable to read .xinitrc: {}", source))]
     ReadXInitRc { source: io::Error },
-    #[snafu(display("Could not guess window manager"))]
+    #[snafu(display("Unable to guess window manager"))]
     GuessWm,
-    #[snafu(display("Could not determine editor"))]
+    #[snafu(display("Unable to determine editor"))]
     Editor { source: std::env::VarError },
-    #[snafu(display("Could not retrieve IP address: {}", source))]
+    #[snafu(display("Unable to retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
-    #[snafu(display(
-        "Could not retrieve package count. Perhaps you input the wrong package manager?"
-    ))]
+    #[snafu(display("Unable to retrieve package count."))]
     Pkgcount { source: io::Error },
-    #[snafu(display("Could not run mpc"))]
+    #[snafu(display("Unable to run mpc."))]
     Mpc { source: io::Error },
 }
 
@@ -126,81 +124,66 @@ fn main() {
     let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.9.0")
-                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
+                    .about("\nAn fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
                         .value_name(" ")
-                        .help("Links to those who helped make this, and thanks to others who've helped me.")
-                        .takes_value(false))
+                        .help("Links to past and current contributors for this project."))
                     .arg(Arg::with_name("no-bold")
                         .short("b")
                         .long("no-bold")
-                        .help("Turn bold for field titles off.")
-                        .takes_value(false))
+                        .help("Turn bold for field titles off."))
                     .arg(Arg::with_name("no-borders")
                         .short("B")
                         .long("no-borders")
-                        .help("Turn borders off.")
-                        .takes_value(false))
+                        .help("Turn borders off."))
                     .arg(Arg::with_name("no-caps")
                         .short("c")
                         .long("no-caps")
-                        .help("Turn all caps off.")
-                        .takes_value(false))
+                        .help("Turn all caps off."))
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
-                         .help("Turn CPU information (model, frequency, and processor count) on.")
-                         .takes_value(false))
+                         .help("Turn CPU information (model, frequency, and processor count) on."))
                     .arg(Arg::with_name("no-user")
                         .short("U")
                         .long("no-user")
-                        .help("Turn user name off.")
-                        .takes_value(false))
+                        .help("Turn user name off."))
                     .arg(Arg::with_name("no-host")
                         .short("h")
                         .long("no-host")
-                        .help("Turn device name off.")
-                        .takes_value(false))
+                        .help("Turn device name off."))
                     .arg(Arg::with_name("ip_address")
                         .short("i")
                         .long("ip_address")
-                        .help("Turn ip address display on.")
-                        .takes_value(false))
+                        .help("Turn ip address display on."))
                     .arg(Arg::with_name("editor")
                         .short("e")
                         .long("editor")
-                        .help("Turn default editor name on. (Must have $EDITOR variable set.).")
-                        .takes_value(false))
+                        .help("Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)"))
                     .arg(Arg::with_name("no-shell")
                         .short("s")
                         .long("no-shell")
-                        .help("Turn default shell name off.")
-                        .takes_value(false))
+                        .help("Turn default shell name off."))
                     .arg(Arg::with_name("no-wm-de")
                         .short("w")
                         .long("no-wm-de")
-                        .help("Turn window manager or desktop environment name off.")
-                        .takes_value(false))
+                        .help("Turn WM or DE name off."))
                     .arg(Arg::with_name("no-distro")
                         .short("d")
                         .long("no-distro")
-                        .help("Turn distro name off.")
-                        .takes_value(false))
+                        .help("Turn distro name off."))
                     .arg(Arg::with_name("no-kernel")
                         .short("k")
                         .long("no-kernel")
-                        .help("Turn kernel version off.")
-                        .takes_value(false))
+                        .help("Turn kernel version off."))
                     .arg(Arg::with_name("no-uptime")
                         .short("u")
                         .long("no-uptime")
-                        .help("Turn uptime info off.")
-                        .takes_value(false))
+                        .help("Turn uptime info off."))
                     .arg(Arg::with_name("minimal")
                         .short("M")
                         .long("minimal")
-                        .help("Turn minimal mode on.")
-                        .takes_value(false))
+                        .help("Turn minimal mode on."))
                     .arg(Arg::with_name("packages")
                         .short("p")
                         .long("packages")
@@ -211,13 +194,12 @@ fn main() {
                         .short("m")
                         .long("music")
                         .value_name("SOURCE")
-                        .help("Choose where to get music info. Supported options are \"mpd\" (mpc) and no (none).\n")
+                        .help("Choose where to get music info. The only supported options is \"mpd\".\n")
                         .takes_value(true))
                     .arg(Arg::with_name("no-logo")
                         .short("l")
                         .long("no-logo")
-                        .help("Turn the logo or ascii art off.")
-                        .takes_value(false))
+                        .help("Turn the logo or ascii art off."))
                     .arg(Arg::with_name("logofile")
                         .short("L")
                         .long("logofile")
@@ -228,21 +210,24 @@ fn main() {
                         .short("C")
                         .long("corners")
                         .value_name("CHARACTER")
-                        .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when borders are enabled.")
+                        .help("Specify the corner character. Only used when borders are enabled.")
                         .takes_value(true))
                     .get_matches();
+
     if matches.is_present("credits") {
         println!();
-        println!("Main Developer:   valley  (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      kiedtl  (Reddit: /u/kiedtl)     (Github: kiedtl)");
-        println!("Contributor:      lnicola                         (Github: lnicola)\n");
-        println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
+        println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
+        println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
+        println!("Contributor:      Laurentiu Nicola                           (Github: lnicola)\n");
+        println!("With thanks to:   \"/r/rust\" and the tool \"neofetch\" for giving the inspiration to create this.");
         println!();
         return;
     }
+    
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
+
     // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
     let music = matches.value_of("music").unwrap_or("no");
