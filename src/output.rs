@@ -39,11 +39,11 @@ impl OutputOptions {
         self.bold = v;
     }
 
-    pub fn use_borders(&mut self, v: bool) {
+    pub fn borders(&mut self, v: bool) {
         self.use_borders = v;
     }
 
-    pub fn borders(&mut self, c: usize) {
+    pub fn corners(&mut self, c: usize) {
         self.borders = std::char::from_u32(c as u32).unwrap();
     }
 }
@@ -95,18 +95,19 @@ impl OutputHelper {
         }
     }
 
-    pub fn add(&mut self, key: String, val: String) {
+    pub fn add(&mut self, key: &str, val: &str) {
         let item = Keyval {
-            key: key,
-            val: val,
+            key: key.to_owned(),
+            val: val.to_owned(),
         }
 
         self.data.push(item);
     }
 
     pub fn ascii(&mut self, ascii: String) {
-        self.ascii = ascii
+        self.ascii = ascii;
     }
+
     pub fn output(&mut self) {
         // minimal output style
         if self.options.output_style == OutputType::Minimal {

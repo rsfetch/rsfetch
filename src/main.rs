@@ -195,165 +195,115 @@ fn main() {
     let music = matches.value_of("music").unwrap_or("");
     let logofile = matches.value_of("logofile").unwrap_or("");
     let packages = matches.value_of("packages");
-    let format;
-   
+
+    let mut opts;
+    if matches.is_present("minimal") {
+        opts = OutputOptions::new(OutputType::Minimal);
+    } else {
+        opts = OutputOptions::new(OutputType::Rsfetch);
+    }
+
+    char corners;
+    if matches.is_present("minimal") || !borders {
+        corners = ' ';
+    } else if borders {
+        corners = corners.chars().collect::<Vec<char>>()[0];
+    } else {
+        corners = '■';
+    }
+
+    opts.caps(caps).bold(bold).borders(borders).corners(corners);
+
+    //let format;
     // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
     let mut env = EnvInfo::new();
     
-    // Determine if borders are used, and if they are, the style of the corners.
-    if matches.is_present("minimal") || ! borders {
-        format = format::FormatBuilder::new()
-            .column_separator(' ')
-            .borders(' ')
-            .separators(
-                &[format::LinePosition::Top, format::LinePosition::Bottom],
-                format::LineSeparator::new(' ', ' ', ' ', ' '),
-            )
-            .padding(0, 0)
-            .build();
-        table.set_format(format);
-    } else if borders {
-        if corners != "" {
-            let corner = corners.chars().collect::<Vec<char>>()[0];
-            format = format::FormatBuilder::new()
-                .column_separator(' ')
-                .borders('│')
-                .separators(
-                    &[format::LinePosition::Top, format::LinePosition::Bottom],
-                    format::LineSeparator::new('─', '─', corner, corner),
-                )
-                .padding(1, 1)
-                .build();
-            table.set_format(format);
-        } else { //if corners == "■" {
-            format = format::FormatBuilder::new()
-                .column_separator(' ')
-                .borders('│')
-                .separators(
-                    &[format::LinePosition::Top, format::LinePosition::Bottom],
-                    format::LineSeparator::new('─', '─', '■', '■'),
-                )
-                .padding(1, 1)
-                .build();
-            table.set_format(format);
-        }
-    }
-
-    // output
-    
+    // --- OUTPUT ---
     // if there aren't any options, then no information fields
     // will be enabled, which means we may as well exit now
-    if std::env::args().collect::<Vec<String>>().len() < 1 {
+    if std::env::args().collect::<Vec<String>>().len() < 2 {
         std::process::exit(0); // get the hell outta here!
     }
 
-    println!(); // Print blank line before output.
+    print!("\n"); // print blank line before output.
+    let writer = OutputHelper::new(opts);
     
     // Determine the logo to use.
     if matches.is_present("logo") {
+        let logo: String;
         if !logofile.is_empty() {
-            if let Err(e) = print_logo(logofile) {
-                error!("{}", e);
+            let res_logo = std::fs::read_to_string(logofile);
+            match res_logo {
+                Ok(l)  => logo = l;
+                Err(e) => error!("{}", e);
             }
         } else {
-            print_default_logo()
+            logo = get_default_logo();
         }
-        println!(); // print a newline
+        writer.ascii(logo);
     }
 
     if matches.is_present("user") {
         match env.get(EnvItem::User) {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", env.format(EnvItem::User));
-            } else {
-                add_row(&mut table, bold, caps, borders, "USER", &env.format(EnvItem::User));
-            },
+            Ok(()) => writer.add("USER", &env.format(EnvItem::User)),
             Err(e) => error!("{}", e),
         }
     }
+    
     if matches.is_present("host") {
         let mut device = DeviceInfo::new();
         match device.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", device.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "HOST", &device.format());
-            },
+            Ok(()) => writer.add("HOST", &device.format()),
             Err(e) => error!("{}", e),
         }
     }
+    
     if matches.is_present("uptime") {
         let mut uptime = UptimeInfo::new();
         match uptime.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", uptime.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "UPTIME", &uptime.format());
-            },
+            Ok(()) => writer.add("UPTIME", &uptime.format()),
             Err(e) => error!("{}", e),
         }
     }
+    
     if matches.is_present("distro") {
         let mut distro = DistroInfo::new();
         match distro.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", distro.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "DISTRO", &distro.format());
-            },
+            Ok(()) => writer.add("DISTRO", &distro.format()),
             Err(e) => error!("{}", e),
         }
     }
+
     if matches.is_present("kernel") {
         let mut kernel = KernelInfo::new();
         match kernel.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", kernel.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "KERNEL", &kernel.format());
-            },
+            Ok(()) => writer.add("KERNEL", &kernel.format()),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("wm") {
         let mut wmde = WMDEInfo::new();
         match wmde.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", wmde.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "WM/DE", &wmde.format());
-            },
+            Ok(()) => writer.add("WM/DE", &wmde.format()),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("editor") {
         match env.get(EnvItem::Editor) {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", env.format(EnvItem::Editor));
-            } else {
-                add_row(&mut table, bold, caps, borders, "EDITOR", &env.format(EnvItem::Editor));
-            },
+            Ok(()) => writer.add("EDITOR", &env.format(EnvItem::Editor)),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("shell") {
         match env.get(EnvItem::Shell) {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", env.format(EnvItem::Shell));
-            } else {
-                add_row(&mut table, bold, caps, borders, "SHELL", &env.format(EnvItem::Shell));
-            },
+            Ok(()) => writer.add("SHELL", &env.format(EnvItem::Shell)),
             Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new();
         match cpu.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", cpu.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "CPU", &cpu.format());
-            },
+            Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
         }
     }
@@ -361,11 +311,7 @@ fn main() {
     if matches.is_present("ip_address") {
         let mut ip = NetworkInfo::new();
         match ip.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", ip.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip.format());
-            },
+            Ok(()) => writer.add("IP ADDRESS", &ip.format()),
             Err(e) => error!("{}", e),
         }
     }
@@ -375,13 +321,8 @@ fn main() {
         pkgs.set_manager(packages);
         
         match pkgs.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", pkgs.format());
-            } else {
-                add_row(&mut table, bold, caps, borders,
-                        &format!("PACKAGES ({})", packages.to_ascii_uppercase()),
-                        &pkgs.format());
-            },
+            Ok(()) => writer.add(
+                &format!("PACKAGES ({})", packages.to_ascii_uppercase()), &pkgs.format()),
             Err(e) => error!("{}", e),
         }
     }
@@ -390,17 +331,12 @@ fn main() {
         let mut mpd = MusicInfo::new();
         
         match mpd.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{}", mpd.format());
-            } else {
-                add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mpd.format());
-            },
+            Ok(()) => writer.add("MUSIC (MPD)", &mpd.format()),
             Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("minimal") {
-        table.printstd();
-    }
+
+    writer.output();
 
     print!("\n"); // blank line
 }
