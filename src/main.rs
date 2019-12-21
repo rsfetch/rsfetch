@@ -1,58 +1,55 @@
 // TODO: replace reqwest with a lighter crate :(
 // -- kiedtl
 
-mod env;
-mod cpu;
-mod wmde;
-mod pkgs;
-mod music;
-mod uptime;
-mod device;
-mod distro;
-mod kernel;
-mod network;
-mod output;
-
 use clap::{App, Arg};
 use log::error;
 use snafu::{OptionExt, ResultExt, Snafu};
-use std::fmt;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
 use std::result;
 
+mod env;
 use crate::env::*;
+mod cpu;
 use crate::cpu::*;
+mod wmde;
 use crate::wmde::*;
+mod pkgs;
 use crate::pkgs::*;
+mod music;
 use crate::music::*;
+mod uptime;
 use crate::uptime::*;
+mod device;
 use crate::device::*;
+mod distro;
 use crate::distro::*;
+mod kernel;
 use crate::kernel::*;
+mod network;
 use crate::network::*;
+mod output;
 use crate::output::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Unable to retrieve device name: {}", source))]
-    DeviceName { source: io::Error },
+    DeviceName { source: std::io::Error },
     #[snafu(display("Unable to retrieve Linux distro: {}", source))]
-    OsRelease { source: io::Error },
+    OsRelease { source: std::io::Error },
     #[snafu(display("Unable to retrieve kernel version: {}", source))]
-    KernelVersion { source: io::Error },
+    KernelVersion { source: std::io::Error },
     #[snafu(display("Unable to read the provided logo file: {}", source))]
-    ReadLogo { source: io::Error },
+    ReadLogo { source: std::io::Error },
     #[snafu(display("Unable to retrieve uptime: {}", source))]
-    Uptime { source: io::Error },
+    Uptime { source: std::io::Error },
     #[snafu(display("Unable to determine home directory"))]
     HomeDir,
     #[snafu(display("Unable to open .xinitrc: {}", source))]
-    OpenXInitRc { source: io::Error },
+    OpenXInitRc { source: std::io::Error },
     #[snafu(display("Empty .xinitrc"))]
     EmptyXInitRc,
     #[snafu(display("Unable to read .xinitrc: {}", source))]
-    ReadXInitRc { source: io::Error },
+    ReadXInitRc { source: std::io::Error },
     #[snafu(display("Unable to guess window manager"))]
     GuessWm,
     #[snafu(display("Unable to retrieve USER, SHELL, or EDITOR/VISUAL."))]
@@ -60,11 +57,11 @@ pub enum Error {
     #[snafu(display("Unable to retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
     #[snafu(display("Unable to retrieve package count."))]
-    Pkgcount { source: io::Error },
+    Pkgcount { source: std::io::Error },
     #[snafu(display("Unable to retrive mpd information."))]
-    Mpc { source: io::Error },
+    Mpc { source: std::io::Error },
     #[snafu(display("Unable to retrieve CPU information: {}", source))]
-    CPUErr { source: io::Error },
+    CPUErr { source: std::io::Error },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
@@ -75,6 +72,12 @@ fn get_default_logo() -> String {
     logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
     logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
            format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"))
+}
+
+// get art from file.
+fn get_logo_from_file(path: String) -> Result<String> {
+    let logo = std::fs::read_to_string(&*path).context(ReadLogo)?;
+    Ok(logo)
 }
 
 // Main function
@@ -239,9 +242,7 @@ fn main() {
     if matches.is_present("logo") {
         let mut logo: String = "".to_owned();
         if !logofile.is_empty() {
-            let res_logo = std::fs::read_to_string(logofile)
-                .context(ReadLogo);
-            match res_logo {
+            match get_logo_from_file(logofile.to_owned()) {
                 Ok(l)  => logo = l,
                 Err(e) => error!("{:?}", e),
             }
