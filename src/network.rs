@@ -1,4 +1,4 @@
-use std::result::Result;
+use crate::*;
 
 pub struct NetworkInfo {
     ip_address: String,
@@ -16,8 +16,11 @@ impl NetworkInfo {
         NetworkInfo { ip_address: String::new(), }
     }
 
-    pub fn get(&mut self) -> Result<(), reqwest::Error> {
-        self.ip_address = reqwest::get("https://ipecho.net/plain")?.text()?;
+    pub fn get(&mut self) -> Result<()> {
+        self.ip_address = reqwest::get("https://ipecho.net/plain")
+            .context(Reqwest)?
+            .text()
+            .context(Reqwest)?;
         Ok(())
     }
 

@@ -1,5 +1,5 @@
 use std::fs;
-use std::result::Result;
+use crate::*;
 
 pub struct UptimeInfo {
     pub days:    i32,
@@ -16,8 +16,9 @@ impl UptimeInfo {
         }
     }
 
-    pub fn get(&mut self) -> Result<(), std::io::Error> {
-        let mut proc_uptime: &str = &*fs::read_to_string("/proc/uptime")?;
+    pub fn get(&mut self) -> Result<()> {
+        let mut proc_uptime: &str = &*fs::read_to_string("/proc/uptime")
+            .context(Uptime)?;
 
         // right now, proc_uptime looks like this:
         // 98798798.98 12897928l.12

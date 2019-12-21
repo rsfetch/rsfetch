@@ -37,14 +37,14 @@ use crate::output::*;
 pub enum Error {
     #[snafu(display("Unable to retrieve device name: {}", source))]
     DeviceName { source: io::Error },
-    #[snafu(display("Unable to read the OS release: {}", source))]
+    #[snafu(display("Unable to retrieve Linux distro: {}", source))]
     OsRelease { source: io::Error },
-    #[snafu(display("Unable to read the kernel version: {}", source))]
+    #[snafu(display("Unable to retrieve kernel version: {}", source))]
     KernelVersion { source: io::Error },
-    #[snafu(display("Unable to read the logo file: {}", source))]
+    #[snafu(display("Unable to read the provided logo file: {}", source))]
     ReadLogo { source: io::Error },
-    #[snafu(display("Unable to format uptime: {}", source))]
-    FormatUptime { source: fmt::Error },
+    #[snafu(display("Unable to retrieve uptime: {}", source))]
+    Uptime { source: io::Error },
     #[snafu(display("Unable to determine home directory"))]
     HomeDir,
     #[snafu(display("Unable to open .xinitrc: {}", source))]
@@ -55,17 +55,19 @@ pub enum Error {
     ReadXInitRc { source: io::Error },
     #[snafu(display("Unable to guess window manager"))]
     GuessWm,
-    #[snafu(display("Unable to determine editor"))]
-    Editor { source: std::env::VarError },
+    #[snafu(display("Unable to retrieve USER, SHELL, or EDITOR/VISUAL."))]
+    EnvError { source: std::env::VarError },
     #[snafu(display("Unable to retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
     #[snafu(display("Unable to retrieve package count."))]
     Pkgcount { source: io::Error },
-    #[snafu(display("Unable to run mpc."))]
+    #[snafu(display("Unable to retrive mpd information."))]
     Mpc { source: io::Error },
+    #[snafu(display("Unable to retrieve CPU information: {}", source))]
+    CPUErr { source: io::Error },
 }
 
-type Result<T, E = Error> = result::Result<T, E>;
+pub type Result<T, E = Error> = result::Result<T, E>;
 
 // Default art.
 fn get_default_logo() -> String {
@@ -237,10 +239,11 @@ fn main() {
     if matches.is_present("logo") {
         let mut logo: String = "".to_owned();
         if !logofile.is_empty() {
-            let res_logo = std::fs::read_to_string(logofile);
+            let res_logo = std::fs::read_to_string(logofile)
+                .context(ReadLogo);
             match res_logo {
                 Ok(l)  => logo = l,
-                Err(e) => error!("{}", e),
+                Err(e) => error!("{:?}", e),
             }
         } else {
             logo = get_default_logo();

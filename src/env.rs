@@ -1,4 +1,4 @@
-use std::result::Result;
+use crate::*;
 
 pub enum EnvItem {
     User,
@@ -21,11 +21,13 @@ impl EnvInfo {
         }
     }
 
-    pub fn get(&mut self, item: EnvItem) -> Result<(), std::env::VarError> {
+    pub fn get(&mut self, item: EnvItem) -> Result<()> {
         match item {
-            EnvItem::User  => self.user  = std::env::var("USER")?.to_string(),
+            EnvItem::User  => self.user  = std::env::var("USER")
+                .context(EnvError)?.to_string(),
             EnvItem::Shell => self.shell = {
-                let sh = std::env::var("SHELL")?;
+                let sh = std::env::var("SHELL")
+                    .context(EnvError)?;
                 let sh_pieces = sh.split("/").collect::<Vec<&str>>();
                 sh_pieces[sh_pieces.len() - 1].to_string()
             },
@@ -33,7 +35,8 @@ impl EnvInfo {
             // fallback to $env:SHELL
             EnvItem::Editor => match std::env::var("VISUAL") {
                Ok(v)  => self.editor = v.to_string(),
-               Err(_) => self.editor = std::env::var("EDITOR")?.to_string(),
+               Err(_) => self.editor = std::env::var("EDITOR")
+                   .context(EnvError)?.to_string(),
             },
         }
 

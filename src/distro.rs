@@ -1,5 +1,5 @@
 use std::fs;
-use std::result::Result;
+use crate::*;
 
 pub struct DistroInfo {
     name:        String,
@@ -20,8 +20,12 @@ impl DistroInfo {
 
     // TODO: support for non-standard distros like CRUX, which
     // typically don't have an /etc/os-release file.
-    pub fn get(&mut self) -> Result<(), std::io::Error> {
-        let file = fs::read_to_string("/etc/os-release")?;
+    // TODO: support for Bedrock Linux, which doesn't modify
+    // the /etc/os-release file when it's installed on top
+    // of another system.
+    pub fn get(&mut self) -> Result<()> {
+        let file = fs::read_to_string("/etc/os-release")
+            .context(OsRelease)?;
 
         for value in file.split("\n") {
             let keyval = value.split("=").collect::<Vec<&str>>();
