@@ -11,6 +11,7 @@ mod device;
 mod distro;
 mod kernel;
 mod network;
+mod output;
 
 use clap::{App, Arg};
 use log::error;
@@ -31,6 +32,7 @@ use crate::device::*;
 use crate::distro::*;
 use crate::kernel::*;
 use crate::network::*;
+use crate::output::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -69,48 +71,19 @@ type Result<T, E = Error> = result::Result<T, E>;
 // escape character (U+001B)
 const E: char = '\x1B';
 
-// Function for making bold text.
-fn make_bold(text: &str) -> String {
-    format!("{}[1m{}{}[0m", E, text, E)
-}
-
-// Function for adding rows to the table.
-fn add_row(table: &mut Table, bold: bool, caps: bool, border: bool, title: &str, value: &str) {
-    let mut title_str = title.to_string();
-    if !caps {
-        title_str = title_str.to_lowercase();
-    }
-    if bold {
-        title_str = make_bold(&title_str);
-    }
-    if !border {
-        table.add_row(row![title_str, value]);
-    } else {
-        table.add_row(row![title_str, "=", value]);
-    }
-}
-
-// For custom art.
-fn print_logo(file: &str) -> Result<()> {
-    let fs = File::open(file).context(ReadLogo)?;
-    for line in BufReader::new(fs).lines() {
-        println!("{}", make_bold(&line.context(ReadLogo)?));
-    }
-    Ok(())
-}
-
 // Default art.
-fn print_default_logo() {
-    println!("{}", make_bold(" \\    / /\\   |    |    |--- \\   /"));
-    println!("{}", make_bold("  \\  / /__\\  |    |    |---  \\ /"));
-    println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
+fn get_default_logo() {
+    let logo;
+    format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
+    format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /\n"));
+    format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |\n"))
 }
 
 // Main function
 fn main() {
     pretty_env_logger::init();
+
     // Variables
-    let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.9.0")
                     .about("\nAn fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")

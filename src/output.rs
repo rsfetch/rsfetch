@@ -114,6 +114,9 @@ impl OutputHelper {
                 println!("{}", thing.val);
             }
         } else if self.options.output_style == OutputType::Rsfetch {
+            // print logo
+            println!("{}", bold(&self.ascii));
+
             // convert self.data to table, then print
             for thing in self.data {
                 let mut key = thing.key.clone();
@@ -132,6 +135,10 @@ impl OutputHelper {
                     self.table.add_row(row![key, "=", val]);
                 }
             }
+            self.table.printstd();
+        } else if self.options.output_style == OutputType::Neofetch {
+            // don't do anything
+            // TODO: implement
         }
     }
 }
