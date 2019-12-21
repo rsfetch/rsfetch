@@ -15,7 +15,6 @@ mod output;
 
 use clap::{App, Arg};
 use log::error;
-use prettytable::{cell, format, row, Table};
 use snafu::{OptionExt, ResultExt, Snafu};
 use std::fmt;
 use std::fs::File;
@@ -68,15 +67,12 @@ pub enum Error {
 
 type Result<T, E = Error> = result::Result<T, E>;
 
-// escape character (U+001B)
-const E: char = '\x1B';
-
 // Default art.
-fn get_default_logo() {
-    let logo;
-    format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
-    format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /\n"));
-    format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |\n"))
+fn get_default_logo() -> String {
+    let mut logo: String;
+    logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
+    logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
+           format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"))
 }
 
 // Main function
@@ -196,23 +192,29 @@ fn main() {
     let logofile = matches.value_of("logofile").unwrap_or("");
     let packages = matches.value_of("packages");
 
-    let mut opts;
+    let style;
     if matches.is_present("minimal") {
-        opts = OutputOptions::new(OutputType::Minimal);
+        style = OutputType::Minimal;
     } else {
-        opts = OutputOptions::new(OutputType::Rsfetch);
+        style = OutputType::Rsfetch;
     }
 
-    char corners;
+    let corner: char;
     if matches.is_present("minimal") || !borders {
-        corners = ' ';
+        corner = ' ';
     } else if borders {
-        corners = corners.chars().collect::<Vec<char>>()[0];
+        corner = corners.chars().collect::<Vec<char>>()[0];
     } else {
-        corners = '■';
+        corner = '■';
     }
 
-    opts.caps(caps).bold(bold).borders(borders).corners(corners);
+    let opts = OutputOptions {
+        output_type: style,
+        caps:        caps,
+        bold:        bold,
+        use_borders: borders,
+        borders:     corner,
+    };
 
     //let format;
     // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
@@ -225,17 +227,20 @@ fn main() {
         std::process::exit(0); // get the hell outta here!
     }
 
-    print!("\n"); // print blank line before output.
-    let writer = OutputHelper::new(opts);
+    if matches.is_present("logo") {
+        print!("\n"); // print blank line before output.
+    }
+
+    let mut writer = OutputHelper::new(opts);
     
     // Determine the logo to use.
     if matches.is_present("logo") {
-        let logo: String;
+        let mut logo: String = "".to_owned();
         if !logofile.is_empty() {
             let res_logo = std::fs::read_to_string(logofile);
             match res_logo {
-                Ok(l)  => logo = l;
-                Err(e) => error!("{}", e);
+                Ok(l)  => logo = l,
+                Err(e) => error!("{}", e),
             }
         } else {
             logo = get_default_logo();
