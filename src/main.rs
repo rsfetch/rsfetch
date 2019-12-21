@@ -32,8 +32,10 @@ use crate::output::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("Unable to retrieve device name: {}", source))]
+    #[snafu(display("Unable to retrieve device model: {}", source))]
     DeviceName { source: std::io::Error },
+    #[snafu(display("Unable to retrieve hostname: {}", source))]
+    Hostname { source: std::io::Error },
     #[snafu(display("Unable to retrieve Linux distro: {}", source))]
     OsRelease { source: std::io::Error },
     #[snafu(display("Unable to retrieve kernel version: {}", source))]
