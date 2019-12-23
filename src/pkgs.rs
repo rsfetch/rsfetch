@@ -45,7 +45,7 @@ impl PkgInfo {
             let output = match manager {
                 PkgManager::Arch    => Command::new("pacman").arg("-Qq")
                     .output().context(Pkgcount)?,
-                PkgManager::Debian  => Command::new("apt").arg("list")
+                PkgManager::Debian  => Command::new("apt").arg("list --installed")
                     .output().context(Pkgcount)?,
                 PkgManager::Void    => Command::new("xbps-query").arg("-l")
                     .output().context(Pkgcount)?,
