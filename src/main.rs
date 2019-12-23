@@ -262,7 +262,7 @@ fn main() {
                 Err(e) => error!("{:?}", e),
             }
         } else {
-            logo = get_default_logo(style);
+            logo = get_default_logo(style.clone());
         }
         writer.ascii(logo);
     }

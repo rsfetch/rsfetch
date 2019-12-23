@@ -116,9 +116,9 @@ impl OutputHelper {
             }
             self.table.printstd();
         } else if self.options.output_type == OutputType::Neofetch {
-            let ascii_height: usize = 0;
-            let ascii_max_width: usize = 0;
-            let key_max_width: usize = 0;
+            let mut ascii_height: usize = 0;
+            let mut ascii_max_width: usize = 0;
+            let mut key_max_width: usize = 0;
 
             let _ = self.ascii.split("\n").map(|l| {
                 ascii_height += 1;
