@@ -69,11 +69,18 @@ pub enum Error {
 pub type Result<T, E = Error> = result::Result<T, E>;
 
 // Default art.
-fn get_default_logo() -> String {
+fn get_default_logo(style: OutputType) -> String {
     let mut logo: String;
-    logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
-    logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
-           format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"))
+    if style == OutputType::Rsfetch {
+        logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
+        logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
+        return format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"));
+    } else {
+        // TODO: better default logo :-)
+        logo = format!("{}",           bold("(\\/)"));
+        logo = format!("{}{}\n", logo, bold("( . .)"));
+        return format!("{}{}\n", logo, bold("c(\")(\")"));
+    }
 }
 
 // get art from file.
@@ -147,7 +154,11 @@ fn main() {
                     .arg(Arg::with_name("minimal")
                         .short("M")
                         .long("minimal")
-                        .help("Turn minimal mode on."))
+                        .help("Turn minimal-style output mode on."))
+                    .arg(Arg::with_name("neofetch")
+                         .short("N")
+                         .long("neofetch")
+                         .help("Turn neofetch-style output mode on."))
                     .arg(Arg::with_name("packages")
                         .short("p")
                         .long("packages")
@@ -202,6 +213,8 @@ fn main() {
     let style;
     if matches.is_present("minimal") {
         style = OutputType::Minimal;
+    } else if matches.is_present("neofetch") {
+        style = OutputType::Neofetch;
     } else {
         style = OutputType::Rsfetch;
     }
@@ -249,7 +262,7 @@ fn main() {
                 Err(e) => error!("{:?}", e),
             }
         } else {
-            logo = get_default_logo();
+            logo = get_default_logo(style);
         }
         writer.ascii(logo);
     }

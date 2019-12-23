@@ -1,6 +1,8 @@
 use std::vec::Vec;
 use prettytable::{ cell, format, row, Table };
 
+const E: char = 0x1B as char;
+
 #[derive(Clone)]
 struct KeyValue {
     key: String,
@@ -114,8 +116,48 @@ impl OutputHelper {
             }
             self.table.printstd();
         } else if self.options.output_type == OutputType::Neofetch {
-            // don't do anything
-            // TODO: implement
+            let ascii_height: usize = 0;
+            let ascii_max_width: usize = 0;
+            let key_max_width: usize = 0;
+
+            let _ = self.ascii.split("\n").map(|l| {
+                ascii_height += 1;
+
+                if l.len() > ascii_max_width {
+                    ascii_max_width = l.len()
+                }
+            }).collect::<()>();
+            
+            for thing in self.data.clone() {
+                if self.data.clone().len() > key_max_width {
+                    key_max_width = self.data.clone().len();
+                }
+            }
+
+            // print out logo
+            print!("{}", self.ascii);
+
+            // move to the top of the logo
+            print!("{}[{}A", E, ascii_height);
+
+            // print out information
+            for thing in self.data.clone() {
+                let mut key = thing.key.clone();
+                
+                if !self.options.caps {
+                    key = key.to_lowercase();
+                }
+
+                if self.options.bold {
+                    key = bold(&key);
+                }
+
+                // move beyond logo
+                print!("{}[{}C", E, ascii_max_width);
+
+                // print key and value
+                print!("{}:{}[{}C{}\n", key, E, key_max_width, thing.val.clone());
+            }
         }
     }
 }
