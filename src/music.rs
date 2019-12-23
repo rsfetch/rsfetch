@@ -13,7 +13,7 @@ impl MusicInfo {
     }
 
     pub fn get(&mut self) -> Result<()> {
-        let data = Command::new("mpc").arg("current")
+        let data = Command::new("mpc")
             .arg("-f")
             .arg("%artist% - (%date%) %album% - %title%")
             .output().context(Mpc)?;
