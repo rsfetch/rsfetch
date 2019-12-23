@@ -1,470 +1,153 @@
-// TODO: refactor this hairy mess into multiple files,
-// with structures and `impl`s.
-// ALSO TODO: replace reqwest with a lighter crate :(
+// TODO: replace reqwest with a lighter crate :(
 // -- kiedtl
 
 use clap::{App, Arg};
 use log::error;
-use prettytable::{cell, format, row, Table};
 use snafu::{OptionExt, ResultExt, Snafu};
-use std::env;
-use std::fmt;
-use std::fs::{self, File};
-use std::io::{self, BufRead, BufReader};
-use std::path::Path;
-use std::process::Command;
+use std::fs::File;
 use std::result;
 
+mod env;
+use crate::env::*;
 mod cpu;
 use crate::cpu::*;
+mod wmde;
+use crate::wmde::*;
+mod pkgs;
+use crate::pkgs::*;
+mod music;
+use crate::music::*;
+mod uptime;
+use crate::uptime::*;
+mod device;
+use crate::device::*;
+mod distro;
+use crate::distro::*;
+mod kernel;
+use crate::kernel::*;
+mod network;
+use crate::network::*;
+mod output;
+use crate::output::*;
 
 #[derive(Debug, Snafu)]
-enum Error {
-    #[snafu(display("Could not retrieve device name: {}", source))]
-    DeviceName { source: io::Error },
-    #[snafu(display("Could not read the OS release: {}", source))]
-    OsRelease { source: io::Error },
-    #[snafu(display("Could not read the kernel version: {}", source))]
-    KernelVersion { source: io::Error },
-    #[snafu(display("Could not read the logo file: {}", source))]
-    ReadLogo { source: io::Error },
-    #[snafu(display("Could not format uptime: {}", source))]
-    FormatUptime { source: fmt::Error },
-    #[snafu(display("Could not determine home directory"))]
+pub enum Error {
+    #[snafu(display("Unable to retrieve device model: {}", source))]
+    DeviceName { source: std::io::Error },
+    #[snafu(display("Unable to retrieve hostname: {}", source))]
+    Hostname { source: std::io::Error },
+    #[snafu(display("Unable to retrieve Linux distro: {}", source))]
+    OsRelease { source: std::io::Error },
+    #[snafu(display("Unable to retrieve kernel version: {}", source))]
+    KernelVersion { source: std::io::Error },
+    #[snafu(display("Unable to read the provided logo file: {}", source))]
+    ReadLogo { source: std::io::Error },
+    #[snafu(display("Unable to retrieve uptime: {}", source))]
+    Uptime { source: std::io::Error },
+    #[snafu(display("Unable to determine home directory"))]
     HomeDir,
-    #[snafu(display("Could not open .xinitrc: {}", source))]
-    OpenXInitRc { source: io::Error },
+    #[snafu(display("Unable to open .xinitrc: {}", source))]
+    OpenXInitRc { source: std::io::Error },
     #[snafu(display("Empty .xinitrc"))]
     EmptyXInitRc,
-    #[snafu(display("Could not read .xinitrc: {}", source))]
-    ReadXInitRc { source: io::Error },
-    #[snafu(display("Could not guess window manager"))]
+    #[snafu(display("Unable to read .xinitrc: {}", source))]
+    ReadXInitRc { source: std::io::Error },
+    #[snafu(display("Unable to guess window manager"))]
     GuessWm,
-    #[snafu(display("Could not determine editor"))]
-    Editor { source: env::VarError },
-    #[snafu(display("Could not retrieve IP address: {}", source))]
+    #[snafu(display("Unable to retrieve USER, SHELL, or EDITOR/VISUAL."))]
+    EnvError { source: std::env::VarError },
+    #[snafu(display("Unable to retrieve IP address: {}", source))]
     Reqwest { source: reqwest::Error },
-    #[snafu(display(
-        "Could not retrieve package count. Perhaps you input the wrong package manager?"
-    ))]
-    Pkgcount { source: io::Error },
-    #[snafu(display("Could not run mpc"))]
-    Mpc { source: io::Error },
+    #[snafu(display("Unable to retrieve package count."))]
+    Pkgcount { source: std::io::Error },
+    #[snafu(display("Unable to retrive mpd information."))]
+    Mpc { source: std::io::Error },
+    #[snafu(display("Unable to retrieve CPU information: {}", source))]
+    CPUErr { source: std::io::Error },
 }
 
-type Result<T, E = Error> = result::Result<T, E>;
-
-// escape character (U+001B)
-const E: char = '\x1B';
-
-// Function for making bold text.
-fn make_bold(text: &str) -> String {
-    format!("{}[1m{}{}[0m", E, text, E)
-}
-
-// Function for adding rows to the table.
-fn add_row(table: &mut Table, bold: bool, caps: bool, border: bool, title: &str, value: &str) {
-    let mut title_str = title.to_string();
-    if !caps {
-        title_str = title_str.to_lowercase();
-    }
-    if bold {
-        title_str = make_bold(&title_str);
-    }
-    if !border {
-        table.add_row(row![title_str, value]);
-    } else {
-        table.add_row(row![title_str, "=", value]);
-    }
-}
-
-// For custom art.
-fn print_logo(file: &str) -> Result<()> {
-    let fs = File::open(file).context(ReadLogo)?;
-    for line in BufReader::new(fs).lines() {
-        println!("{}", make_bold(&line.context(ReadLogo)?));
-    }
-    Ok(())
-}
+pub type Result<T, E = Error> = result::Result<T, E>;
 
 // Default art.
-fn print_default_logo() {
-    println!("{}", make_bold(" \\    / /\\   |    |    |--- \\   /"));
-    println!("{}", make_bold("  \\  / /__\\  |    |    |---  \\ /"));
-    println!("{}", make_bold("   \\/ /----\\ |___ |___ |---   |"));
+fn get_default_logo() -> String {
+    let mut logo: String;
+    logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
+    logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
+           format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"))
 }
 
-fn get_value(key: &str, line: &str) -> Option<String> {
-    if line.starts_with(key) {
-        Some(
-            line[key.len() + 1..line.len() - 1]
-                .trim_matches('"')
-                .to_string(),
-        )
-    } else {
-        None
-    }
-}
-
-fn get_uptime() -> String {
-    let mut proc_uptime: &str = &*std::fs::read_to_string("/proc/uptime").unwrap();
-    
-    // right now, proc_uptime looks like this:
-    // 98798798.98 12897928l.12
-    // we need to trim off everything after the first dot
-    proc_uptime = proc_uptime.split(".").collect::<Vec<&str>>()[0];
-
-    // convert proc_uptime (a string) to usize
-    let seconds: i32 = proc_uptime.parse::<i32>().unwrap();
-
-    // convert seconds to days, hours, and minutes
-    let mut uptime = "".to_owned();
-    let days: i32 = seconds / 60 / 60 / 24;
-    let hours: i32 = (seconds / 60 / 60) % 24; // only 24 hours in a day!
-    let minutes: i32 = (seconds / 60) % 60; // only 60 minutes in an hour!
-
-    if days > 0 { uptime = format!("{}d ", days); }
-    if hours > 0 { uptime = format!("{}{}h ", uptime, hours); }
-    if minutes > 0 { uptime = format!("{}{}m ", uptime, minutes); }
-
-    uptime
-}
-
-fn get_device_name() -> Result<String> {
-    let contents =
-        fs::read_to_string("/sys/devices/virtual/dmi/id/product_name").context(DeviceName)?;
-    let dev = contents.trim_end().to_string();
-    Ok(dev)
-}
-
-fn get_os_release() -> Result<Option<String>> {
-    let file = File::open("/etc/os-release").context(OsRelease)?;
-    let mut reader = BufReader::new(file);
-    let mut line = String::new();
-    let mut name = None;
-    let mut pretty_name = None;
-    while reader.read_line(&mut line).context(OsRelease)? > 0 {
-        if let Some(val) = get_value("NAME", &line) {
-            name = Some(val);
-        } else if let Some(val) = get_value("PRETTY_NAME", &line) {
-            pretty_name = Some(val);
-            break;
-        }
-        line.clear();
-    }
-    Ok(pretty_name.or(name))
-}
-
-fn get_kernel_version() -> Result<String> {
-    let contents = fs::read_to_string("/proc/sys/kernel/osrelease").context(KernelVersion)?;
-    let kern = contents.trim_end().to_string();
-    Ok(kern)
-}
-
-fn count_lines(data: Vec<u8>) -> usize {
-    let mut count: usize = 0;
-
-    // convert srcs from Vec<u8> to String
-    let mut src = "".to_owned();
-    for byte in data {
-        src = format!("{}{}", src, byte as char);
-    }
-
-    let _ = src.split("\n").map(|_| count += 1).collect::<()>();
-    count
-}
-
-fn get_window_manager() -> Result<String> {
-    if let Some(de) = env::var_os("XDG_DESKTOP_SESSION")
-        .or_else(|| env::var_os("XDG_CURRENT_DESKTOP"))
-        .or_else(|| env::var_os("DESKTOP_SESSION"))
-        .map(|s| s.to_string_lossy().into_owned())
-    {
-        return Ok(de);
-    }
-
-    let mut path = dirs::home_dir().context(HomeDir)?;
-    path.push(".xinitrc");
-    let file = File::open(path).context(OpenXInitRc)?;
-    let reader = BufReader::new(file);
-    let last_line = reader
-        .lines()
-        .last()
-        .context(EmptyXInitRc)?
-        .context(ReadXInitRc)?;
-    let space = last_line.find(' ').context(GuessWm)?;
-    let wm = last_line[space + 1..].to_string();
-    Ok(wm)
-}
-
-fn get_editor() -> Result<String> {
-    let ed = env::var("EDITOR").context(Editor)?.to_string();
-    Ok(ed)
-}
-
-fn get_ip_address() -> Result<String> {
-    let ip = reqwest::get("https://ipecho.net/plain")
-        .context(Reqwest)?
-        .text()
-        .context(Reqwest)?;
-    Ok(ip)
-}
-
-fn get_package_count_arch_based() -> Result<String> {
-    let pacman = Command::new("pacman")
-        .arg("-Qq")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(pacman.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_debian_based() -> Result<String> {
-    let apt = Command::new("apt").arg("list").output().context(Pkgcount)?;
-    let pkgs = count_lines(apt.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_void() -> Result<String> {
-    let xbps = Command::new("xbps-query")
-        .arg("-l")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(xbps.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_fedora() -> Result<String> {
-    let dnf = Command::new("dnf")
-        .arg("list")
-        .arg("--installed")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(dnf.stdout);
-    let pkgs = pkgs - 1;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_bsd() -> Result<String> {
-    let bpkg = Command::new("pkg").arg("info").output().context(Pkgcount)?;
-    let pkgs = count_lines(bpkg.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_solus() -> Result<String> {
-    let eopkg = Command::new("eopkg")
-        .arg("list-installed")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(eopkg.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_suse() -> Result<String> {
-    let rpm = Command::new("rpm").arg("-qa").output().context(Pkgcount)?;
-    let pkgs = count_lines(rpm.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_alpine() -> Result<String> {
-    let apk = Command::new("apk").arg("info").output().context(Pkgcount)?;
-    let pkgs = count_lines(apk.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_gentoo() -> Result<String> {
-    let qlist = Command::new("qlist").arg("-I").output().context(Pkgcount)?;
-    let pkgs = count_lines(qlist.stdout);
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_pip() -> Result<String> {
-    let pip = Command::new("pip").arg("list").output().context(Pkgcount)?;
-    let pkgs = count_lines(pip.stdout);
-    let pkgs = pkgs - 2;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_package_count_cargo() -> Result<String> {
-    let cargo = Command::new("cargo")
-        .arg("list")
-        .output()
-        .context(Pkgcount)?;
-    let pkgs = count_lines(cargo.stdout);
-    let pkgs = pkgs - 1;
-    let pkg = format!("{}", pkgs);
-    Ok(pkg)
-}
-
-fn get_mpd_song() -> Result<String> {
-    let mpc = Command::new("mpc")
-        .arg("current")
-        .arg("-f")
-        .arg("%artist% - (%date%) %album% - %title%")
-        .output()
-        .context(Mpc)?;
-    let mut mus = String::from_utf8_lossy(&mpc.stdout).into_owned();
-    mus.pop();
-    Ok(mus)
-}
-
-//fn format_duration(duration: Duration) -> Result<String> {
-//    let mut duration = duration.as_secs();
-//    if duration < 60 {
-//       let s = if duration == 1 {
-//            String::from("1 second")
-//        } else {
-//            format!("{} seconds", duration)
-//        };
-//        return Ok(s);
-//    }
-//
-//    duration /= 60;
-//    let minutes = duration % 60;
-//    duration /= 60;
-//    let hours = duration % 24;
-//    duration /= 24;
-//    let days = duration % 7;
-//    let weeks = (duration / 7) % 52;
-//    duration /= 365;
-//    let years = duration % 10;
-//    let decades = duration / 10;
-//
-//    let mut s = String::new();
-//    let mut comma = false;
-//    fn add_part(comma: &mut bool, mut s: &mut String, name: &str, value: u64) -> Result<()> {
-//        if value > 0 {
-//            if *comma {
-//                s.push_str(", ");
-//            }
-//            itoa::fmt(&mut s, value).context(FormatUptime)?;
-//            s.push(' ');
-//            s.push_str(name);
-//            if value > 1 {
-//                s.push('s');
-//            }
-//            *comma = true;
-//        }
-//        Ok(())
-//    }
-//    add_part(&mut comma, &mut s, "decade", decades)?;
-//    add_part(&mut comma, &mut s, "year", years)?;
-//    add_part(&mut comma, &mut s, "week", weeks)?;
-//    add_part(&mut comma, &mut s, "day", days)?;
-//    add_part(&mut comma, &mut s, "hour", hours)?;
-//    add_part(&mut comma, &mut s, "minute", minutes)?;
-//    Ok(s)
-//}
-
-fn get_packages(packages: &str) -> Result<String> {
-    match packages {
-        "pacman" => get_package_count_arch_based(),
-        "apt" => get_package_count_debian_based(),
-        "xbps" => get_package_count_void(),
-        "dnf" => get_package_count_fedora(),
-        "pkg" => get_package_count_bsd(),
-        "eopkg" => get_package_count_solus(),
-        "rpm" => get_package_count_suse(),
-        "apk" => get_package_count_alpine(),
-        "portage" => get_package_count_gentoo(),
-        "pip" => get_package_count_pip(),
-        "cargo" => get_package_count_cargo(),
-        _ => unreachable!(),
-    }
+// get art from file.
+fn get_logo_from_file(path: String) -> Result<String> {
+    let logo = std::fs::read_to_string(&*path).context(ReadLogo)?;
+    Ok(logo)
 }
 
 // Main function
 fn main() {
     pretty_env_logger::init();
+
     // Variables
-    let mut table = Table::new();
     let matches = App::new("rsfetch")
                     .version("1.9.0")
-                    .about("\nMy info fetch tool for Linux. Fast (1ms execution time) and somewhat(?) minimal.\n\nAll options are on (with the exception of package count, editor, window manager, and ip address). Music info is turned off by default.\n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
+                    .about("\nAn fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
-                        .value_name(" ")
-                        .help("Links to those who helped make this, and thanks to others who've helped me.")
-                        .takes_value(false))
+                        .help("List of past and current contributors for this project."))
                     .arg(Arg::with_name("no-bold")
                         .short("b")
                         .long("no-bold")
-                        .help("Turn bold for field titles off.")
-                        .takes_value(false))
+                        .help("Turn bold for field titles off."))
                     .arg(Arg::with_name("no-borders")
                         .short("B")
                         .long("no-borders")
-                        .help("Turn borders off.")
-                        .takes_value(false))
+                        .help("Turn borders off."))
                     .arg(Arg::with_name("no-caps")
                         .short("c")
                         .long("no-caps")
-                        .help("Turn all caps off.")
-                        .takes_value(false))
+                        .help("Turn all caps off."))
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
-                         .help("Turn CPU information (model, frequency, and processor count) on.")
-                         .takes_value(false))
-                    .arg(Arg::with_name("no-user")
+                         .help("Turn CPU information on."))
+                    .arg(Arg::with_name("user")
                         .short("U")
-                        .long("no-user")
-                        .help("Turn user name off.")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-host")
+                        .long("user")
+                        .help("Turn user name off."))
+                    .arg(Arg::with_name("host")
                         .short("h")
-                        .long("no-host")
-                        .help("Turn device name off.")
-                        .takes_value(false))
+                        .long("host")
+                        .help("Turn device name off."))
                     .arg(Arg::with_name("ip_address")
                         .short("i")
                         .long("ip_address")
-                        .help("Turn ip address display on.")
-                        .takes_value(false))
+                        .help("Turn ip address display on."))
                     .arg(Arg::with_name("editor")
                         .short("e")
                         .long("editor")
-                        .help("Turn default editor name on. (Must have $EDITOR variable set.).")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-shell")
+                        .help("Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)"))
+                    .arg(Arg::with_name("shell")
                         .short("s")
-                        .long("no-shell")
-                        .help("Turn default shell name off.")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-wm-de")
+                        .long("shell")
+                        .help("Turn default shell name off."))
+                    .arg(Arg::with_name("wm")
                         .short("w")
-                        .long("no-wm-de")
-                        .help("Turn window manager or desktop environment name off.")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-distro")
+                        .long("wm")
+                        .help("Turn WM or DE name off."))
+                    .arg(Arg::with_name("distro")
                         .short("d")
-                        .long("no-distro")
-                        .help("Turn distro name off.")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-kernel")
+                        .long("distro")
+                        .help("Turn distro name off."))
+                    .arg(Arg::with_name("kernel")
                         .short("k")
-                        .long("no-kernel")
-                        .help("Turn kernel version off.")
-                        .takes_value(false))
-                    .arg(Arg::with_name("no-uptime")
+                        .long("kernel")
+                        .help("Turn kernel version off."))
+                    .arg(Arg::with_name("uptime")
                         .short("u")
-                        .long("no-uptime")
-                        .help("Turn uptime info off.")
-                        .takes_value(false))
+                        .long("uptime")
+                        .help("Turn uptime info off."))
                     .arg(Arg::with_name("minimal")
                         .short("M")
                         .long("minimal")
-                        .help("Turn minimal mode on.")
-                        .takes_value(false))
+                        .help("Turn minimal mode on."))
                     .arg(Arg::with_name("packages")
                         .short("p")
                         .long("packages")
@@ -475,13 +158,12 @@ fn main() {
                         .short("m")
                         .long("music")
                         .value_name("SOURCE")
-                        .help("Choose where to get music info. Supported options are \"mpd\" (mpc) and no (none).\n")
+                        .help("Choose where to get music info. The only supported options is \"mpd\".\n")
                         .takes_value(true))
-                    .arg(Arg::with_name("no-logo")
+                    .arg(Arg::with_name("logo")
                         .short("l")
-                        .long("no-logo")
-                        .help("Turn the logo or ascii art off.")
-                        .takes_value(false))
+                        .long("logo")
+                        .help("Turn the logo or ascii art off."))
                     .arg(Arg::with_name("logofile")
                         .short("L")
                         .long("logofile")
@@ -492,244 +174,184 @@ fn main() {
                         .short("C")
                         .long("corners")
                         .value_name("CHARACTER")
-                        .help("Specify the corner style. Choose either \"■\" or \"0\". Only used when borders are enabled.")
+                        .help("Specify the corner character. Only used when borders are enabled.")
                         .takes_value(true))
                     .get_matches();
+
     if matches.is_present("credits") {
         println!();
-        println!("Main Developer:   valley  (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      kiedtl  (Reddit: /u/kiedtl)     (Github: kiedtl)");
-        println!("Contributor:      lnicola                         (Github: lnicola)\n");
-        println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\" for all the help they gave; and the tool \"neofetch\" for giving me the inspiration to make this.");
+        println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
+        println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
+        println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
+            std::char::from_u32(539 as u32).unwrap());
+        println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\", for their contributions, and the tool \"neofetch\" for giving the inspiration to create this.");
         println!();
         return;
     }
-    let current_user = if !matches.is_present("no-user") || !matches.is_present("no-shell") {
-        Some(env::var("USER")) //Passwd::current_user()
-    } else {
-        None
-    };
+    
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
+
     // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
-    let music = matches.value_of("music").unwrap_or("no");
+    let music = matches.value_of("music").unwrap_or("");
     let logofile = matches.value_of("logofile").unwrap_or("");
     let packages = matches.value_of("packages");
-    let format;
-    // Determine if borders are used, and if they are, the style of the corners.
+
+    let style;
     if matches.is_present("minimal") {
-        format = format::FormatBuilder::new()
-            .column_separator(' ')
-            .borders(' ')
-            .separators(
-                &[format::LinePosition::Top, format::LinePosition::Bottom],
-                format::LineSeparator::new(' ', ' ', ' ', ' '),
-            )
-            .padding(0, 0)
-            .build();
-        table.set_format(format);
+        style = OutputType::Minimal;
+    } else {
+        style = OutputType::Rsfetch;
+    }
+
+    let corner: char;
+    if matches.is_present("minimal") || !borders {
+        corner = ' ';
     } else if borders {
-        if corners == "■" {
-            format = format::FormatBuilder::new()
-                .column_separator(' ')
-                .borders('│')
-                .separators(
-                    &[format::LinePosition::Top, format::LinePosition::Bottom],
-                    format::LineSeparator::new('─', '─', '■', '■'),
-                )
-                .padding(1, 1)
-                .build();
-            table.set_format(format);
-        } else if corners == "0" {
-            format = format::FormatBuilder::new()
-                .column_separator(' ')
-                .borders('│')
-                .separators(
-                    &[format::LinePosition::Top, format::LinePosition::Bottom],
-                    format::LineSeparator::new('─', '─', '0', '0'),
-                )
-                .padding(1, 1)
-                .build();
-            table.set_format(format);
+        corner = corners.chars().collect::<Vec<char>>()[0];
+    } else {
+        corner = '■';
+    }
+
+    let opts = OutputOptions {
+        output_type: style,
+        caps:        caps,
+        bold:        bold,
+        use_borders: borders,
+        borders:     corner,
+    };
+
+    //let format;
+    // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
+    let mut env = EnvInfo::new();
+    
+    // --- OUTPUT ---
+    // if there aren't any options, then no information fields
+    // will be enabled, which means we may as well exit now
+    if std::env::args().collect::<Vec<String>>().len() < 2 {
+        std::process::exit(0); // get the hell outta here!
+    }
+
+    if matches.is_present("logo") {
+        print!("\n"); // print blank line before output.
+    }
+
+    let mut writer = OutputHelper::new(opts);
+    
+    // Determine the logo to use.
+    if matches.is_present("logo") {
+        let mut logo: String = "".to_owned();
+        if !logofile.is_empty() {
+            match get_logo_from_file(logofile.to_owned()) {
+                Ok(l)  => logo = l,
+                Err(e) => error!("{:?}", e),
+            }
+        } else {
+            logo = get_default_logo();
+        }
+        writer.ascii(logo);
+    }
+
+    if matches.is_present("user") {
+        match env.get(EnvItem::User) {
+            Ok(()) => writer.add("USER", &env.format(EnvItem::User)),
+            Err(e) => error!("{}", e),
         }
     }
-    // Begin output. Data for variables will *only* be collected if the option for that specific output is turned on. Therefore making the program much more efficient.
-    println!(); // Print blank line before output.
-                // Determine the logo to use.
-    if !matches.is_present("minimal") {
-        if !matches.is_present("no-logo") {
-            if !logofile.is_empty() {
-                if let Err(e) = print_logo(logofile) {
-                    error!("{}", e);
-                }
+    
+    if matches.is_present("host") {
+        let mut device = DeviceInfo::new();
+        match device.get() {
+            Ok(()) => writer.add("HOST", &device.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
+    
+    if matches.is_present("uptime") {
+        let mut uptime = UptimeInfo::new();
+        match uptime.get() {
+            Ok(()) => writer.add("UPTIME", &uptime.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
+    
+    if matches.is_present("distro") {
+        let mut distro = DistroInfo::new();
+        match distro.get() {
+            Ok(()) => writer.add("DISTRO", &distro.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
+
+    if matches.is_present("kernel") {
+        let mut kernel = KernelInfo::new();
+        match kernel.get() {
+            Ok(()) => writer.add("KERNEL", &kernel.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
+    if matches.is_present("wm") {
+        let mut wmde = WMDEInfo::new();
+        match wmde.get() {
+            Ok(()) => writer.add("WM/DE", &wmde.format()),
+            Err(e) => if wmde.format() != "" {
+                writer.add("DE", &wmde.format());
             } else {
-                print_default_logo()
-            }
-            println!(); // print a newline
-        }
-    }
-    if !matches.is_present("no-user") {
-        if matches.is_present("minimal") {
-            if let Some(ref user) = current_user {
-                println!("{}", user.as_ref().unwrap());
-            }
-        } else {
-            if let Some(ref user) = current_user {
-                add_row(&mut table, bold, caps, borders, "USER", &user.as_ref().unwrap());
-            }
-        }
-    }
-    if !matches.is_present("no-host") {
-        if matches.is_present("minimal") {
-            match get_device_name() {
-                Ok(dev) => println!("{}", &dev),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_device_name() {
-                Ok(dev) => add_row(&mut table, bold, caps, borders, "HOST", &dev),
-                Err(e) => error!("{}", e),
-            }
-        }
-    }
-    if !matches.is_present("no-uptime") {
-        if matches.is_present("minimal") {
-            let uptime = get_uptime();
-            println!("{}", &uptime);
-        } else {
-            let uptime = get_uptime();
-            add_row(&mut table, bold, caps, borders, "UPTIME", &uptime);
-        }
-    }
-    if !matches.is_present("no-distro") {
-        if matches.is_present("minimal") {
-            if let Ok(Some(dist)) = get_os_release() {
-                println!("{}", &dist);
-            }
-        } else {
-            if let Ok(Some(dist)) = get_os_release() {
-                add_row(&mut table, bold, caps, borders, "DISTRO", &dist);
-            }
-        }
-    }
-    if !matches.is_present("no-kernel") {
-        if matches.is_present("minimal") {
-            match get_kernel_version() {
-                Ok(kern) => println!("{}", &kern),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_kernel_version() {
-                Ok(kern) => add_row(&mut table, bold, caps, borders, "KERNEL", &kern),
-                Err(e) => error!("{}", e),
-            }
-        }
-    }
-    if !matches.is_present("no-wm-de") {
-        if matches.is_present("minimal") {
-            match get_window_manager() {
-                Ok(wm) => println!("{}", &wm),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_window_manager() {
-                Ok(wm) => add_row(&mut table, bold, caps, borders, "WM/DE", &wm),
-                Err(e) => error!("{}", e),
-            }
+                error!("{}", e)
+            },
         }
     }
     if matches.is_present("editor") {
-        if matches.is_present("minimal") {
-            match get_editor() {
-                Ok(ed) => println!("{}", &ed),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_editor() {
-                Ok(ed) => add_row(&mut table, bold, caps, borders, "EDITOR", &ed),
-                Err(e) => error!("{}", e),
-            }
+        match env.get(EnvItem::Editor) {
+            Ok(()) => writer.add("EDITOR", &env.format(EnvItem::Editor)),
+            Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("no-shell") {
-        if matches.is_present("minimal") {
-                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
-                    println!("{}", shell.to_string_lossy().as_ref());
-                }
-        } else {
-                if let Some(shell) = Path::new(&env::var("SHELL").unwrap()).file_name() {
-                    add_row(
-                        &mut table,
-                        bold,
-                        caps,
-                        borders,
-                        "SHELL",
-                        shell.to_string_lossy().as_ref(),
-                    );
-                }
+    if matches.is_present("shell") {
+        match env.get(EnvItem::Shell) {
+            Ok(()) => writer.add("SHELL", &env.format(EnvItem::Shell)),
+            Err(e) => error!("{}", e),
         }
     }
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new();
         match cpu.get() {
-            Ok(()) => if matches.is_present("minimal") {
-                println!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq);
-            } else {
-                add_row(&mut table, bold, caps, borders, "CPU", 
-                        &format!("{} ({}) @ {}GHz", cpu.model, cpu.cores, cpu.freq));
-            },
+            Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
         }
     }
+
     if matches.is_present("ip_address") {
-        if matches.is_present("minimal") {
-            match get_ip_address() {
-                Ok(ip) => println!("{}", &ip),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_ip_address() {
-                Ok(ip) => add_row(&mut table, bold, caps, borders, "IP ADDRESS", &ip),
-                Err(e) => error!("{}", e),
-            }
-        }
-    }
-    if let Some(packages) = packages {
-        match get_packages(packages) {
-            Ok(pkg) => {
-                if matches.is_present("minimal") {
-                    println!("{}", &pkg);
-                } else {
-                    add_row(
-                        &mut table,
-                        bold,
-                        caps,
-                        borders,
-                        &format!("PACKAGES ({})", packages.to_ascii_uppercase()),
-                        &pkg,
-                    );
-                }
-            }
+        let mut ip = NetworkInfo::new();
+        match ip.get() {
+            Ok(()) => writer.add("IP ADDRESS", &ip.format()),
             Err(e) => error!("{}", e),
         }
     }
-    if music == "mpd" {
-        if matches.is_present("minimal") {
-            match get_mpd_song() {
-                Ok(mus) => println!("{}", &mus),
-                Err(e) => error!("{}", e),
-            }
-        } else {
-            match get_mpd_song() {
-                Ok(mus) => add_row(&mut table, bold, caps, borders, "MUSIC (MPD)", &mus),
-                Err(e) => error!("{}", e),
-            }
+
+    if let Some(packages) = packages {
+        let mut pkgs = PkgInfo::new();
+        pkgs.set_manager(packages);
+        
+        match pkgs.get() {
+            Ok(()) => writer.add(
+                &format!("PACKAGES ({})", packages.to_ascii_uppercase()), &pkgs.format()),
+            Err(e) => error!("{}", e),
         }
     }
-    if !matches.is_present("minimal") {
-        table.printstd(); // After collecting data for variables and adding the rows, print the final output into a custom table.
+
+    if music == "mpd" {
+        let mut mpd = MusicInfo::new();
+        
+        match mpd.get() {
+            Ok(()) => writer.add("MUSIC (MPD)", &mpd.format()),
+            Err(e) => error!("{}", e),
+        }
     }
-    println!(); // Print blank line after output.
+
+    writer.output();
+
+    print!("\n"); // blank line
 }
