@@ -296,7 +296,11 @@ fn main() {
         let mut wmde = WMDEInfo::new();
         match wmde.get() {
             Ok(()) => writer.add("WM/DE", &wmde.format()),
-            Err(e) => error!("{}", e),
+            Err(e) => if wmde.format() != "" {
+                writer.add("DE", &wmde.format());
+            } else {
+                error!("{}", e)
+            },
         }
     }
     if matches.is_present("editor") {

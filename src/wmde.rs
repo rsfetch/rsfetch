@@ -21,10 +21,12 @@ impl WMDEInfo {
             .or_else(|_| env::var("DESKTOP_SESSION"));
 
         match de {
-            Ok(de) => self.de = de,
+            Ok(d) => self.de = d,
             Err(_) => (),
         }
 
+        // if Err() is returned anywhere, it will be returned right
+        // here.
         let path = format!("{}/.xinitrc", dirs::home_dir()
                            .context(HomeDir)?
                            .to_str()
