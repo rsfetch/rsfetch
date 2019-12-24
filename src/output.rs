@@ -160,15 +160,18 @@ impl OutputHelper {
                     key = bold(&key);
                 }
 
-                // print key and value an dmove down
-                print!("{}:{}{}[B", key, thing.val.clone(), E);
+                // print key and value
+                print!("{}:{}[{}C{}", key, 
+                       E, (key_max_width + 1) - key.len(),
+                       thing.val.clone());
 
-                // move beyond logo
-                print!("{}[{}C", E, ascii_max_width + 1);
+                // move down and beyond logo
+                print!("\n{}[{}C", E, ascii_max_width + 4);
                 ascii_height -= 1;
             }
 
             print!("{}[{}B", E, ascii_height);
+            print!("\n");
         }
     }
 }
