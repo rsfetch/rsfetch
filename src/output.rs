@@ -106,6 +106,7 @@ impl OutputHelper {
 
                 if self.options.bold {
                     key = bold(&key);
+                    self.ascii = bold(&self.ascii.clone());
                 }
 
                 if !self.options.use_borders {
@@ -127,18 +128,25 @@ impl OutputHelper {
                     ascii_max_width = l.len()
                 }
             }).collect::<()>();
+            ascii_height -= 1;
             
             for thing in self.data.clone() {
-                if self.data.clone().len() > key_max_width {
-                    key_max_width = self.data.clone().len();
+                if thing.clone().key.len() > key_max_width {
+                    key_max_width = thing.clone().key.len();
                 }
+            }
+
+            if self.options.bold {
+                self.ascii = bold(&self.ascii.clone());
             }
 
             // print out logo
             print!("{}", self.ascii);
 
             // move to the top of the logo
-            print!("{}[{}A", E, ascii_height);
+            // and then beyond it
+            print!("{}[{}A{}[{}C", E, ascii_height,
+                   E, (ascii_max_width + 4));
 
             // print out information
             for thing in self.data.clone() {
@@ -152,12 +160,15 @@ impl OutputHelper {
                     key = bold(&key);
                 }
 
-                // move beyond logo
-                print!("{}[{}C", E, ascii_max_width);
+                // print key and value an dmove down
+                print!("{}:{}{}[B", key, thing.val.clone(), E);
 
-                // print key and value
-                print!("{}:{}[{}C{}\n", key, E, key_max_width, thing.val.clone());
+                // move beyond logo
+                print!("{}[{}C", E, ascii_max_width + 1);
+                ascii_height -= 1;
             }
+
+            print!("{}[{}B", E, ascii_height);
         }
     }
 }

@@ -69,17 +69,20 @@ pub enum Error {
 pub type Result<T, E = Error> = result::Result<T, E>;
 
 // Default art.
-fn get_default_logo(style: OutputType) -> String {
-    let mut logo: String;
-    if style == OutputType::Rsfetch {
-        logo = format!("{}",           bold(" \\    / /\\   |    |    |--- \\   /\n"));
-        logo = format!("{}{}\n", logo, bold("  \\  / /__\\  |    |    |---  \\ /"));
-        return format!("{}{}\n", logo, bold("   \\/ /----\\ |___ |___ |---   |"));
+fn get_default_logo(style: &OutputType) -> String {
+    if style == &OutputType::Rsfetch {
+        return " \\    / /\\   |    |    |--- \\   /
+  \\  / /__\\  |    |    |---  \\ /
+   \\/ /----\\ |___ |___ |---   |".to_string();
     } else {
         // TODO: better default logo :-)
-        logo = format!("{}",           bold("(\\/)"));
-        logo = format!("{}{}\n", logo, bold("( . .)"));
-        return format!("{}{}\n", logo, bold("c(\")(\")"));
+        return "    ___
+   (.· |
+   (<> |
+  / __  \\
+ ( /  \\ /|
+_/\\ __)/_)
+\\/-____\\/".to_string();
     }
 }
 
@@ -229,7 +232,7 @@ fn main() {
     }
 
     let opts = OutputOptions {
-        output_type: style,
+        output_type: style.clone(),
         caps:        caps,
         bold:        bold,
         use_borders: borders,
@@ -262,7 +265,7 @@ fn main() {
                 Err(e) => error!("{:?}", e),
             }
         } else {
-            logo = get_default_logo(style.clone());
+            logo = get_default_logo(&style);
         }
         writer.ascii(logo);
     }
@@ -365,6 +368,4 @@ fn main() {
     }
 
     writer.output();
-
-    print!("\n"); // blank line
 }
