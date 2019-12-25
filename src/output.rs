@@ -32,8 +32,7 @@ pub struct OutputHelper {
 }
 
 pub fn bold(text: &str) -> String {
-    let e: char = 0x1B as u8 as char;
-    format!("{}[1m{}{}[0m", e, text, e)
+    format!("{}[1m{}{}[0m", E, text, E)
 }
 
 impl OutputHelper {
@@ -117,41 +116,28 @@ impl OutputHelper {
             }
             self.table.printstd();
         } else if self.options.output_type == OutputType::Neofetch {
-            let mut ascii_height: usize = 0;
-            let mut ascii_max_width: usize = 0;
-            let mut key_max_width: usize = 0;
+            let mut width = 0;
+            let ascii = self.ascii.clone()
+                .split("\n")
+                .map(|l| {
+                    if l.len() > width {
+                        width = l.len();
+                    }
 
-            let _ = self.ascii.split("\n").map(|l| {
-                ascii_height += 1;
-
-                if l.len() > ascii_max_width {
-                    ascii_max_width = l.len()
-                }
-            }).collect::<()>();
-            ascii_height -= 1;
+                    l.to_string()
+                }).collect::<Vec<String>>();
             
-            for thing in self.data.clone() {
-                if thing.clone().key.len() > key_max_width {
-                    key_max_width = thing.clone().key.len();
-                }
+            if ascii.len() > 0 {
+                width += 3;
             }
 
-            if self.options.bold {
-                self.ascii = bold(&self.ascii.clone());
-            }
+            let stuff = self.data.clone();
+            let mut printed = 0;
+            for c in 0..stuff.len() {
+                let thing = stuff[c].clone();
+                let mut key = thing.key;
+                let val = thing.val;
 
-            // print out logo
-            print!("{}", self.ascii);
-
-            // move to the top of the logo
-            // and then beyond it
-            print!("{}[{}A{}[{}C", E, ascii_height,
-                   E, (ascii_max_width + 4));
-
-            // print out information
-            for thing in self.data.clone() {
-                let mut key = thing.key.clone();
-                
                 if !self.options.caps {
                     key = key.to_lowercase();
                 }
@@ -160,18 +146,32 @@ impl OutputHelper {
                     key = bold(&key);
                 }
 
-                // print key and value
-                print!("{}:{}[{}C{}", key, 
-                       E, (key_max_width + 1) - key.len(),
-                       thing.val.clone());
+                if ascii.len() <= c {
+                    print!("{}[{}C{}: {}\n", E, width, key, val);
+                } else {
+                    if self.options.bold {
+                        print!("{}{}[{}C{}: {}\n", bold(&ascii[c]), E, 
+                            (width - ascii[c].len()), key, val);
+                    } else {
+                        print!("{}{}[{}C{}: {}\n", ascii[c], E,
+                            (width - ascii[c].len()), key, val);
+                    }
+                }
 
-                // move down and beyond logo
-                print!("\n{}[{}C", E, ascii_max_width + 4);
-                ascii_height -= 1;
+                printed = c;
+            }
+            
+            if ascii.len() > printed {
+                for i in (printed + 1)..ascii.len() {
+                    if self.options.bold {
+                        print!("{}\n", bold(&ascii[i]));
+                    } else {
+                        print!("{}\n", ascii[i]);
+                    }
+                }
             }
 
-            print!("{}[{}B", E, ascii_height);
-            print!("\n");
+            print!("\n"); // newline
         }
     }
 }
