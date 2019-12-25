@@ -296,7 +296,8 @@ fn main() {
     if matches.is_present("distro") {
         let mut distro = DistroInfo::new();
         match distro.get() {
-            Ok(()) => writer.add("DISTRO", &distro.format()),
+            //Ok(()) => writer.add("DISTRO", &distro.format()),
+            Ok(()) => writer.add("OS", &distro.format()),
             Err(e) => error!("{}", e),
         }
     }
