@@ -303,7 +303,7 @@ fn main() {
         if matches.is_present("userat") {
             let mut userstr: String = "".to_owned();
             if matches.is_present("user") {
-                if bold {
+                if bold && (style != OutputType::Rsfetch) {
                     userstr = format!("{}[1m{}{}[0m", 27 as char,
                                       user, 27 as char);
                 } else {
@@ -316,7 +316,7 @@ fn main() {
                     userstr = format!("{}@", userstr);
                 }
 
-                if bold {
+                if bold && (style != OutputType::Rsfetch) {
                     userstr = format!("{}{}[1m{}{}[0m", userstr,
                                       27 as char, host, 27 as char);
                 } else {
