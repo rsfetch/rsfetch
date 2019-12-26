@@ -45,7 +45,7 @@ impl OutputHelper {
         } else { '│' };
 
         let sep = if options.output_type == OutputType::Minimal {
-            format::LineSeparator::new(' ', ' ', 
+            format::LineSeparator::new(' ', ' ',
                                        options.borders, options.borders)
         } else {
             format::LineSeparator::new('─', '─',
@@ -139,7 +139,7 @@ impl OutputHelper {
 
                     l.to_string()
                 }).collect::<Vec<String>>();
-            
+
             if ascii.len() > 0 {
                 width += 2;
             }
@@ -167,7 +167,7 @@ impl OutputHelper {
                 // print logo
                 if c < ascii.len() {
                     if self.options.bold {
-                        print!("{}{}[{}C", bold(&ascii[c]), E, 
+                        print!("{}{}[{}C", bold(&ascii[c]), E,
                             (width - ascii[c].len()));
                     } else {
                         print!("{}{}[{}C", ascii[c], E,
@@ -196,7 +196,7 @@ impl OutputHelper {
 
                 printed = c;
             }
-            
+
             if ascii.len() > printed {
                 for i in (printed + 1)..ascii.len() {
                     if self.options.bold {

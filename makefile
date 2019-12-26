@@ -39,9 +39,7 @@ options:
 debug:
 	${CC} build ${DFLAGS}
 
-./target/debug/rsfetch: debug
-
-run: ./target/debug/rsfetch
+run:
 	${DBIN} ${RUN_ARGS}
 
 build:
