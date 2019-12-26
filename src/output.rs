@@ -152,7 +152,7 @@ impl OutputHelper {
                     key_width = key.len();
                 }
             }).collect::<()>();
-            key_width += 1;
+            key_width += 2;
 
             let mut printed = 0;
             for c in 0..stuff.len() {
