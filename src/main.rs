@@ -120,6 +120,11 @@ fn main() {
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
                          .help("Turn CPU information on."))
+                    // OPEN ISSUE: nameing of argument below
+                    .arg(Arg::with_name("userat")
+                         .long("userat")
+                         .short("@")
+                         .help("Turn 'user@hostname' style on (only applicable if both 'user' and 'hostname' are enabled!)."))
                     .arg(Arg::with_name("user")
                         .short("U")
                         .long("user")
@@ -276,14 +281,16 @@ fn main() {
         writer.ascii(logo);
     }
 
-    if matches.is_present("user") {
+    if matches.is_present("user") || matches.is_present("hostname") {
         let mut hostname = Hostname::new();
         let mut user = "".to_owned();
         let mut host = "".to_owned();
 
-        match env.get(EnvItem::User) {
-            Ok(()) => user = env.format(EnvItem::User),
-            Err(e) => error!("{}", e),
+        if matches.is_present("user") {
+            match env.get(EnvItem::User) {
+                Ok(()) => user = env.format(EnvItem::User),
+                Err(e) => error!("{}", e),
+            }
         }
 
         if matches.is_present("hostname") {
@@ -293,27 +300,43 @@ fn main() {
             }
         }
 
-        let mut userstr: String;
-        if bold {
-            userstr = format!("{}[1m{}{}[0m", 27 as char,
-                              user, 27 as char);
-        } else {
-            userstr = format!("{}", user);
-        }
-
-        if matches.is_present("hostname") {
-            if bold {
-                userstr = format!("{}@{}[1m{}{}[0m", userstr,
-                                  27 as char, host, 27 as char);
-            } else {
-                userstr = format!("{}@{}", userstr, host);
+        if matches.is_present("userat") {
+            let mut userstr: String = "".to_owned();
+            if matches.is_present("user") {
+                if bold {
+                    userstr = format!("{}[1m{}{}[0m", 27 as char,
+                                      user, 27 as char);
+                } else {
+                    userstr = format!("{}", user);
+                }
             }
-        }
 
-        if style == OutputType::Neofetch {
-            writer.add("", &userstr);
+            if matches.is_present("hostname") {
+                if matches.is_present("user") {
+                    userstr = format!("{}@", userstr);
+                }
+
+                if bold {
+                    userstr = format!("{}{}[1m{}{}[0m", userstr,
+                                      27 as char, host, 27 as char);
+                } else {
+                    userstr = format!("{}{}", userstr, host);
+                }
+            }
+
+            if style == OutputType::Neofetch {
+                writer.add("", &userstr);
+            } else {
+                writer.add("USER", &userstr);
+            }
         } else {
-            writer.add("USER", &userstr);
+            if matches.is_present("user") {
+                writer.add("USER", &user);
+            }
+
+            if matches.is_present("hostname") {
+                writer.add("HOSTNAME", &host);
+            }
         }
     }
 
