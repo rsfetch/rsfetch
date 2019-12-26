@@ -90,9 +90,21 @@ impl OutputHelper {
             for thing in self.data.clone() {
                 println!("{}", thing.val);
             }
+
+            print!("\n");
+
         } else if self.options.output_type == OutputType::Rsfetch {
             // print logo
             println!("{}", bold(&self.ascii));
+
+            // print newline, if necessary
+            let chr = self.ascii.clone().chars().last();
+            match chr {
+                Some(ch) => if (ch as u32) != 10 {
+                    print!("\n");
+                },
+                None     => print!("\n"),
+            }
 
             // convert self.data to table, then print
             for thing in self.data.clone() {
