@@ -24,6 +24,14 @@ impl DistroInfo {
     // the /etc/os-release file when it's installed on top
     // of another system.
     pub fn get(&mut self) -> Result<()> {
+        // check for bedrock
+        if fs::metadata("/bedrock/etc/os-release").is_ok() {
+            self.name        = "bedrock".to_string();
+            self.pretty_name = "Bedrock Linux".to_string();
+
+            return Ok(());
+        }
+
         let file = fs::read_to_string("/etc/os-release")
             .context(OsRelease)?;
 
@@ -37,9 +45,9 @@ impl DistroInfo {
             let val = keyval[1].trim().trim_matches('"');
 
             match key {
-                "NAME"        => self.name = val.to_string(),
-                "ID"          => self.id   = val.to_string(),
-                "DISTRIB_ID"  => self.distrib_id = val.to_string(),
+                "NAME"        => self.name        = val.to_string(),
+                "ID"          => self.id          = val.to_string(),
+                "DISTRIB_ID"  => self.distrib_id  = val.to_string(),
                 "PRETTY_NAME" => self.pretty_name = val.to_string(),
                 &_            => (),
             }
