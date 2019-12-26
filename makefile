@@ -43,7 +43,7 @@ run:
 
 build:
 	${CC} build ${RFLAGS}
-	strip $(RBIN)
+	strip --strip-debug $(RBIN)
 
 clean:
 	rm -rf ./target/
