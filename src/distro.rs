@@ -1,5 +1,6 @@
 use std::fs;
 use crate::*;
+use std::process::Command;
 
 pub struct DistroInfo {
     name:        String,
@@ -18,18 +19,41 @@ impl DistroInfo {
         }
     }
 
-    // TODO: support for non-standard distros like CRUX, which
-    // typically don't have an /etc/os-release file.
-    // TODO: support for Bedrock Linux, which doesn't modify
-    // the /etc/os-release file when it's installed on top
-    // of another system.
+    // TODO: check for:
+    // - (Free|Open|Net|Dragonfly)BSD
     pub fn get(&mut self) -> Result<()> {
-        // check for bedrock
+        // check for Bedrock
         if fs::metadata("/bedrock/etc/os-release").is_ok() {
             self.name        = "bedrock".to_string();
             self.pretty_name = "Bedrock Linux".to_string();
 
             return Ok(());
+        }
+
+        // check for CRUX
+        let isthiscrux = Command::new("crux").output();
+        match isthiscrux {
+            Ok(output) => {
+                // TODO: parse output of `crux` command
+                // into self.name and self.pretty_name
+                self.name        = "crux".to_string();
+                self.pretty_name = "CRUX Linux".to_string();
+
+                return Ok(());
+            },
+            Err(_)     => (),
+        }
+
+        // check for GNU Guix
+        let isthisguix = Command::new("guix").output();
+        match isthisguix {
+            Ok(_) => {
+                self.name        = "guix".to_string();
+                self.pretty_name = "Guix System".to_string();
+
+                return Ok(());
+            },
+            Err(_) => (),
         }
 
         let file = fs::read_to_string("/etc/os-release")
