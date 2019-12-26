@@ -73,9 +73,9 @@ pub type Result<T, E = Error> = result::Result<T, E>;
 // Default art.
 fn get_default_logo(style: &OutputType) -> String {
     if style == &OutputType::Rsfetch {
-        return " \\    / /\\   |    |    |--- \\   /
-  \\  / /__\\  |    |    |---  \\ /
-   \\/ /----\\ |___ |___ |---   |".to_string();
+        return " ┬─┐┌─┐┌─┐┌─┐┌┬┐┌─┐┬ ┬
+ ├┬┘└─┐├┤ ├┤  │ │  ├─┤
+ ┴└─└─┘└  └─┘ ┴ └─┘┴ ┴".to_string();
     } else {
         // TODO: better default logo :-)
         return "    ___
