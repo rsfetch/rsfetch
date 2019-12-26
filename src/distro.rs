@@ -33,7 +33,7 @@ impl DistroInfo {
         // check for CRUX
         let isthiscrux = Command::new("crux").output();
         match isthiscrux {
-            Ok(output) => {
+            Ok(__) => {
                 // TODO: parse output of `crux` command
                 // into self.name and self.pretty_name
                 self.name        = "crux".to_string();
@@ -41,7 +41,7 @@ impl DistroInfo {
 
                 return Ok(());
             },
-            Err(_)     => (),
+            Err(_) => (),
         }
 
         // check for GNU Guix
