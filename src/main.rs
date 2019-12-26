@@ -7,6 +7,8 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use std::fs::File;
 use std::result;
 
+mod hostname;
+use crate::hostname::*;
 mod env;
 use crate::env::*;
 mod cpu;
@@ -35,7 +37,7 @@ pub enum Error {
     #[snafu(display("Unable to retrieve device model: {}", source))]
     DeviceName { source: std::io::Error },
     #[snafu(display("Unable to retrieve hostname: {}", source))]
-    Hostname { source: std::io::Error },
+    ReadHostname { source: std::io::Error },
     #[snafu(display("Unable to retrieve Linux distro: {}", source))]
     OsRelease { source: std::io::Error },
     #[snafu(display("Unable to retrieve kernel version: {}", source))]
@@ -77,7 +79,7 @@ fn get_default_logo(style: &OutputType) -> String {
     } else {
         // TODO: better default logo :-)
         return "    ___
-   (.· |
+   (.. |
    (<> |
   / __  \\
  ( /  \\ /|
@@ -122,6 +124,10 @@ fn main() {
                         .short("U")
                         .long("user")
                         .help("Turn user name off."))
+                    .arg(Arg::with_name("hostname")
+                         .short("H")
+                         .long("hostname")
+                         .help("Turn hostname on."))
                     .arg(Arg::with_name("host")
                         .short("h")
                         .long("host")
@@ -202,7 +208,7 @@ fn main() {
         println!();
         return;
     }
-    
+
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
@@ -242,7 +248,7 @@ fn main() {
     //let format;
     // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
     let mut env = EnvInfo::new();
-    
+
     // --- OUTPUT ---
     // if there aren't any options, then no information fields
     // will be enabled, which means we may as well exit now
@@ -255,7 +261,7 @@ fn main() {
     }
 
     let mut writer = OutputHelper::new(opts);
-    
+
     // Determine the logo to use.
     if matches.is_present("logo") {
         let mut logo: String = "".to_owned();
@@ -271,12 +277,55 @@ fn main() {
     }
 
     if matches.is_present("user") {
+        let mut hostname = Hostname::new();
+        let mut user = "".to_owned();
+        let mut host = "".to_owned();
+
         match env.get(EnvItem::User) {
-            Ok(()) => writer.add("USER", &env.format(EnvItem::User)),
+            Ok(()) => user = env.format(EnvItem::User),
+            Err(e) => error!("{}", e),
+        }
+
+        if matches.is_present("hostname") {
+            match hostname.get() {
+                Ok(()) => host = hostname.format(),
+                Err(e) => error!("{}", e),
+            }
+        }
+
+        let mut userstr: String;
+        if bold {
+            userstr = format!("{}[1m{}{}[0m", 27 as char,
+                              user, 27 as char);
+        } else {
+            userstr = format!("{}", user);
+        }
+
+        if matches.is_present("hostname") {
+            if bold {
+                userstr = format!("{}@{}[1m{}{}[0m", userstr,
+                                  27 as char, host, 27 as char);
+            } else {
+                userstr = format!("{}@{}", userstr, host);
+            }
+        }
+
+        if style == OutputType::Neofetch {
+            writer.add("", &userstr);
+        } else {
+            writer.add("USER", &userstr);
+        }
+    }
+
+    if matches.is_present("distro") {
+        let mut distro = DistroInfo::new();
+        match distro.get() {
+            //Ok(()) => writer.add("DISTRO", &distro.format()),
+            Ok(()) => writer.add("OS", &distro.format()),
             Err(e) => error!("{}", e),
         }
     }
-    
+
     if matches.is_present("host") {
         let mut device = DeviceInfo::new();
         match device.get() {
@@ -284,20 +333,11 @@ fn main() {
             Err(e) => error!("{}", e),
         }
     }
-    
+
     if matches.is_present("uptime") {
         let mut uptime = UptimeInfo::new();
         match uptime.get() {
             Ok(()) => writer.add("UPTIME", &uptime.format()),
-            Err(e) => error!("{}", e),
-        }
-    }
-    
-    if matches.is_present("distro") {
-        let mut distro = DistroInfo::new();
-        match distro.get() {
-            //Ok(()) => writer.add("DISTRO", &distro.format()),
-            Ok(()) => writer.add("OS", &distro.format()),
             Err(e) => error!("{}", e),
         }
     }
@@ -351,7 +391,7 @@ fn main() {
     if let Some(packages) = packages {
         let mut pkgs = PkgInfo::new();
         pkgs.set_manager(packages);
-        
+
         match pkgs.get() {
             Ok(()) => writer.add(
                 &format!("PACKAGES ({})", packages.to_ascii_uppercase()), &pkgs.format()),
@@ -361,7 +401,7 @@ fn main() {
 
     if music == "mpd" {
         let mut mpd = MusicInfo::new();
-        
+
         match mpd.get() {
             Ok(()) => writer.add("MUSIC (MPD)", &mpd.format()),
             Err(e) => error!("{}", e),
