@@ -43,17 +43,11 @@ run:
 
 build:
 	${CC} build ${RFLAGS}
+	strip $(RBIN)
 
 clean:
 	rm -rf ./target/
 	rm -f rsfetch.tar.gz
-
-dist: options clean build
-	mkdir -p rsfetch-tmp
-	cp -f ${RBIN} ./rsfetch-tmp/ 
-	tar -cf rsfetch.tar rsfetch-tmp
-	gzip rsfetch.tar
-	rm -rf rsfetch
 
 install: build
 	mkdir -p ${DESTDIR}${PREFIX}/bin
