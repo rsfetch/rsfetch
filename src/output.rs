@@ -1,6 +1,8 @@
 use std::vec::Vec;
 use prettytable::{ cell, format, row, Table };
 
+const E: char = 0x1B as char;
+
 #[derive(Clone)]
 struct KeyValue {
     key: String,
@@ -23,15 +25,14 @@ pub struct OutputOptions {
 }
 
 pub struct OutputHelper {
-    table:   Table,
-    ascii:   String,
-    options: OutputOptions,
-    data:    Vec<KeyValue>,
+    table:    Table,
+    ascii:    String,
+    options:  OutputOptions,
+    data:     Vec<KeyValue>,
 }
 
 pub fn bold(text: &str) -> String {
-    let e: char = 0x1B as u8 as char;
-    format!("{}[1m{}{}[0m", e, text, e)
+    format!("{}[1m{}{}[0m", E, text, E)
 }
 
 impl OutputHelper {
@@ -44,7 +45,7 @@ impl OutputHelper {
         } else { '│' };
 
         let sep = if options.output_type == OutputType::Minimal {
-            format::LineSeparator::new(' ', ' ', 
+            format::LineSeparator::new(' ', ' ',
                                        options.borders, options.borders)
         } else {
             format::LineSeparator::new('─', '─',
@@ -63,10 +64,10 @@ impl OutputHelper {
         table.set_format(format);
 
         OutputHelper {
-            table:   table,
-            ascii:   String::new(),
-            options: options,
-            data:    Vec::new(),
+            table:    table,
+            ascii:    String::new(),
+            options:  options,
+            data:     Vec::new(),
         }
     }
 
@@ -89,9 +90,21 @@ impl OutputHelper {
             for thing in self.data.clone() {
                 println!("{}", thing.val);
             }
+
+            print!("\n");
+
         } else if self.options.output_type == OutputType::Rsfetch {
             // print logo
             println!("{}", bold(&self.ascii));
+
+            // print newline, if necessary
+            let chr = self.ascii.clone().chars().last();
+            match chr {
+                Some(ch) => if (ch as u32) != 10 {
+                    print!("\n");
+                },
+                None     => print!("\n"),
+            }
 
             // convert self.data to table, then print
             for thing in self.data.clone() {
@@ -104,6 +117,7 @@ impl OutputHelper {
 
                 if self.options.bold {
                     key = bold(&key);
+                    self.ascii = bold(&self.ascii.clone());
                 }
 
                 if !self.options.use_borders {
@@ -114,8 +128,86 @@ impl OutputHelper {
             }
             self.table.printstd();
         } else if self.options.output_type == OutputType::Neofetch {
-            // don't do anything
-            // TODO: implement
+            let mut width = 0;
+            let mut key_width = 0;
+            let ascii = self.ascii.clone()
+                .split("\n")
+                .map(|l| {
+                    if l.len() > width {
+                        width = l.len();
+                    }
+
+                    l.to_string()
+                }).collect::<Vec<String>>();
+
+            if ascii.len() > 0 {
+                width += 2;
+            }
+
+            let stuff = self.data.clone();
+
+            let _ = stuff.iter().map(|i| {
+                let key = &i.key;
+                if key.len() > key_width {
+                    key_width = key.len();
+                }
+            }).collect::<()>();
+            key_width += 2;
+
+            let mut printed = 0;
+            for c in 0..stuff.len() {
+                let thing = stuff[c].clone();
+                let mut key = thing.key;
+                let val = thing.val;
+
+                if !self.options.caps {
+                    key = key.to_lowercase();
+                }
+
+                // print logo
+                if c < ascii.len() {
+                    if self.options.bold {
+                        print!("{}{}[{}C", bold(&ascii[c]), E,
+                            (width - ascii[c].len()));
+                    } else {
+                        print!("{}{}[{}C", ascii[c], E,
+                            (width - ascii[c].len()));
+                    }
+                } else {
+                    print!("{}[{}C", E, width);
+                }
+
+                // print key and value
+                if key != "" {
+                    if self.options.bold {
+                        print!("{}{}[{}C{}\n", bold(&key), E,
+                               (key_width - key.len()), val);
+                    } else {
+                        print!("{}{}[{}C{}\n", key, E,
+                               (key_width - key.len()), val);
+                    }
+                } else {
+                    if self.options.bold {
+                        print!("{}\n", bold(&val));
+                    } else {
+                        print!("{}\n", val);
+                    }
+                }
+
+                printed = c;
+            }
+
+            if ascii.len() > printed {
+                for i in (printed + 1)..ascii.len() {
+                    if self.options.bold {
+                        print!("{}\n", bold(&ascii[i]));
+                    } else {
+                        print!("{}\n", ascii[i]);
+                    }
+                }
+            }
+
+            print!("\n"); // newline
         }
     }
 }

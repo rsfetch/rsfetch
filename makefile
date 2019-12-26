@@ -13,6 +13,9 @@ JOBS  ?= 1
 DFLAGS = --color always -j$(JOBS)
 RFLAGS = ${DFLAGS} --release
 
+# default arguments
+RUN_ARGS = -deskUH
+
 # run args
 ifeq (run,$(firstword $(MAKECMDGOALS)))
   # use the rest as arguments for "run"
@@ -24,19 +27,18 @@ endif
 # compiler and linker
 CC = cargo
 
-all: options run
+all: options debug run
 
-opt:
-	@echo :: OPTIONS
+options:
 	@echo "CC        = ${CC}"
 	@echo "DFLAGS    = ${DFLAGS}"
 	@echo "RFLAGS    = ${RFLAGS}"
-	@echo "RUNARGS   = ${RUN_ARGS}"
+	@echo "RUNARGS   = ${RUN_ARGS}\n\n"
 
 debug:
 	${CC} build ${DFLAGS}
 
-run: debug
+run:
 	${DBIN} ${RUN_ARGS}
 
 build:

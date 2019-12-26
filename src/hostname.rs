@@ -14,8 +14,8 @@ impl Hostname {
 
     pub fn get(&mut self) -> Result<()> {
         let f = fs::read_to_string("/etc/hostname")
-            .context(Hostname)?;
-        self.model = f.trim().to_string();
+            .context(ReadHostname)?;
+        self.name = f.trim().to_string();
 
         Ok(())
     }
