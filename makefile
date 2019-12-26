@@ -27,14 +27,13 @@ endif
 # compiler and linker
 CC = cargo
 
-all: options run
+all: options debug run
 
 options:
-	@echo :: OPTIONS
 	@echo "CC        = ${CC}"
 	@echo "DFLAGS    = ${DFLAGS}"
 	@echo "RFLAGS    = ${RFLAGS}"
-	@echo "RUNARGS   = ${RUN_ARGS}"
+	@echo "RUNARGS   = ${RUN_ARGS}\n\n"
 
 debug:
 	${CC} build ${DFLAGS}
