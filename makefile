@@ -45,6 +45,9 @@ build:
 	${CC} build ${RFLAGS}
 	strip --strip-debug $(RBIN)
 
+bench:
+	hyperfine ufetch pfetch kfetch "neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory" "target/release/rsfetch -NcldkuUH@swp xbps"
+
 clean:
 	rm -rf ./target/
 	rm -f rsfetch.tar.gz
@@ -57,4 +60,4 @@ install: build
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/rsfetch
 
-.PHONY: all options run clean dist install uninstall
+.PHONY: all options run clean dist install uninstall bench
