@@ -19,8 +19,6 @@ impl DistroInfo {
         }
     }
 
-    // TODO: check for:
-    // - (Free|Open|Net|Dragonfly)BSD
     pub fn get(&mut self) -> Result<()> {
         // check for Bedrock
         if fs::metadata("/bedrock/etc/os-release").is_ok() {
@@ -56,28 +54,52 @@ impl DistroInfo {
             Err(_) => (),
         }
 
-        let file = fs::read_to_string("/etc/os-release")
-            .context(OsRelease)?;
+        // check for etc/os-release file, which handles the
+        // rest
+        if fs::metadata("/etc/os-release").is_ok() {
+            let file = fs::read_to_string("/etc/os-release")
+                .context(OsRelease)?;
 
-        for value in file.split("\n") {
-            let keyval = value.split("=").collect::<Vec<&str>>();
-            if keyval.len() < 2 {
-                continue;
+            for value in file.split("\n") {
+                let keyval = value.split("=").collect::<Vec<&str>>();
+                if keyval.len() < 2 {
+                    continue;
+                }
+
+                let key = keyval[0].trim();
+                let val = keyval[1].trim().trim_matches('"');
+
+                match key {
+                    "NAME"        => self.name        = val.to_string(),
+                    "ID"          => self.id          = val.to_string(),
+                    "DISTRIB_ID"  => self.distrib_id  = val.to_string(),
+                    "PRETTY_NAME" => self.pretty_name = val.to_string(),
+                    &_            => (),
+                }
             }
 
-            let key = keyval[0].trim();
-            let val = keyval[1].trim().trim_matches('"');
+            return Ok(());
+        } else {
+            // just return the output of uname -sr ;P
+            // also handles the BSD's
+            let uname = Command::new("uname").arg("-sr").output();
+            match uname {
+                Ok(out) => {
+                    let mut output = "".to_owned();
+                    let _ = out.stdout.iter().map(|b| {
+                        output.push(*b as char);
+                    }).collect::<()>();
 
-            match key {
-                "NAME"        => self.name        = val.to_string(),
-                "ID"          => self.id          = val.to_string(),
-                "DISTRIB_ID"  => self.distrib_id  = val.to_string(),
-                "PRETTY_NAME" => self.pretty_name = val.to_string(),
-                &_            => (),
+                    self.name = output;
+                    Ok(())
+                },
+
+                Err(_)  => {
+                    self.name = "?".to_string();
+                    return Ok(());
+                },
             }
         }
-
-        Ok(())
     }
 
     pub fn format(&self) -> String {
