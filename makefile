@@ -46,7 +46,10 @@ build:
 	strip --strip-debug $(RBIN)
 
 bench:
-	hyperfine ufetch pfetch kfetch "neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory" "target/release/rsfetch -NcldkuUH@swp xbps"
+	hyperfine "target/release/rsfetch -NcldkuUH@swp xbps" \
+		kfetch ufetch pfetch \
+		"aura -n \"term\"" \
+		"neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory"
 
 clean:
 	rm -rf ./target/

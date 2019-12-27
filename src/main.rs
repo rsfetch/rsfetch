@@ -417,7 +417,7 @@ fn main() {
 
         match pkgs.get() {
             Ok(()) => writer.add("PACKAGES", 
-                &format!("{} ({})", packages.to_ascii_uppercase(), pkgs.format())),
+                &format!("{} ({})", packages, pkgs.format())),
             Err(e) => error!("{}", e),
         }
     }
