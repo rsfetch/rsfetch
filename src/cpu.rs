@@ -1,10 +1,36 @@
 use std::fs;
 use crate::*;
+use std::vec::Vec;
+use std::process::Command;
 
 pub struct CPUInfo {
     pub model: String,
     pub cores: usize,
     pub freq:  usize,
+}
+
+// TODO: cleanup this function
+pub fn is_bsd() -> bool {
+    let uname = Command::new("uname").arg("-s")
+        .output().unwrap();
+
+    let os = uname.stdout.iter()
+        .map(|b| b as char).collect::<Vec<char>>();
+
+    if os.len() < 3 {
+        return false;
+    }
+
+    let last3: String;
+    last3.push(os[os.len() - 3]);
+    last3.push(os[os.len() - 2]);
+    last3.push(os[os.len() - 1]);
+
+    if last3.to_ascii_lowercase() != "bsd" {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 impl CPUInfo {
@@ -18,6 +44,45 @@ impl CPUInfo {
 
     // retrieve model, cores, and frequency
     pub fn get(&mut self) -> Result<()> {
+        // check if it's BSD first...
+        // TODO: test this
+        if is_bsd {
+            let mut out = "".to_string();
+            Command::new("sysctl").arg("-n hw.model")
+                .output().context(BSD_CPUErr)?
+                .stdout.iter().map(|b|
+            {
+                out.push(b as char);
+            }).collect::<()>();
+
+            self.model = out.split('@')
+                .collect::<Vec<&str>>()[0].trim();
+
+            let mut cores: String;
+            let mut speed: String;
+
+            let cores_command = Command::new("sysctl")
+                .arg("-n hw.ncpu").output().context(BSD_CPUErr)?
+                .stdout.iter().map(|b| cores.push(b as char))
+                .collect::<()>();
+
+            let mut speed_command = Command::new("sysctl")
+                .arg("-n hw.cpuspeed").output().context(BSD_CPUErr)?
+                .stdout.iter().map(|b| cores.push(b as char))
+                .collect::<()>();
+            if speed == "" {
+                speed = "";
+                speed_command = Command::new("sysctl")
+                    .arg("-n hw.clockrate").output().context(BSD_CPUErr)?
+                    .stdout.iter().map(|b| cores.push(b as char))
+                    .collect::<()>();
+            }
+
+            self.cores = cores.parse::<usize>().context(BSD_CPUParseErr)?;
+            self.speed = speed.parse::<usize>().context(BSD_CPUParseErr)?;
+            return Ok(());
+        }
+
         // model and number of cores
         let cpuinfos = fs::read_to_string("/proc/cpuinfo").context(CPUErr)?;
         for line in cpuinfos.split("\n") {
