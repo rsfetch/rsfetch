@@ -416,8 +416,8 @@ fn main() {
         pkgs.set_manager(packages);
 
         match pkgs.get() {
-            Ok(()) => writer.add(
-                &format!("PACKAGES ({})", packages.to_ascii_uppercase()), &pkgs.format()),
+            Ok(()) => writer.add("PACKAGES", 
+                &format!("{} ({})", packages.to_ascii_uppercase(), pkgs.format())),
             Err(e) => error!("{}", e),
         }
     }
