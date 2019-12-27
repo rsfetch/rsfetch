@@ -77,7 +77,6 @@ fn get_default_logo(style: &OutputType) -> String {
  ├┬┘└─┐├┤ ├┤  │ │  ├─┤
  ┴└─└─┘└  └─┘ ┴ └─┘┴ ┴".to_string();
     } else {
-        // TODO: better default logo :-)
         return "    ___
    (.. |
    (<> |
