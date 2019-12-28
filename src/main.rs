@@ -421,7 +421,7 @@ fn main() {
 
         match pkgs.get() {
             Ok(()) => writer.add("PACKAGES", 
-                &format!("{} ({})", packages, pkgs.format())),
+                &format!("{} ({})", pkgs.format(), packages)),
             Err(e) => error!("{}", e),
         }
     }

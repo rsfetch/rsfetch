@@ -11,7 +11,12 @@ impl DeviceInfo {
     }
 
     pub fn get(&mut self) -> Result<()> {
-        let f = fs::read_to_string("/sys/devices/virtual/dmi/id/product_name")
+        let mut path = "/sys/devices/virtual/dmi/id/product_name";
+        if !fs::metadata(path).is_ok() {
+            path = "/sys/firmware/devicetree/base/model";
+        }
+
+        let f = fs::read_to_string(path)
             .context(DeviceName)?;
         self.model = f.trim().to_string();
 
