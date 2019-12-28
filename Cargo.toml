@@ -6,7 +6,7 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
-clap = "2.33"
+clap = { version = "3.0.0-beta.1", features = ["yaml"] }
 dirs = "1.0"
 log = "0.4"
 pretty_env_logger = "0.3"

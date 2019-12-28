@@ -1,0 +1,106 @@
+name: rsfetch
+version: "1.9.0"
+about: |
+        A fast, minimal(?) fetch tool for Linux and \*BSD.
+        
+        All options are off by default.
+
+        Accepted values for the package manager are pacman, apt, xbps, dnf, 
+        pkg, eopkg, rpm, apk, portage, pip, and cargo.
+
+args:
+        - credits:
+                long: credits
+                help: List of past and current contributors for this project.
+        - no-bold:
+                long: no-bold
+                short: b
+                help: Turn bold for field titles off.
+        - no-borders:
+                long: no-borders
+                short: B
+                help: Turn borders off. (only applicable for normal output style.)
+        - no-caps:
+                long: no-caps
+                short: c
+                help: Turn upper-case for field titles off.
+        - userat:
+                long: userat
+                short: @
+                help: Turn 'user@hostname' style on. (only applicable if both user and hostname are enabled!)
+        - minimal:
+                long: minimal
+                short: M
+                help: Turn minimal-style output mode on.
+        - neofetch:
+                long: neofetch
+                short: N
+                help: Turn neofetch/screenfetch/pfetch-style output mode on.
+        - cpu:
+                long: cpu
+                help: Turn CPU information on.
+        - user:
+                long: user
+                short: U
+                help: Turn username information on.
+        - hostname:
+                long: hostname
+                short: H
+                help: Turn hostname information on.
+        - ip-address:
+                long: ip-address
+                short: i
+                help: Turn IP address information on.
+        - editor:
+                long: editor
+                short: e
+                help: Turn default editor name on. (Must have $VISUAL/$EDITOR env variable set.)
+        - shell:
+                long: shell
+                short: s
+                help: Turn shell information on.
+        - wm:
+                long: wm
+                short: w
+                help: Turn current WM/DE information on.
+        - distro:
+                long: distro
+                short: d
+                help: Turn distro information on.
+        - kernel:
+                long: kernel
+                short: 
+                help: Turn kernel information on.
+        - uptime:
+                long: uptime
+                short: u
+                help: Turn uptime information on.
+        - logo:
+                short: l
+                long: logo
+                help: Turn ASCII art on.
+        - packages:
+                long: packages
+                short: p
+                help: Turn package count on.
+                takes_value: true
+                value_name: "PKG MNGR"
+        - music:
+                short: m
+                long: music
+                help: Turn music information on. (Accepted values: \'mpd\'.)
+                takes_value: true
+                value_name: SOURCE
+        - logofile:
+                long: logofile
+                short: L
+                help: Specify file from which to read custom ASCII art.
+                takes_value: true
+                value_name: FILE
+        - corners:
+                long: corners
+                short: C
+                help: Specify corner character. (only applicable when borders and normal output mode are enabled.)
+                takes_value: true
+                value_name: CHAR
+

@@ -124,7 +124,6 @@ fn main() {
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
                          .help("Turn CPU information on."))
-                    // OPEN ISSUE: nameing of argument below
                     .arg(Arg::with_name("userat")
                          .long("userat")
                          .short("@")
