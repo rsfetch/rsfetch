@@ -211,7 +211,8 @@ fn main() {
     if matches.is_present("credits") {
         println!();
         println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
+        println!("Contributor:      Ki{}d Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)",
+            std::char::from_u32(235 as u32).unwrap());
         println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
             std::char::from_u32(539 as u32).unwrap());
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\", for their contributions, and the tool \"neofetch\" for giving the inspiration to create this.");
