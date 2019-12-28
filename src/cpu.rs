@@ -15,13 +15,13 @@ pub fn is_bsd() -> bool {
         .output().unwrap();
 
     let os = uname.stdout.iter()
-        .map(|b| b as char).collect::<Vec<char>>();
+        .map(|b| *b as char).collect::<Vec<char>>();
 
     if os.len() < 3 {
         return false;
     }
 
-    let last3: String;
+    let mut last3: String = String::new();
     last3.push(os[os.len() - 3]);
     last3.push(os[os.len() - 2]);
     last3.push(os[os.len() - 1]);
@@ -46,40 +46,40 @@ impl CPUInfo {
     pub fn get(&mut self) -> Result<()> {
         // check if it's BSD first...
         // TODO: test this
-        if is_bsd {
+        if is_bsd() {
             let mut out = "".to_string();
-            Command::new("sysctl").arg("-n hw.model")
-                .output().context(BSD_CPUErr)?
+            let _ = Command::new("sysctl").arg("-n hw.model")
+                .output().context(BSDCPUErr)?
                 .stdout.iter().map(|b|
             {
-                out.push(b as char);
+                out.push(*b as char);
             }).collect::<()>();
 
             self.model = out.split('@')
-                .collect::<Vec<&str>>()[0].trim();
+                .collect::<Vec<&str>>()[0].trim().to_string();
 
-            let mut cores: String;
-            let mut speed: String;
+            let mut cores: String = String::new();
+            let mut speed: String = String::new();
 
-            let cores_command = Command::new("sysctl")
-                .arg("-n hw.ncpu").output().context(BSD_CPUErr)?
-                .stdout.iter().map(|b| cores.push(b as char))
+            let _ = Command::new("sysctl")
+                .arg("-n hw.ncpu").output().context(BSDCPUErr)?
+                .stdout.iter().map(|b| cores.push(*b as char))
                 .collect::<()>();
 
-            let mut speed_command = Command::new("sysctl")
-                .arg("-n hw.cpuspeed").output().context(BSD_CPUErr)?
-                .stdout.iter().map(|b| cores.push(b as char))
+            let _ = Command::new("sysctl")
+                .arg("-n hw.cpuspeed").output().context(BSDCPUErr)?
+                .stdout.iter().map(|b| cores.push(*b as char))
                 .collect::<()>();
             if speed == "" {
-                speed = "";
-                speed_command = Command::new("sysctl")
-                    .arg("-n hw.clockrate").output().context(BSD_CPUErr)?
-                    .stdout.iter().map(|b| cores.push(b as char))
+                speed = "".to_string();
+                let _ = Command::new("sysctl")
+                    .arg("-n hw.clockrate").output().context(BSDCPUErr)?
+                    .stdout.iter().map(|b| cores.push(*b as char))
                     .collect::<()>();
             }
 
-            self.cores = cores.parse::<usize>().context(BSD_CPUParseErr)?;
-            self.speed = speed.parse::<usize>().context(BSD_CPUParseErr)?;
+            self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
+            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)?;
             return Ok(());
         }
 
@@ -88,8 +88,9 @@ impl CPUInfo {
         for line in cpuinfos.split("\n") {
             let cpuinfo = line.split(":").map(|i| i.trim()).collect::<Vec<&str>>();
             match cpuinfo[0] {
-                "Hardware" => self.model = cpuinfo[1].to_string(),
-                "processor" => self.cores = cpuinfo[1].parse::<usize>().unwrap() + 1,
+                "Hardware"   => self.model = cpuinfo[1].to_string(),
+                "processor"  => self.cores = cpuinfo[1].parse::<usize>().unwrap() + 1,
+                "model name" => self.model = cpuinfo[1].to_string(),
                 _ => (),
             }
         }
@@ -102,6 +103,17 @@ impl CPUInfo {
         } else {
             self.freq = 0;
         }
+
+        // remove junk from CPU model
+        self.model = self.model.clone().replace("(TM)", "")
+            .replace("(tm)", "")
+            .replace("(R)", "")
+            .replace("CPU", "")
+            .replace("Processor", "")
+            .replace("Intel ", "")
+            .replace("AMD ", "")
+            .replace("Qualcomm ", "")
+            .trim().to_string();
 
         Ok(())
     }

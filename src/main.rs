@@ -68,9 +68,9 @@ pub enum Error {
     CPUErr { source: std::io::Error },
     #[snafu(display("Unable to retrieve CPU on BSD system: {}.
             Note: rsfetch does not currently contain proper support for *BSD.", source))]
-    BSD_CPUErr { source: std::io::Error },
+    BSDCPUErr { source: std::io::Error },
     #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
-    BSD_CPUParseErr { source: std::num::ParseIntError },
+    BSDCPUParseErr { source: std::num::ParseIntError },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
