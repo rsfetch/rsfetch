@@ -105,14 +105,15 @@ impl CPUInfo {
         }
 
         // remove junk from CPU model
-        self.model = self.model.clone().replace("(TM)", "")
+        self.model = self.model.clone()
+            .split("@")
+            .collect::<Vec<&str>>()[0]
+            .replace("(TM)", "")
             .replace("(tm)", "")
             .replace("(R)", "")
             .replace("CPU", "")
             .replace("Processor", "")
-            .replace("Intel ", "")
-            .replace("AMD ", "")
-            .replace("Qualcomm ", "")
+            .replace("Core ", "")
             .trim().to_string();
 
         Ok(())
