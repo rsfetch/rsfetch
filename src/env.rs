@@ -1,4 +1,5 @@
 use crate::*;
+use std::process::Command;
 
 pub enum EnvItem {
     User,
@@ -23,8 +24,28 @@ impl EnvInfo {
 
     pub fn get(&mut self, item: EnvItem) -> Result<()> {
         match item {
-            EnvItem::User  => self.user  = std::env::var("USER")
-                .context(EnvError)?.to_string(),
+            EnvItem::User  => 
+            {
+                let command = Command::new("id").arg("-un").output();
+                match command {
+                    Ok(o)  => {
+                        let mut user = String::new();
+                        let _ = o.stdout.iter().map(|b| {
+                            user.push(*b as char);
+                        }).collect::<()>();
+
+                        if user != "" {
+                            self.user = user;
+                            return Ok(());
+                        }
+                    },
+                    Err(_) => (),
+                }
+
+                // fallback to reading the USER variable
+                self.user  = std::env::var("USER")
+                .context(EnvError)?.to_string();
+            },
             EnvItem::Shell => self.shell = {
                 let sh = std::env::var("SHELL")
                     .context(EnvError)?;
