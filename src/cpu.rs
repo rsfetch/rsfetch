@@ -9,30 +9,6 @@ pub struct CPUInfo {
     pub freq:  usize,
 }
 
-// TODO: cleanup this function
-pub fn is_bsd() -> bool {
-    let uname = Command::new("uname").arg("-s")
-        .output().unwrap();
-
-    let os = uname.stdout.iter()
-        .map(|b| *b as char).collect::<Vec<char>>();
-
-    if os.len() < 3 {
-        return false;
-    }
-
-    let mut last3: String = String::new();
-    last3.push(os[os.len() - 3]);
-    last3.push(os[os.len() - 2]);
-    last3.push(os[os.len() - 1]);
-
-    if last3.to_ascii_lowercase() != "bsd" {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 impl CPUInfo {
     pub fn new() -> CPUInfo {
         CPUInfo {
@@ -44,9 +20,12 @@ impl CPUInfo {
 
     // retrieve model, cores, and frequency
     pub fn get(&mut self) -> Result<()> {
+        let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
+        let cpu_file = "/proc/cpuinfo";
+
         // check if it's BSD first...
         // TODO: test this
-        if is_bsd() {
+        if !fs::metadata(cpu_file).is_ok() || !fs::metadata(freq_file).is_ok() {
             let mut out = "".to_string();
             let _ = Command::new("sysctl").arg("-n").arg("hw.model")
                 .output().context(BSDCPUErr)?
@@ -84,7 +63,7 @@ impl CPUInfo {
         }
 
         // model and number of cores
-        let cpuinfos = fs::read_to_string("/proc/cpuinfo").context(CPUErr)?;
+        let cpuinfos = fs::read_to_string(cpu_file).context(CPUErr)?;
         for line in cpuinfos.split("\n") {
             let cpuinfo = line.split(":").map(|i| i.trim()).collect::<Vec<&str>>();
             match cpuinfo[0] {
@@ -96,7 +75,6 @@ impl CPUInfo {
         }
 
         // frequency
-        let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
         if fs::metadata(freq_file).is_ok() {
             self.freq = (fs::read_to_string(freq_file).context(CPUErr)?
                 .trim_end().parse::<usize>().unwrap()) / 1000000;
