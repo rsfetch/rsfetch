@@ -1,6 +1,5 @@
 # rsfetch - minimalistic fetch program
 # See LICENSE file for copyright and license details.
-# This Makefile is proudly stolen from XST project
 
 # paths
 DBIN = ./target/debug/rsfetch
@@ -24,7 +23,6 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-# compiler and linker
 CC = cargo
 
 all: options debug run
