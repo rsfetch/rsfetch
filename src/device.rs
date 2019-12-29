@@ -31,6 +31,27 @@ impl DeviceInfo {
             },
         }
 
+        // trim junk
+        self.model = self.model.clone()
+            .replace("To", "")
+            .replace("Not", "")
+            .replace("Version", "")
+            .replace("be", "")
+            .replace("Be", "")
+            .replace("Applicable", "")
+            .replace("Undefined", "")
+            .replace("Specified", "")
+            .replace("OEM", "")
+            .replace("INVALID", "")
+            .replace("Default", "")
+            .replace("O.E.M", "")
+            .replace("Product", "")
+            .replace("Name", "")
+            .replace("string", "")
+            .replace("System", "")
+            .trim().to_string();
+
+
         Ok(())
     }
 
