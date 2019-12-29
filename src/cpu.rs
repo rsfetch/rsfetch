@@ -23,9 +23,15 @@ impl CPUInfo {
         let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
         let cpu_file = "/proc/cpuinfo";
 
+        // TODO: replace context(CPUErr) with context(GuessOS)
+        let mut uname = String::new();
+        let _ = Command::new("uname").arg("-s")
+            .output().context(CPUErr)?
+            .stdout.iter().map(|b| uname.push(*b as char))
+            .collect::<()>();
+
         // check if it's BSD first...
-        // TODO: test this
-        if !fs::metadata(cpu_file).is_ok() || !fs::metadata(freq_file).is_ok() {
+        if uname != "Linux" {
             let mut out = "".to_string();
             let _ = Command::new("sysctl").arg("-n").arg("hw.model")
                 .output().context(BSDCPUErr)?
@@ -40,25 +46,29 @@ impl CPUInfo {
             let mut cores: String = String::new();
             let mut speed: String = String::new();
 
+            // get core count
             let _ = Command::new("sysctl")
                 .arg("-n").arg("hw.ncpu").output().context(BSDCPUErr)?
                 .stdout.iter().map(|b| cores.push(*b as char))
                 .collect::<()>();
 
+            // get cpu clocking
             let _ = Command::new("sysctl")
                 .arg("-n").arg("hw.cpuspeed").output().context(BSDCPUErr)?
-                .stdout.iter().map(|b| cores.push(*b as char))
+                .stdout.iter().map(|b| speed.push(*b as char))
                 .collect::<()>();
+
             if speed == "" {
-                speed = "".to_string();
                 let _ = Command::new("sysctl")
                     .arg("-n").arg("hw.clockrate").output().context(BSDCPUErr)?
-                    .stdout.iter().map(|b| cores.push(*b as char))
+                    .stdout.iter().map(|b| speed.push(*b as char))
                     .collect::<()>();
             }
 
+            cores = cores.trim().to_string();
+            speed = speed.trim().to_string();
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
-            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)?;
+            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)? * 1000;
             return Ok(());
         }
 
