@@ -32,7 +32,7 @@ impl UptimeInfo {
             seconds = proc_uptime.parse::<u64>().unwrap();
         } else {
             let mut sysctl: String = String::new();
-            let _ = Command::new("sysctl").arg("-n kern.boottime")
+            let _ = Command::new("sysctl").arg("-n").arg("kern.boottime")
                 .output().context(Uptime)?.stdout.iter()
                 .map(|b| sysctl.push(*b as char))
                 .collect::<()>();
