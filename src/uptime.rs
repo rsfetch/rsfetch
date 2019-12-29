@@ -36,7 +36,11 @@ impl UptimeInfo {
                 .output().context(Uptime)?.stdout.iter()
                 .map(|b| sysctl.push(*b as char))
                 .collect::<()>();
-            let boottime: u64 = sysctl.parse::<u64>().unwrap();
+            let boottime: u64 = sysctl
+                .split(",").collect::<Vec<&str>()[0]
+                .split("sec =").collect::<Vec<&str>()[1]
+                .trim()
+                .parse::<u64>().unwrap();
             let current:  u64 = std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Your system time is not configured correctly.")
