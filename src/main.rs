@@ -66,6 +66,11 @@ pub enum Error {
     Mpc { source: std::io::Error },
     #[snafu(display("Unable to retrieve CPU information: {}", source))]
     CPUErr { source: std::io::Error },
+    #[snafu(display("Unable to retrieve CPU on BSD system: {}.
+            Note: rsfetch does not currently contain proper support for *BSD.", source))]
+    BSDCPUErr { source: std::io::Error },
+    #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
+    BSDCPUParseErr { source: std::num::ParseIntError },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
@@ -77,7 +82,6 @@ fn get_default_logo(style: &OutputType) -> String {
  ├┬┘└─┐├┤ ├┤  │ │  ├─┤
  ┴└─└─┘└  └─┘ ┴ └─┘┴ ┴".to_string();
     } else {
-        // TODO: better default logo :-)
         return "    ___
    (.. |
    (<> |
@@ -99,6 +103,8 @@ fn main() {
     pretty_env_logger::init();
 
     // Variables
+    //let args = load_yml!("args.yml");
+    //let matches = App::from(args).get_matches();
     let matches = App::new("rsfetch")
                     .version("1.9.0")
                     .about("\nAn fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
@@ -120,7 +126,6 @@ fn main() {
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
                          .help("Turn CPU information on."))
-                    // OPEN ISSUE: nameing of argument below
                     .arg(Arg::with_name("userat")
                          .long("userat")
                          .short("@")
@@ -128,7 +133,7 @@ fn main() {
                     .arg(Arg::with_name("user")
                         .short("U")
                         .long("user")
-                        .help("Turn user name off."))
+                        .help("Turn user name on."))
                     .arg(Arg::with_name("hostname")
                          .short("H")
                          .long("hostname")
@@ -136,10 +141,10 @@ fn main() {
                     .arg(Arg::with_name("host")
                         .short("h")
                         .long("host")
-                        .help("Turn device name off."))
-                    .arg(Arg::with_name("ip_address")
+                        .help("Turn device name on."))
+                    .arg(Arg::with_name("ip-address")
                         .short("i")
-                        .long("ip_address")
+                        .long("ip-address")
                         .help("Turn ip address display on."))
                     .arg(Arg::with_name("editor")
                         .short("e")
@@ -148,23 +153,23 @@ fn main() {
                     .arg(Arg::with_name("shell")
                         .short("s")
                         .long("shell")
-                        .help("Turn default shell name off."))
+                        .help("Turn default shell name on."))
                     .arg(Arg::with_name("wm")
                         .short("w")
                         .long("wm")
-                        .help("Turn WM or DE name off."))
+                        .help("Turn WM or DE name on."))
                     .arg(Arg::with_name("distro")
                         .short("d")
                         .long("distro")
-                        .help("Turn distro name off."))
+                        .help("Turn distro name on."))
                     .arg(Arg::with_name("kernel")
                         .short("k")
                         .long("kernel")
-                        .help("Turn kernel version off."))
+                        .help("Turn kernel version on."))
                     .arg(Arg::with_name("uptime")
                         .short("u")
                         .long("uptime")
-                        .help("Turn uptime info off."))
+                        .help("Turn uptime info on."))
                     .arg(Arg::with_name("minimal")
                         .short("M")
                         .long("minimal")
@@ -188,7 +193,7 @@ fn main() {
                     .arg(Arg::with_name("logo")
                         .short("l")
                         .long("logo")
-                        .help("Turn the logo or ascii art off."))
+                        .help("Turn the logo or ascii art on."))
                     .arg(Arg::with_name("logofile")
                         .short("L")
                         .long("logofile")
@@ -206,7 +211,8 @@ fn main() {
     if matches.is_present("credits") {
         println!();
         println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      Kied Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)");
+        println!("Contributor:      Ki{}d Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)",
+            std::char::from_u32(235 as u32).unwrap());
         println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
             std::char::from_u32(539 as u32).unwrap());
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\", for their contributions, and the tool \"neofetch\" for giving the inspiration to create this.");
@@ -403,7 +409,7 @@ fn main() {
         }
     }
 
-    if matches.is_present("ip_address") {
+    if matches.is_present("ip-address") {
         let mut ip = NetworkInfo::new();
         match ip.get() {
             Ok(()) => writer.add("IP ADDRESS", &ip.format()),
@@ -416,8 +422,8 @@ fn main() {
         pkgs.set_manager(packages);
 
         match pkgs.get() {
-            Ok(()) => writer.add(
-                &format!("PACKAGES ({})", packages.to_ascii_uppercase()), &pkgs.format()),
+            Ok(()) => writer.add("PACKAGES", 
+                &format!("{} ({})", pkgs.format(), packages)),
             Err(e) => error!("{}", e),
         }
     }

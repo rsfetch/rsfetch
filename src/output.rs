@@ -88,7 +88,7 @@ impl OutputHelper {
         // minimal output style
         if self.options.output_type == OutputType::Minimal {
             for thing in self.data.clone() {
-                println!("{}", thing.val);
+                println!("{}", thing.val.replace("\n", ""));
             }
 
             print!("\n");
@@ -109,7 +109,7 @@ impl OutputHelper {
             // convert self.data to table, then print
             for thing in self.data.clone() {
                 let mut key = thing.key.clone();
-                let val = thing.val.clone();
+                let val = thing.val.clone().replace("\n", "");
 
                 if !self.options.caps {
                     key = key.to_lowercase();
@@ -158,7 +158,7 @@ impl OutputHelper {
             for c in 0..stuff.len() {
                 let thing = stuff[c].clone();
                 let mut key = thing.key;
-                let val = thing.val;
+                let val = thing.val.replace("\n", "");
 
                 if !self.options.caps {
                     key = key.to_lowercase();

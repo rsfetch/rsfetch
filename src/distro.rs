@@ -1,5 +1,6 @@
 use std::fs;
 use crate::*;
+use std::process::Command;
 
 pub struct DistroInfo {
     name:        String,
@@ -18,34 +19,87 @@ impl DistroInfo {
         }
     }
 
-    // TODO: support for non-standard distros like CRUX, which
-    // typically don't have an /etc/os-release file.
-    // TODO: support for Bedrock Linux, which doesn't modify
-    // the /etc/os-release file when it's installed on top
-    // of another system.
     pub fn get(&mut self) -> Result<()> {
-        let file = fs::read_to_string("/etc/os-release")
-            .context(OsRelease)?;
+        // check for Bedrock
+        if fs::metadata("/bedrock/etc/os-release").is_ok() {
+            self.name        = "bedrock".to_string();
+            self.pretty_name = "Bedrock Linux".to_string();
 
-        for value in file.split("\n") {
-            let keyval = value.split("=").collect::<Vec<&str>>();
-            if keyval.len() < 2 {
-                continue;
-            }
-
-            let key = keyval[0].trim();
-            let val = keyval[1].trim().trim_matches('"');
-
-            match key {
-                "NAME"        => self.name = val.to_string(),
-                "ID"          => self.id   = val.to_string(),
-                "DISTRIB_ID"  => self.distrib_id = val.to_string(),
-                "PRETTY_NAME" => self.pretty_name = val.to_string(),
-                &_            => (),
-            }
+            return Ok(());
         }
 
-        Ok(())
+        // check for CRUX
+        let isthiscrux = Command::new("crux").output();
+        match isthiscrux {
+            Ok(__) => {
+                // TODO: parse output of `crux` command
+                // into self.name and self.pretty_name
+                self.name        = "crux".to_string();
+                self.pretty_name = "CRUX Linux".to_string();
+
+                return Ok(());
+            },
+            Err(_) => (),
+        }
+
+        // check for GNU Guix
+        let isthisguix = Command::new("guix").output();
+        match isthisguix {
+            Ok(_) => {
+                self.name        = "guix".to_string();
+                self.pretty_name = "Guix System".to_string();
+
+                return Ok(());
+            },
+            Err(_) => (),
+        }
+
+        // check for etc/os-release file, which handles the
+        // rest
+        if fs::metadata("/etc/os-release").is_ok() {
+            let file = fs::read_to_string("/etc/os-release")
+                .context(OsRelease)?;
+
+            for value in file.split("\n") {
+                let keyval = value.split("=").collect::<Vec<&str>>();
+                if keyval.len() < 2 {
+                    continue;
+                }
+
+                let key = keyval[0].trim();
+                let val = keyval[1].trim().trim_matches('"');
+
+                match key {
+                    "NAME"        => self.name        = val.to_string(),
+                    "ID"          => self.id          = val.to_string(),
+                    "DISTRIB_ID"  => self.distrib_id  = val.to_string(),
+                    "PRETTY_NAME" => self.pretty_name = val.to_string(),
+                    &_            => (),
+                }
+            }
+
+            return Ok(());
+        } else {
+            // just return the output of uname -sr ;P
+            // also handles the BSD's
+            let uname = Command::new("uname").arg("-s").output();
+            match uname {
+                Ok(out) => {
+                    let mut output = "".to_owned();
+                    let _ = out.stdout.iter().map(|b| {
+                        output.push(*b as char);
+                    }).collect::<()>();
+
+                    self.name = output;
+                    Ok(())
+                },
+
+                Err(_)  => {
+                    self.name = "?".to_string();
+                    return Ok(());
+                },
+            }
+        }
     }
 
     pub fn format(&self) -> String {

@@ -43,17 +43,18 @@ run:
 
 build:
 	${CC} build ${RFLAGS}
+	strip --strip-debug $(RBIN)
+
+bench:
+	hyperfine "target/release/rsfetch -NcldkuUH@swp xbps" \
+		ufetch pfetch \
+		"aura -n \"term\"" \
+		"neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory" \
+		"screenfetch -d \"-gtk;-res;-disk;-mem;-cpu\""
 
 clean:
 	rm -rf ./target/
 	rm -f rsfetch.tar.gz
-
-dist: options clean build
-	mkdir -p rsfetch-tmp
-	cp -f ${RBIN} ./rsfetch-tmp/ 
-	tar -cf rsfetch.tar rsfetch-tmp
-	gzip rsfetch.tar
-	rm -rf rsfetch
 
 install: build
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -63,4 +64,4 @@ install: build
 uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/rsfetch
 
-.PHONY: all options run clean dist install uninstall
+.PHONY: all options run clean dist install uninstall bench
