@@ -1,5 +1,6 @@
 use std::fs;
 use crate::*;
+use std::vec::Vec;
 use std::process::Command;
 
 pub struct UptimeInfo {
@@ -37,8 +38,8 @@ impl UptimeInfo {
                 .map(|b| sysctl.push(*b as char))
                 .collect::<()>();
             let boottime: u64 = sysctl
-                .split(",").collect::<Vec<&str>()[0]
-                .split("sec =").collect::<Vec<&str>()[1]
+                .split(",").collect::<Vec<&str>>()[0]
+                .split("sec =").collect::<Vec<&str>>()[1]
                 .trim()
                 .parse::<u64>().unwrap();
             let current:  u64 = std::time::SystemTime::now()
