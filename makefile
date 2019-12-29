@@ -49,7 +49,8 @@ bench:
 	hyperfine "target/release/rsfetch -NcldkuUH@swp xbps" \
 		kfetch ufetch pfetch \
 		"aura -n \"term\"" \
-		"neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory"
+		"neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory" \
+		"screenfetch -d \"-gtk;-res;-disk;-mem;-cpu\""
 
 clean:
 	rm -rf ./target/
