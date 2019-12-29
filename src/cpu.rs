@@ -68,7 +68,7 @@ impl CPUInfo {
             cores = cores.trim().to_string();
             speed = speed.trim().to_string();
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
-            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)? * 1000;
+            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)? / 1000;
             return Ok(());
         }
 
