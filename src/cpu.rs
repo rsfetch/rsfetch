@@ -29,6 +29,7 @@ impl CPUInfo {
             .output().context(CPUErr)?
             .stdout.iter().map(|b| uname.push(*b as char))
             .collect::<()>();
+        uname = uname.trim().replace("\n", "").to_string();
 
         // check if it's BSD first...
         if uname != "Linux" {
