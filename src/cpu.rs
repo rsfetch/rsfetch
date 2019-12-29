@@ -48,7 +48,7 @@ impl CPUInfo {
         // TODO: test this
         if is_bsd() {
             let mut out = "".to_string();
-            let _ = Command::new("sysctl").arg("-n hw.model")
+            let _ = Command::new("sysctl").arg("-n").arg("hw.model")
                 .output().context(BSDCPUErr)?
                 .stdout.iter().map(|b|
             {
@@ -62,18 +62,18 @@ impl CPUInfo {
             let mut speed: String = String::new();
 
             let _ = Command::new("sysctl")
-                .arg("-n hw.ncpu").output().context(BSDCPUErr)?
+                .arg("-n").arg("hw.ncpu").output().context(BSDCPUErr)?
                 .stdout.iter().map(|b| cores.push(*b as char))
                 .collect::<()>();
 
             let _ = Command::new("sysctl")
-                .arg("-n hw.cpuspeed").output().context(BSDCPUErr)?
+                .arg("-n").arg("hw.cpuspeed").output().context(BSDCPUErr)?
                 .stdout.iter().map(|b| cores.push(*b as char))
                 .collect::<()>();
             if speed == "" {
                 speed = "".to_string();
                 let _ = Command::new("sysctl")
-                    .arg("-n hw.clockrate").output().context(BSDCPUErr)?
+                    .arg("-n").arg("hw.clockrate").output().context(BSDCPUErr)?
                     .stdout.iter().map(|b| cores.push(*b as char))
                     .collect::<()>();
             }
