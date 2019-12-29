@@ -55,15 +55,23 @@ impl RAMInfo {
         let mut info = String::new();
 
         if let Some(u) = self.used {
-            info = format!("{}{}MiB", info, u);
+            if u < 1024 {
+                info = format!("{}{}MiB", info, u);
+            } else {
+                info = format!("{}{}GiB", info, u / 1024);
+            }
         } else {
-            info = format!("?MiB");
+            info = format!("?");
         }
 
         if let Some(t) = self.total {
-            info = format!("{} / {}MiB", info, t);
+            if t < 1024 {
+                info = format!("{} / {}MiB", info, t);
+            } else {
+                info = format!("{} / {}GiB", info, t / 1024);
+            }
         } else {
-            info = format!("{} / ?MiB", info);
+            info = format!("{} / ?", info);
         }
 
         info
