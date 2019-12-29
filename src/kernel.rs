@@ -23,6 +23,7 @@ impl KernelInfo {
                 .output().context(KernelVersion)?
                 .stdout.iter().map(|b| output.push(*b as char))
                 .collect::<()>();
+            self.version = output.trim().to_string();
         }
 
         Ok(())
