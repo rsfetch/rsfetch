@@ -31,6 +31,8 @@ mod network;
 use crate::network::*;
 mod output;
 use crate::output::*;
+mod memory;
+use crate::memory::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -71,6 +73,8 @@ pub enum Error {
     BSDCPUErr { source: std::io::Error },
     #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
     BSDCPUParseErr { source: std::num::ParseIntError },
+    #[snafu(display("Unable to retrieve RAM information: {}", source))]
+    RAMErr { source: std::io::Error },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
@@ -166,6 +170,10 @@ fn main() {
                         .short("k")
                         .long("kernel")
                         .help("Turn kernel version on."))
+                    .arg(Arg::with_name("memory")
+                        .short("r")
+                        .long("memory")
+                        .help("Turn memory information on."))
                     .arg(Arg::with_name("uptime")
                         .short("u")
                         .long("uptime")
@@ -424,6 +432,14 @@ fn main() {
         match pkgs.get() {
             Ok(()) => writer.add("PACKAGES", 
                 &format!("{} ({})", pkgs.format(), packages)),
+            Err(e) => error!("{}", e),
+        }
+    }
+
+    if matches.is_present("memory") {
+        let mut mem = RAMInfo::new();
+        match mem.get() {
+            Ok(()) => writer.add("MEMORY", &mem.format()),
             Err(e) => error!("{}", e),
         }
     }
