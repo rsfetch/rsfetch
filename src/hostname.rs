@@ -25,6 +25,7 @@ impl Hostname {
                 .context(ReadHostname)?.stdout
                 .iter().map(|b| hostname.push(*b as char))
                 .collect::<()>();
+            self.name = hostname.trim().to_string();
         }
 
         Ok(())
