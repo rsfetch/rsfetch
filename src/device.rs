@@ -23,7 +23,7 @@ impl DeviceInfo {
             Err(_) => {
                 // fallback to sysctl...
                 let mut model = String::new();
-                let _ = Command::new("sysctl").arg("-n hw.model").output()
+                let _ = Command::new("sysctl").arg("-n").arg("hw.model").output()
                     .context(DeviceName)?
                     .stdout
                     .iter()
