@@ -23,9 +23,11 @@ impl DeviceInfo {
             Err(_) => {
                 // fallback to sysctl...
                 let mut model = String::new();
-                let _ = Command::new("sysctl").arg("-n hw.model")
-                    .output().context(DeviceName)?
-                    .stdout.iter().map(|b| model.push(*b as char))
+                let _ = Command::new("sysctl").arg("-n hw.model").output()
+                    .context(DeviceName)?
+                    .stdout
+                    .iter()
+                    .map(|b| model.push(*b as char))
                     .collect::<()>();
                 self.model = model.trim().to_string();
             },
