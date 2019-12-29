@@ -57,9 +57,12 @@ thoughts on how this is.
 ### Installation
 I have prebuilt binaries in the releases tab for people who don't want to build from source, otherwise you can do this.
 
-1. Install rust and cargo.
-2. Clone the repository.
-3. `cd rsfetch; make; sudo make install`
+#### Prerequisites
+- the Rust compiler toolchain
+- **GNU** Make (makefile not compatible with `bmake`!)
+
+1. Clone the repository.
+2. `cd rsfetch; make; sudo make install`
 
 Uninstall with `sudo make uninstall`.
 
