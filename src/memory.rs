@@ -23,22 +23,24 @@ impl RAMInfo {
             let _ = fs::read_to_string("/proc/meminfo")
                 .context(RAMErr)?.split("\n").map(|i| {
                     let inf = i.split("\n").collect::<Vec<&str>>();
-                    let key = inf[0].trim();
-                    let val = inf[1].replace("kB", "")
-                        .replace("\n", "").trim().parse::<u64>()
-                        .unwrap();
+                    if inf.len() > 1 {
+                        let key = inf[0].trim();
+                        let val = inf[1].replace("kB", "")
+                            .replace("\n", "").trim().parse::<u64>()
+                            .unwrap();
 
-                    match key {
-                        "MemTotal"    => {
-                            used += val;
-                            total = val;
-                        },
-                        "Shmem"       => used += val,
-                        "SReclaimable"|
-                            "Buffers" |
-                            "Cached"  |
-                            "MemFree" => used -= val,
-                        &_            => (),
+                        match key {
+                            "MemTotal"    => {
+                                used += val;
+                                total = val;
+                            },
+                            "Shmem"       => used += val,
+                            "SReclaimable"|
+                                "Buffers" |
+                                "Cached"  |
+                                "MemFree" => used -= val,
+                            &_            => (),
+                        }
                     }
                 }).collect::<()>();
             self.used  = Some(used  / 1024);
