@@ -22,7 +22,7 @@ impl RAMInfo {
             let mut used:  u64 = 0_u64;
             let _ = fs::read_to_string("/proc/meminfo")
                 .context(RAMErr)?.split("\n").map(|i| {
-                    let inf = i.split("\n").collect::<Vec<&str>>();
+                    let inf = i.split(":").collect::<Vec<&str>>();
                     if inf.len() > 1 {
                         let key = inf[0].trim();
                         let val = inf[1].replace("kB", "")
