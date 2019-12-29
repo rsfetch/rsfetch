@@ -82,7 +82,7 @@ impl DistroInfo {
         } else {
             // just return the output of uname -sr ;P
             // also handles the BSD's
-            let uname = Command::new("uname").arg("-sr").output();
+            let uname = Command::new("uname").arg("-s").output();
             match uname {
                 Ok(out) => {
                     let mut output = "".to_owned();
