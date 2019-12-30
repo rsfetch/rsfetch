@@ -1,5 +1,6 @@
 use std::fs;
 use crate::*;
+use crate::util::*;
 use std::vec::Vec;
 use std::process::Command;
 
@@ -19,20 +20,12 @@ impl CPUInfo {
     }
 
     // retrieve model, cores, and frequency
-    pub fn get(&mut self) -> Result<()> {
+    pub fn get(&mut self, os: OS) -> Result<()> {
         let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
         let cpu_file = "/proc/cpuinfo";
 
-        // TODO: replace context(CPUErr) with context(GuessOS)
-        let mut uname = String::new();
-        let _ = Command::new("uname").arg("-s")
-            .output().context(CPUErr)?
-            .stdout.iter().map(|b| uname.push(*b as char))
-            .collect::<()>();
-        uname = uname.trim().replace("\n", "").to_string();
-
         // check if it's BSD first...
-        if uname != "Linux" {
+        if os != OS::Linux {
             let mut out = "".to_string();
             let _ = Command::new("sysctl").arg("-n").arg("hw.model")
                 .output().context(BSDCPUErr)?

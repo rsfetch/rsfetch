@@ -1,5 +1,6 @@
 use std::fs;
 use crate::*;
+use crate::util::*;
 
 // all measures are in MiB
 pub struct RAMInfo {
@@ -15,13 +16,13 @@ impl RAMInfo {
         }
     }
 
-    pub fn get(&mut self) -> Result<()> {
+    pub fn get(&mut self, os: OS) -> Result<()> {
         // for Linux OSs
-        if fs::metadata("/proc/meminfo").is_ok() {
+        if os == OS::Linux {
             let mut total: u64 = 0_u64;
             let mut used:  u64 = 0_u64;
             let _ = fs::read_to_string("/proc/meminfo")
-                .context(RAMErr)?.split("\n").map(|i| {
+                .context(RAMErr)?.split("\n").for_each(|i| {
                     let inf = i.split(":").collect::<Vec<&str>>();
                     if inf.len() > 1 {
                         let key = inf[0].trim();
@@ -42,11 +43,34 @@ impl RAMInfo {
                             &_            => (),
                         }
                     }
-                }).collect::<()>();
+                });
             self.used  = Some(used  / 1024);
             self.total = Some(total / 1024);
-            return Ok(());        
-        } else {
+            return Ok(());
+        } else if os == OS::OpenBSD {
+            let mut total: u64 = 0_u64;
+            let mut used:  u64 = 0_u64;
+
+            let mut buffer = String::new();
+            Command::new("sysctl").arg("-n").arg("hw.physmem")
+                .output().context(RAMErr)?.stdout.iter()
+                .for_each(|b| buffer.push(*b as char));
+            total = buffer.parse::<u64>();
+
+            // flush buffer
+            buffer = "".to_owned();
+
+            Command::new("vmstat").output().context(RAMErr)?
+                .stdout.iter().for_each(|b| buffer.push(*b as char));
+            used = buffer.split("\n").last().split(" ").nth(2).parse();
+
+            self.used  = Some(used  / 1024 / 1024);
+            self.total = Some(total / 1024 / 1024);
+            return Ok(());
+        } else if os == OS::FreeBSD ||
+            os == OS::Other {
+            return Ok(());
+        } else if os == OS::NetBSD {
             return Ok(());
         }
     }

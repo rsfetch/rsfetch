@@ -33,6 +33,8 @@ mod output;
 use crate::output::*;
 mod memory;
 use crate::memory::*;
+mod util;
+use crate::util::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -102,7 +104,6 @@ fn get_logo_from_file(path: String) -> Result<String> {
     Ok(logo)
 }
 
-// Main function
 fn main() {
     pretty_env_logger::init();
 
@@ -228,6 +229,7 @@ fn main() {
         return;
     }
 
+    let os = OSInfo::get_os();
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
@@ -411,7 +413,7 @@ fn main() {
     }
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new();
-        match cpu.get() {
+        match cpu.get(os) {
             Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
         }
@@ -438,7 +440,7 @@ fn main() {
 
     if matches.is_present("memory") {
         let mut mem = RAMInfo::new();
-        match mem.get() {
+        match mem.get(os) {
             Ok(()) => writer.add("MEMORY", &mem.format()),
             Err(e) => error!("{}", e),
         }
