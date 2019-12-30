@@ -31,6 +31,10 @@ mod network;
 use crate::network::*;
 mod output;
 use crate::output::*;
+mod memory;
+use crate::memory::*;
+mod util;
+use crate::util::*;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -71,6 +75,8 @@ pub enum Error {
     BSDCPUErr { source: std::io::Error },
     #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
     BSDCPUParseErr { source: std::num::ParseIntError },
+    #[snafu(display("Unable to retrieve RAM information: {}", source))]
+    RAMErr { source: std::io::Error },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
@@ -98,7 +104,6 @@ fn get_logo_from_file(path: String) -> Result<String> {
     Ok(logo)
 }
 
-// Main function
 fn main() {
     pretty_env_logger::init();
 
@@ -166,6 +171,10 @@ fn main() {
                         .short("k")
                         .long("kernel")
                         .help("Turn kernel version on."))
+                    .arg(Arg::with_name("memory")
+                        .short("r")
+                        .long("memory")
+                        .help("Turn memory information on."))
                     .arg(Arg::with_name("uptime")
                         .short("u")
                         .long("uptime")
@@ -219,6 +228,16 @@ fn main() {
         println!();
         return;
     }
+
+    let os = match OSInfo::get_os() {
+        Ok(o)  => o,
+        Err(_) => {
+            error!("unable to detect OS - results may be inaccurate.");
+
+            // default to Linux
+            OS::Linux
+        },
+    };
 
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
@@ -403,7 +422,7 @@ fn main() {
     }
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new();
-        match cpu.get() {
+        match cpu.get(&os) {
             Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
         }
@@ -424,6 +443,14 @@ fn main() {
         match pkgs.get() {
             Ok(()) => writer.add("PACKAGES", 
                 &format!("{} ({})", pkgs.format(), packages)),
+            Err(e) => error!("{}", e),
+        }
+    }
+
+    if matches.is_present("memory") {
+        let mut mem = RAMInfo::new();
+        match mem.get(&os) {
+            Ok(()) => writer.add("MEMORY", &mem.format()),
             Err(e) => error!("{}", e),
         }
     }
