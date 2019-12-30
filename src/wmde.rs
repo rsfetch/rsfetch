@@ -36,8 +36,12 @@ impl WMDEInfo {
         let last_line = reader.lines().last()
             .context(EmptyXInitRc)?
             .context(ReadXInitRc)?;
-        let space = last_line.find(' ').context(GuessWm)?;
-        self.wm = last_line[space + 1..].to_string();
+
+        if let Some(wm) = last_line.split(" ").last() {
+            self.wm = wm.trim().to_string();
+        } else {
+            self.wm = "?".to_string();
+        }
         
         Ok(())
     }
