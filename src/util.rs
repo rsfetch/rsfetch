@@ -22,7 +22,7 @@ impl OSInfo {
         Command::new("uname").arg("-s")
             .output()?.stdout.iter()
             .for_each(|b| uname.push(*b as char));
-        let os = match uname.as_ref() {
+        let os = match uname.replace("\n", "").trim().as_ref() {
             "Linux"   => OS::Linux,
             "FreeBSD" => OS::FreeBSD,
             "NetBSD"  => OS::NetBSD,
