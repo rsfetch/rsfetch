@@ -29,7 +29,7 @@ impl RAMInfo {
             // read contents of /proc/meminfo,
             // and simple split on `:` and parse into
             // proper format.
-            let _ = fs::read_to_string("/proc/meminfo")
+            fs::read_to_string("/proc/meminfo")
                 .context(RAMErr)?.split("\n").for_each(|i| {
                     let inf = i.split(":").collect::<Vec<&str>>();
                     if inf.len() > 1 {
@@ -51,7 +51,7 @@ impl RAMInfo {
                             &_            => (),
                         }
                     }
-                });
+            });
             self.used  = Some(used  / 1024);
             self.total = Some(total / 1024);
             return Ok(());
@@ -107,6 +107,33 @@ impl RAMInfo {
 
             return Ok(());
         } else if os == &OS::NetBSD {
+            let mut buffer = String::new();
+
+            Command::new("sysctl").arg("-n").arg("hw.physmem64")
+                .output().context(RAMErr)?.stdout
+                .iter().for_each(|b| buffer.push(*b as char));
+            total = buffer.parse::<u64>().unwrap();
+            let mut free: u64 = 0_u64;
+
+            fs::read_to_string("/proc/meminfo")
+                .context(RAMErr)?.split("\n").for_each(|i| {
+                    let inf = i.split(":").collect::<Vec<&str>>();
+                    if inf.len() > 1 {
+                        let key = inf[0].trim();
+                        let val = inf[1].replace("kB", "")
+                            .replace("\n", "").trim().parse::<u64>()
+                            .unwrap();
+
+                        match key {
+                            "MemFree" => free = val,
+                            &_        => (),
+                        }
+                    }
+            });
+
+            self.total = Some(total);
+            self.used  = Some(total - free);
+
             return Ok(());
         } else {
             // leave memory information null,
