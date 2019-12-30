@@ -130,6 +130,7 @@ fn main() {
                         .help("Turn all caps off."))
                     .arg(Arg::with_name("cpu")
                          .long("cpu")
+                         .short("P")
                          .help("Turn CPU information on."))
                     .arg(Arg::with_name("userat")
                          .long("userat")
