@@ -20,12 +20,12 @@ impl CPUInfo {
     }
 
     // retrieve model, cores, and frequency
-    pub fn get(&mut self, os: OS) -> Result<()> {
+    pub fn get(&mut self, os: &OS) -> Result<()> {
         let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
         let cpu_file = "/proc/cpuinfo";
 
         // check if it's BSD first...
-        if os != OS::Linux {
+        if os != &OS::Linux {
             let mut out = "".to_string();
             let _ = Command::new("sysctl").arg("-n").arg("hw.model")
                 .output().context(BSDCPUErr)?

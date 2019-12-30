@@ -1,10 +1,9 @@
 // various utility functions
 use crate::*;
-use std::vec::Vec;
 use std::process::Command;
 
 #[derive(Clone, PartialEq)]
-enum OS {
+pub enum OS {
     Linux,
     FreeBSD,
     OpenBSD,
@@ -12,12 +11,13 @@ enum OS {
     Other
 }
 
-struct OSInfo {
+pub struct OSInfo {
+    #[allow(dead_code)]
     os: OS,
 }
 
 impl OSInfo { 
-    fn get_os() -> Result<OS, std::io::Error> {
+    pub fn get_os() -> Result<OS, std::io::Error> {
         let mut uname = String::new();
         Command::new("uname").arg("-s")
             .output()?.stdout.iter()
@@ -28,6 +28,8 @@ impl OSInfo {
             "NetBSD"  => OS::NetBSD,
             "OpenBSD" => OS::OpenBSD,
             &_        => OS::Other,
-        }
+        };
+
+        Ok(os)
     }
 }

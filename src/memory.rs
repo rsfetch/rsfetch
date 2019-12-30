@@ -1,6 +1,10 @@
+// sincere thanks to the contributors of `pfetch`,
+// who may recognize some of their code here ;P
+
 use std::fs;
 use crate::*;
 use crate::util::*;
+use std::process::Command;
 
 // all measures are in MiB
 pub struct RAMInfo {
@@ -16,11 +20,15 @@ impl RAMInfo {
         }
     }
 
-    pub fn get(&mut self, os: OS) -> Result<()> {
-        // for Linux OSs
+    pub fn get(&mut self, os: &OS) -> Result<()> {
+        // temporary buffers
         let mut total = 0_u64;
         let mut used  = 0_u64;
-        if os == OS::Linux {
+
+        if os == &OS::Linux {
+            // read contents of /proc/meminfo,
+            // and simple split on `:` and parse into
+            // proper format.
             let _ = fs::read_to_string("/proc/meminfo")
                 .context(RAMErr)?.split("\n").for_each(|i| {
                     let inf = i.split(":").collect::<Vec<&str>>();
@@ -47,7 +55,7 @@ impl RAMInfo {
             self.used  = Some(used  / 1024);
             self.total = Some(total / 1024);
             return Ok(());
-        } else if os == OS::OpenBSD {
+        } else if os == &OS::OpenBSD {
             let mut buffer = String::new();
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
@@ -59,13 +67,14 @@ impl RAMInfo {
 
             Command::new("vmstat").output().context(RAMErr)?
                 .stdout.iter().for_each(|b| buffer.push(*b as char));
-            used = buffer.split("\n").last().split(" ").nth(2)
+            used = buffer.split("\n").last().unwrap().split(" ")
+                .nth(2).unwrap()
                 .parse::<u64>().unwrap();
 
             self.used  = Some(used  / 1024 / 1024);
             self.total = Some(total / 1024 / 1024);
             return Ok(());
-        } else if os == OS::FreeBSD || os == OS::Other {
+        } else if os == &OS::FreeBSD || os == &OS::Other {
             let mut buffer = String::new();
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
@@ -76,7 +85,7 @@ impl RAMInfo {
             let inactive: u64;
             let free:     u64;
             let cache:    u64;
-            buffer = "";
+            buffer = "".to_owned();
 
             Command::new("sysctl").arg("-n")
                 .arg("hw.pagesize")
@@ -86,17 +95,18 @@ impl RAMInfo {
                 .output().context(RAMErr)?.stdout
                 .iter().for_each(|b| buffer.push(*b as char));
 
-            let info = buffer.split("\n").collect::<Vec<&str>();
-            pagesize = info[0].parse::<u64>();
-            inactive = info[1].parse::<u64>();
-            free     = info[2].parse::<u64>();
-            cache    = info[3].parse::<u64>();
+            let info = buffer.split("\n").collect::<Vec<&str>>();
+            pagesize = info[0].parse::<u64>().unwrap();
+            inactive = info[1].parse::<u64>().unwrap();
+            free     = info[2].parse::<u64>().unwrap();
+            cache    = info[3].parse::<u64>().unwrap();
 
-            self.total = total / 1024 / 1024;
-            self.used  = self.total - ((inactive + free + count) * pagesize / 1024 / 1024);
+            self.total = Some(total / 1024 / 1024);
+            self.used  = Some(self.total.unwrap() -
+                ((inactive + free + cache) * pagesize / 1024 / 1024));
 
             return Ok(());
-        } else if os == OS::NetBSD {
+        } else if os == &OS::NetBSD {
             return Ok(());
         } else {
             // leave memory information null,
