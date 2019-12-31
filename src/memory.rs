@@ -8,8 +8,8 @@ use std::process::Command;
 
 // all measures are in MiB
 pub struct RAMInfo {
-    total:     Option<u64>,
-    used:      Option<u64>,
+    total:     Option<f64>,
+    used:      Option<f64>,
 }
 
 impl RAMInfo {
@@ -22,8 +22,8 @@ impl RAMInfo {
 
     pub fn get(&mut self, os: &OS) -> Result<()> {
         // temporary buffers
-        let mut total = 0_u64;
-        let mut used  = 0_u64;
+        let mut total = 0_f64;
+        let mut used  = 0_f64;
 
         if os == &OS::Linux {
             // read contents of /proc/meminfo,
@@ -35,7 +35,7 @@ impl RAMInfo {
                     if inf.len() > 1 {
                         let key = inf[0].trim();
                         let val = inf[1].replace("kB", "")
-                            .replace("\n", "").trim().parse::<u64>()
+                            .replace("\n", "").trim().parse::<f64>()
                             .unwrap();
 
                         match key {
@@ -52,15 +52,15 @@ impl RAMInfo {
                         }
                     }
             });
-            self.used  = Some(used  / 1024);
-            self.total = Some(total / 1024);
+            self.used  = Some(used  / 1024_f64);
+            self.total = Some(total / 1024_f64);
             return Ok(());
         } else if os == &OS::OpenBSD {
             let mut buffer = String::new();
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
                 .for_each(|b| buffer.push(*b as char));
-            total = buffer.parse::<u64>().unwrap();
+            total = buffer.parse::<f64>().unwrap();
 
             // flush buffer
             buffer = "".to_owned();
@@ -69,22 +69,22 @@ impl RAMInfo {
                 .stdout.iter().for_each(|b| buffer.push(*b as char));
             used = buffer.split("\n").last().unwrap().split(" ")
                 .nth(2).unwrap()
-                .parse::<u64>().unwrap();
+                .parse::<f64>().unwrap();
 
-            self.used  = Some(used  / 1024 / 1024);
-            self.total = Some(total / 1024 / 1024);
+            self.used  = Some(used  / 1024_f64 / 1024_f64);
+            self.total = Some(total / 1024_f64 / 1024_f64);
             return Ok(());
         } else if os == &OS::FreeBSD || os == &OS::Other {
             let mut buffer = String::new();
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
                 .for_each(|b| buffer.push(*b as char));
-            total = buffer.parse::<u64>().unwrap();
+            total = buffer.parse::<f64>().unwrap();
 
-            let pagesize: u64;
-            let inactive: u64;
-            let free:     u64;
-            let cache:    u64;
+            let pagesize: f64;
+            let inactive: f64;
+            let free:     f64;
+            let cache:    f64;
             buffer = "".to_owned();
 
             Command::new("sysctl").arg("-n")
@@ -96,14 +96,14 @@ impl RAMInfo {
                 .iter().for_each(|b| buffer.push(*b as char));
 
             let info = buffer.split("\n").collect::<Vec<&str>>();
-            pagesize = info[0].parse::<u64>().unwrap();
-            inactive = info[1].parse::<u64>().unwrap();
-            free     = info[2].parse::<u64>().unwrap();
-            cache    = info[3].parse::<u64>().unwrap();
+            pagesize = info[0].parse::<f64>().unwrap();
+            inactive = info[1].parse::<f64>().unwrap();
+            free     = info[2].parse::<f64>().unwrap();
+            cache    = info[3].parse::<f64>().unwrap();
 
-            self.total = Some(total / 1024 / 1024);
+            self.total = Some(total / 1024_f64 / 1024_f64);
             self.used  = Some(self.total.unwrap() -
-                ((inactive + free + cache) * pagesize / 1024 / 1024));
+                ((inactive + free + cache) * pagesize / 1024_f64 / 1024_f64));
 
             return Ok(());
         } else if os == &OS::NetBSD {
@@ -112,8 +112,8 @@ impl RAMInfo {
             Command::new("sysctl").arg("-n").arg("hw.physmem64")
                 .output().context(RAMErr)?.stdout
                 .iter().for_each(|b| buffer.push(*b as char));
-            total = buffer.parse::<u64>().unwrap();
-            let mut free: u64 = 0_u64;
+            total = buffer.parse::<f64>().unwrap();
+            let mut free: f64 = 0_f64;
 
             fs::read_to_string("/proc/meminfo")
                 .context(RAMErr)?.split("\n").for_each(|i| {
@@ -121,7 +121,7 @@ impl RAMInfo {
                     if inf.len() > 1 {
                         let key = inf[0].trim();
                         let val = inf[1].replace("kB", "")
-                            .replace("\n", "").trim().parse::<u64>()
+                            .replace("\n", "").trim().parse::<f64>()
                             .unwrap();
 
                         match key {
@@ -147,20 +147,20 @@ impl RAMInfo {
         let mut info = String::new();
 
         if let Some(u) = self.used {
-            if u < 1024 {
-                info = format!("{}{}MiB", info, u);
+            if u < 1024_f64 {
+                info = format!("{}{:.0}MiB", info, u);
             } else {
-                info = format!("{}{}GiB", info, u / 1024);
+                info = format!("{}{:.2}GiB", info, u / 1024_f64);
             }
         } else {
             info = format!("?");
         }
 
         if let Some(t) = self.total {
-            if t < 1024 {
+            if t < 1024_f64 {
                 info = format!("{} / {:.0}MiB", info, t);
             } else {
-                info = format!("{} / {:.2}GiB", info, t / 1024);
+                info = format!("{} / {:.2}GiB", info, t / 1024_f64);
             }
         } else {
             info = format!("{} / ?", info);
