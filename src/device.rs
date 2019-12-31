@@ -38,8 +38,6 @@ impl DeviceInfo {
             .replace("To", "")
             .replace("Not", "")
             .replace("Version", "")
-            .replace("be", "")
-            .replace("Be", "")
             .replace("Applicable", "")
             .replace("Undefined", "")
             .replace("Specified", "")
