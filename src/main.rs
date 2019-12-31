@@ -75,6 +75,8 @@ pub enum Error {
     BSDCPUErr { source: std::io::Error },
     #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
     BSDCPUParseErr { source: std::num::ParseIntError },
+    #[snafu(display("Unable to parse the retrieved CPU frequency into the proper format."))]
+    CPUFreqParseErr { source: std::num::ParseFloatError },
     #[snafu(display("Unable to retrieve RAM information: {}", source))]
     RAMErr { source: std::io::Error },
 }

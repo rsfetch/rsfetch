@@ -158,9 +158,9 @@ impl RAMInfo {
 
         if let Some(t) = self.total {
             if t < 1024 {
-                info = format!("{} / {}MiB", info, t);
+                info = format!("{} / {:.0}MiB", info, t);
             } else {
-                info = format!("{} / {}GiB", info, t / 1024);
+                info = format!("{} / {:.2}GiB", info, t / 1024);
             }
         } else {
             info = format!("{} / ?", info);

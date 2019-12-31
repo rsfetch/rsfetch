@@ -7,7 +7,7 @@ use std::process::Command;
 pub struct CPUInfo {
     pub model: String,
     pub cores: usize,
-    pub freq:  usize,
+    pub freq:  f64,
 }
 
 impl CPUInfo {
@@ -15,7 +15,7 @@ impl CPUInfo {
         CPUInfo {
             model: String::new(),
             cores: 0,
-            freq:  0,
+            freq:  0_f64,
         }
     }
 
@@ -62,7 +62,7 @@ impl CPUInfo {
             cores = cores.trim().to_string();
             speed = speed.trim().to_string();
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
-            self.freq  = speed.parse::<usize>().context(BSDCPUParseErr)? / 1000;
+            self.freq  = speed.parse::<f64>().context(CPUFreqParseErr)? / 1000_f64;
             return Ok(());
         }
 
@@ -80,10 +80,10 @@ impl CPUInfo {
 
         // frequency
         if fs::metadata(freq_file).is_ok() {
-            self.freq = (fs::read_to_string(freq_file).context(CPUErr)?
-                .trim_end().parse::<usize>().unwrap()) / 1000000;
+            self.freq = fs::read_to_string(freq_file).context(CPUErr)?
+                .trim_end().parse::<f64>().context(CPUFreqParseErr)? / 1000000_f64;
         } else {
-            self.freq = 0;
+            self.freq = 0_f64;
         }
 
         // remove junk from CPU model
@@ -103,8 +103,8 @@ impl CPUInfo {
 
     // format it, depending on whether we were able to get the frequency
     pub fn format(&self) -> String {
-        if self.freq != 0 {
-            format!("{} ({}) @ {}GHz", self.model, self.cores, self.freq)
+        if self.freq != 0_f64 {
+            format!("{} ({}) @ {:.3}GHz", self.model, self.cores, self.freq)
         } else {
             format!("{} ({})", self.model, self.cores)
         }
