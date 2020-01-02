@@ -2,7 +2,7 @@ use crate::*;
 use std::fs;
 use std::process;
 use std::vec::Vec;
-use libc::{ c_char, c_int, isatty, ttyname };
+use libc::{ c_int, isatty, ttyname };
 use std::ffi::CStr;
 
 fn get_ppid(id: u32) -> Option<u32> {
@@ -16,12 +16,14 @@ fn get_ppid(id: u32) -> Option<u32> {
         .split("\n")
         .for_each(|i| {
             let info = i.split(":").collect::<Vec<&str>>();
-            let key = info[0].trim();
-            let val = info[1].trim()
-                .replace("\n", "");
+            if info.len() > 1 {
+                let key = info[0].trim();
+                let val = info[1].trim()
+                    .replace("\n", "");
 
-            if key == "PPid" {
-                ppid_str = val;
+                if key == "PPid" {
+                    ppid_str = val;
+                }
             }
         });
 
