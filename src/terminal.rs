@@ -78,7 +78,7 @@ impl Terminal {
             });
 
             // remove spaces/newlines
-            ppname.trim().replace("\n", "");
+            ppname.trim().replace("\n", "").to_string();
 
             // skip shells (e.g. mksh, bash, zsh, elvish, etc)
             // and GNU screen/tmux
