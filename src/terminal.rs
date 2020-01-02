@@ -1,9 +1,9 @@
 use crate::*;
 use std::fs;
-use std::process;
-use std::vec::Vec;
 use libc::{ c_int, isatty, ttyname };
 use std::ffi::CStr;
+use std::process;
+use std::vec::Vec;
 
 fn get_ppid(id: u32) -> Option<u32> {
     if !fs::metadata(&format!("/proc/{}/status", id)).is_ok() {
@@ -81,14 +81,14 @@ impl Terminal {
 
             // remove spaces/newlines
             ppname.trim().replace("\n", "").to_string();
-            print!("found proc '{}' of id {}\n", ppname, lastid);
+            print!("found process '{}' of id {}\n", ppname, lastid);
 
             // skip mosh, ssh, and shells (e.g. bash, zsh, etc)
             // and GNU screen/tmux
             if ppname.ends_with("sh") ||
                 ppname == "ion" || ppname == "screen" ||
                 ppname.starts_with("tmux") || ppname == "tmux" {
-                print!("proc is shell, skipping\n");
+                print!("\t=> process is tmux, shell, or GNU screen, skipping.\n");
                 continue;
             }
 
@@ -97,27 +97,27 @@ impl Terminal {
             if ppname.starts_with("login") ||
                 ppname.starts_with("Login") ||
                 ppname.starts_with("init") {
-                print!("proc is init, retrieving tty name\n");
-                    let mut istty = true;
-                    unsafe {
-                        if isatty(0 as c_int) == 0 {
-                            print!("stdin isn't tty :(\n");
-                            istty = false;
-                        }
+                print!("\t=> process is login or init, retrieving TTY\n");
+                let mut istty = true;
+                unsafe {
+                    if isatty(0 as c_int) == 0 {
+                        istty = false;
                     }
+                }
 
-                    if istty {
-                        unsafe {
-                            self.name = CStr::from_ptr(ttyname(0 as c_int))
-                                .to_str().unwrap().to_owned();
-                            print!("got tty: {}\n", self.name.clone());
-                        }
-                    } else {
-                        self.name = "tty".to_string();
-                        break;
+                if istty {
+                    unsafe {
+                        self.name = CStr::from_ptr(ttyname(0 as c_int))
+                            .to_str().unwrap().to_owned();
                     }
+                } else {
+                    self.name = "tty".to_string();
+                    break;
+                }
+                break;
             }
 
+            print!("\t=> process is a terminal...\n");
             if ppname == "gnome-terminal-" {
                 self.name = "gnome-terminal".to_string();
                 break;
@@ -125,7 +125,6 @@ impl Terminal {
                 self.name = "urxvt".to_string();
                 break;
             } else {
-                print!("is a terminal\n");
                 self.name = ppname.split("/").last()
                     .unwrap().to_string();
                 break;

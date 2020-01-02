@@ -81,6 +81,8 @@ pub enum Error {
     CPUFreqParseErr { source: std::num::ParseFloatError },
     #[snafu(display("Unable to retrieve RAM information: {}", source))]
     RAMErr { source: std::io::Error },
+    #[snafu(display("Unable to guess current terminal emulator: {}", source))]
+    GuessTerm { source: std::io::Error },
 }
 
 pub type Result<T, E = Error> = result::Result<T, E>;
