@@ -67,12 +67,14 @@ impl Terminal {
                 .split("\n")
                 .for_each(|i| {
                     let info = i.split(":").collect::<Vec<&str>>();
-                    let key = info[0].trim();
-                    let val = info[1].trim()
-                        .replace("\n", "");
+                    if info.len() > 1 {
+                        let key = info[0].trim();
+                        let val = info[1].trim()
+                            .replace("\n", "");
 
-                    if key == "Name" {
-                        ppname = val;
+                        if key == "Name" {
+                            ppname = val;
+                        }
                     }
             });
 
