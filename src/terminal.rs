@@ -55,6 +55,8 @@ impl Terminal {
         let myid = process::id();
 
         let mut lastid = myid;
+
+        // TODO: cleanup
         while let Some(newid) = get_ppid(lastid) {
             lastid = newid;
 
@@ -69,7 +71,7 @@ impl Terminal {
                     let info = i.split(":").collect::<Vec<&str>>();
                     if info.len() > 1 {
                         let key = info[0].trim();
-                        let val = info[1].trim();
+                        let val = info[1].trim().to_string();
 
                         if key == "Name" {
                             ppname = val;
@@ -79,12 +81,14 @@ impl Terminal {
 
             // remove spaces/newlines
             ppname.trim().replace("\n", "").to_string();
+            print!("found proc '{}' of id {}\n", ppname, lastid);
 
-            // skip shells (e.g. mksh, bash, zsh, elvish, etc)
+            // skip mosh, ssh, and shells (e.g. bash, zsh, etc)
             // and GNU screen/tmux
             if ppname.ends_with("sh") ||
                 ppname == "ion" || ppname == "screen" ||
                 ppname.starts_with("tmux") || ppname == "tmux" {
+                print!("proc is shell, skipping\n");
                 continue;
             }
 
@@ -93,9 +97,11 @@ impl Terminal {
             if ppname.starts_with("login") ||
                 ppname.starts_with("Login") ||
                 ppname.starts_with("init") {
+                print!("proc is init, retrieving tty name\n");
                     let mut istty = true;
                     unsafe {
                         if isatty(0 as c_int) == 0 {
+                            print!("stdin isn't tty :(\n");
                             istty = false;
                         }
                     }
@@ -104,6 +110,7 @@ impl Terminal {
                         unsafe {
                             self.name = CStr::from_ptr(ttyname(0 as c_int))
                                 .to_str().unwrap().to_owned();
+                            print!("got tty: {}\n", self.name.clone());
                         }
                     } else {
                         self.name = "tty".to_string();
@@ -118,6 +125,7 @@ impl Terminal {
                 self.name = "urxvt".to_string();
                 break;
             } else {
+                print!("is a terminal\n");
                 self.name = ppname.split("/").last()
                     .unwrap().to_string();
                 break;
