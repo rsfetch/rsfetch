@@ -81,7 +81,8 @@ impl Terminal {
             // skip shells (e.g. mksh, bash, zsh, elvish, etc)
             // and GNU screen
             if ppname.ends_with("sh") ||
-                ppname == "ion" || ppname == "screen" {
+                ppname == "ion" || ppname == "screen" ||
+                ppname.starts_with("tmux") {
                 continue;
             }
 
