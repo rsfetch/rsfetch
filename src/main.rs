@@ -7,6 +7,8 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use std::fs::File;
 use std::result;
 
+mod terminal;
+use crate::terminal::*;
 mod hostname;
 use crate::hostname::*;
 mod env;
@@ -134,6 +136,10 @@ fn main() {
                          .long("cpu")
                          .short("P")
                          .help("Turn CPU information on."))
+                    .arg(Arg::with_name("terminal")
+                        .long("terminal")
+                        .short("t")
+                        .help("Turn terminal name on."))
                     .arg(Arg::with_name("userat")
                          .long("userat")
                          .short("@")
@@ -411,18 +417,29 @@ fn main() {
             },
         }
     }
+
     if matches.is_present("editor") {
         match env.get(EnvItem::Editor) {
             Ok(()) => writer.add("EDITOR", &env.format(EnvItem::Editor)),
             Err(e) => error!("{}", e),
         }
     }
+
     if matches.is_present("shell") {
         match env.get(EnvItem::Shell) {
             Ok(()) => writer.add("SHELL", &env.format(EnvItem::Shell)),
             Err(e) => error!("{}", e),
         }
     }
+
+    if matches.is_present("terminal") {
+        let mut term = Terminal::new();
+        match term.get() {
+            Ok(()) => writer.add("TERM", &term.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
+
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new();
         match cpu.get(&os) {
