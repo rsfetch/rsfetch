@@ -135,7 +135,7 @@ impl Terminal {
         // or a non-terminal field
         let ttye = self.name.clone();
         if ttye == "" || ttye == "systemd" {
-            self.name = "?";
+            self.name = "?".to_string();
         }
 
         Ok(())
