@@ -69,8 +69,7 @@ impl Terminal {
                     let info = i.split(":").collect::<Vec<&str>>();
                     if info.len() > 1 {
                         let key = info[0].trim();
-                        let val = info[1].trim()
-                            .replace("\n", "");
+                        let val = info[1].trim();
 
                         if key == "Name" {
                             ppname = val;
@@ -78,8 +77,11 @@ impl Terminal {
                     }
             });
 
+            // remove spaces/newlines
+            ppname.trim().replace("\n", "");
+
             // skip shells (e.g. mksh, bash, zsh, elvish, etc)
-            // and GNU screen
+            // and GNU screen/tmux
             if ppname.ends_with("sh") ||
                 ppname == "ion" || ppname == "screen" ||
                 ppname.starts_with("tmux") || ppname == "tmux" {
