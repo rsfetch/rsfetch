@@ -82,7 +82,7 @@ impl Terminal {
             // and GNU screen
             if ppname.ends_with("sh") ||
                 ppname == "ion" || ppname == "screen" ||
-                ppname.starts_with("tmux") {
+                ppname.starts_with("tmux") || ppname == "tmux" {
                 continue;
             }
 
