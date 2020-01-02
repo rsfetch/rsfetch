@@ -435,7 +435,7 @@ fn main() {
     if matches.is_present("terminal") {
         let mut term = Terminal::new();
         match term.get() {
-            Ok(()) => writer.add("TERM", &term.format()),
+            Ok(()) => writer.add("TERMINAL", &term.format()),
             Err(e) => error!("{}", e),
         }
     }
