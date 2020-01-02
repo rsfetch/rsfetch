@@ -6,6 +6,7 @@ edition = "2018"
 license = "MIT"
 
 [dependencies]
+libc = "0.2.66"
 clap = "^2.33"
 dirs = "1.0"
 log = "0.4"

@@ -13,7 +13,7 @@ DFLAGS = --color always -j$(JOBS)
 RFLAGS = ${DFLAGS} --release
 
 # default arguments
-RUN_ARGS = -pdehHiklrNcsuU@
+RUN_ARGS = -dehHiklrNcsuU@
 
 # run args
 ifeq (run,$(firstword $(MAKECMDGOALS)))
