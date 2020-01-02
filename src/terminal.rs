@@ -81,14 +81,14 @@ impl Terminal {
 
             // remove spaces/newlines
             ppname.trim().replace("\n", "").to_string();
-            print!("found process '{}' of id {}\n", ppname, lastid);
+            //print!("found process '{}' of id {}\n", ppname, lastid);
 
             // skip mosh, ssh, and shells (e.g. bash, zsh, etc)
             // and GNU screen/tmux
             if ppname.ends_with("sh") ||
                 ppname == "ion" || ppname == "screen" ||
                 ppname.starts_with("tmux") || ppname == "tmux" {
-                print!("\t=> process is tmux, shell, or GNU screen, skipping.\n");
+                //print!("\t=> process is tmux, shell, or GNU screen, skipping.\n");
                 continue;
             }
 
@@ -97,7 +97,7 @@ impl Terminal {
             if ppname.starts_with("login") ||
                 ppname.starts_with("Login") ||
                 ppname.starts_with("init") {
-                print!("\t=> process is login or init, retrieving TTY\n");
+                //print!("\t=> process is login or init, retrieving TTY\n");
                 let mut istty = true;
                 unsafe {
                     if isatty(0 as c_int) == 0 {
@@ -117,7 +117,7 @@ impl Terminal {
                 break;
             }
 
-            print!("\t=> process is a terminal...\n");
+            //print!("\t=> process is a terminal...\n");
             if ppname == "gnome-terminal-" {
                 self.name = "gnome-terminal".to_string();
                 break;
@@ -129,6 +129,13 @@ impl Terminal {
                     .unwrap().to_string();
                 break;
             }
+        }
+
+        // clear terminal name if it's empty
+        // or a non-terminal field
+        let ttye = self.name.clone();
+        if ttye == "" || ttye == "systemd" {
+            self.name = "?";
         }
 
         Ok(())
