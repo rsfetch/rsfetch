@@ -1,0 +1,119 @@
+.TH RSFETCH "1" "January 2020" "rsfetch 1.9.0" "User Commands"
+.SH NAME
+rsfetch - a blazingly fast fetch program for Linux and *BSD.
+.SH SYNOPSIS
+rsfetch --<info field> --<info field> [--help]
+.SH DESCRIPTION
+.PP
+rsfetch is a fast, somwhat(?) minimal information utility written in Rust, similar to Neofetch or ufetch. It currently supports Linux and (Open|Net|Free)BSD. All information fields are disabled by default, and must be manually enabled via configuration flags. 
+
+rsfetch has no configuration file, making it even more fast. Users may instead create aliases in their ~/.${SHELL}rc.
+
+In addition, no automatic package manager or ASCII logo mechanism is present, but must instead be manually specified.
+.PP
+rsfetch currently supports the "pacman", "apt", "xbps", "dnf", "pkg", "eopkg", "rpm", "apk", "pip"
+"portage", and "cargo" package managers.
+.SH INFOMATION FLAGS
+.TP
+\fB\-P\fR, \fB\-\-cpu\fR
+Turn CPU make, model, frequency and number of cores on.
+.TP
+\fB\-\-credits\fR
+List of past and current contributors for this project.
+.TP
+\fB\-d\fR, \fB\-\-distro\fR
+Turn distro/OS name on.
+.TP
+\fB\-e\fR, \fB\-\-editor\fR
+Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)
+.TP
+\fB\-h\fR, \fB\-\-host\fR
+Turn device make and model on.
+.TP
+\fB\-H\fR, \fB\-\-hostname\fR
+Turn device hostname on.
+.TP
+\fB\-i\fR, \fB\-\-ip\-address\fR
+Turn ip address on. (must have an active internet connection.)
+.TP
+\fB\-k\fR, \fB\-\-kernel\fR
+Turn OS kernel version on.
+.TP
+\fB\-l\fR, \fB\-\-logo\fR
+Turn the logo/ascii art on.
+.TP
+\fB\-r\fR, \fB\-\-memory\fR
+Turn total and used memory information on. Data is displayed in MiB (unless memory is above 1024MiB, then it is displayed in GiB.)
+.TP
+\fB\-M\fR, \fB\-\-minimal\fR
+Turn minimal-style output mode on.
+.TP
+\fB\-N\fR, \fB\-\-neofetch\fR
+Turn neofetch/pfetch/ufetch-style output mode on.
+.TP
+\fB\-b\fR, \fB\-\-no\-bold\fR
+Turn bold for field titles off.
+.TP
+\fB\-B\fR, \fB\-\-no\-borders\fR
+Turn borders off. (only applicable if normal output style is enabled.)
+.TP
+\fB\-c\fR, \fB\-\-no\-caps\fR
+Turn all caps off.
+.TP
+\fB\-s\fR, \fB\-\-shell\fR
+Turn default shell name on.
+.TP
+\fB\-t\fR, \fB\-\-terminal\fR
+Turn terminal name on.
+.TP
+\fB\-u\fR, \fB\-\-uptime\fR
+Turn uptime information on.
+.TP
+\fB\-U\fR, \fB\-\-user\fR
+Turn username on.
+.TP
+\-@, \fB\-\-userat\fR
+Turn 'user@hostname' style on (only applicable if both 'user' and 'hostname' are enabled).
+.TP
+\fB\-w\fR, \fB\-\-wm\fR
+Turn WM or DE name on.
+.SS OPTIONS
+.TP
+\fB\-C\fR, \fB\-\-corners\fR <CHARACTER>
+Specify the corner character. Only used when borders are enabled.
+.TP
+\fB\-L\fR, \fB\-\-logofile\fR <FILE>
+Specify the file from which to read a custom ASCII logo.
+.TP
+\fB\-m\fR, \fB\-\-music\fR <SOURCE>
+Choose where to get music information. The only supported option is "mpd".
+.TP
+\fB\-p\fR, \fB\-\-packages\fR <PACKAGE MANAGER>
+Turn package count on from the supplied package manager command. (only the package manager name is needed, not the command needed to count packages. e.g. xbps instead of xbps-query.)
+.TP
+\fB\-\-help\fR
+Prints help information
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print rsfetch version and exit.
+.SH EXAMPLES
+.PP
+.TP
+\fBrsfetch --deskuUH@Nl\fR
+Show OS, editor, shell, kernel version, uptime, user@host information, along with a logo in the Neofetch output style.
+.TP
+\fBrsfetch -tiM\fR
+Show the current terminal and IP address in the Minimal output style.
+.TP
+\fBrsfetch -Pp pacman\fR
+Show CPU information and package count for `pacman` package manager.
+.SH AUTHORS
+Created by Valley6660 (GitHub: Phate6660), Kiëd Llaentenn (GitHub: kiedtl), and Laurențiu Nicola (GitHub: lncola).
+.SH REPORTING BUGS
+Submit all bug reports via GitHub to https://github.com/rsfetch/rsfetch/issues/new.
+.SH KNOWN ISSUES
+*BSD support is currently flaky at best.
+.SH COPYRIGHT
+Copyright © all rsfetch contributors. rsfetch is licensed under the MIT license, which you can view online at https://github.com/rsfetch/rsfetch/blob/master/LICENSE or in the source in LICENSE.
+
+This is free software: you are permitted to modify and redistribute it, provided that a copy of the above-mentioned license is distributed with all substantial portions of this software.
