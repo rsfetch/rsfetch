@@ -56,6 +56,7 @@ clean:
 
 install: build
 	mkdir -p ${DESTDIR}${PREFIX}/bin
+	cp -f rsfetch.1 ${DESTDIR}${PREFIX}/share/man/man1/rsfetch.1
 	cp -f ${RBIN} ${DESTDIR}${PREFIX}/bin
 	chmod 755 ${DESTDIR}${PREFIX}/bin/rsfetch
 
