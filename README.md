@@ -82,15 +82,6 @@ If you already have `rust` and `cargo` setup, you can install it with `cargo ins
 **Help**
 ![Help](Screenshots/help.png?raw=true "Help")
 
-**Default Fetch**
-![Default](Screenshots/default.png?raw=true "Default")
-
-**Default (Minimal Mode) Fetch**
-![Default](Screenshots/default-minimal.png?raw=true "Default")
-
-**My Preference of Options**
-![Default](Screenshots/preference.png?raw=true "Preference")
-
 ### Benchmarks
 
 Here's a detailed benchmark, with rsfetch versus Neofetch and ScreenFetch:
