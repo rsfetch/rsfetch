@@ -13,6 +13,7 @@
 * [Preface](#preface)
 * [Things to Know](#things-to-know)
 * [Installation](#installation)
+* [Usage](#usage)
 * [Screenshots](#screenshots)
 * [Benchmarks](#benchmarks)
 * [License](#license)
@@ -77,6 +78,53 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 #### Cargo
 If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.
 
+### Usage
+
+```
+rsfetch 2.0.0
+
+An fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.
+
+All options are off by default. 
+
+Accepted values for the package manager are "pacman", "apt", "xbps", "dnf", "pkg", "eopkg", "rpm", "apk", "pip",
+"portage", and "cargo".
+
+USAGE:
+    rsfetch [FLAGS] [OPTIONS]
+
+FLAGS:
+    -P, --cpu           Turn CPU information on.
+        --credits       List of past and current contributors for this project.
+    -d, --distro        Turn distro name on.
+    -e, --editor        Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)
+        --help          Prints help information
+    -h, --host          Turn device name on.
+    -H, --hostname      Turn hostname on.
+    -i, --ip-address    Turn ip address display on.
+    -k, --kernel        Turn kernel version on.
+    -l, --logo          Turn the logo or ascii art on.
+    -r, --memory        Turn memory information on.
+    -M, --minimal       Turn minimal-style output mode on.
+    -N, --neofetch      Turn neofetch-style output mode on.
+    -b, --no-bold       Turn bold for field titles off.
+    -B, --no-borders    Turn borders off.
+    -c, --no-caps       Turn all caps off.
+    -s, --shell         Turn default shell name on.
+    -t, --terminal      Turn terminal name on.
+    -u, --uptime        Turn uptime info on.
+    -U, --user          Turn user name on.
+    -@, --userat        Turn 'user@hostname' style on (only applicable if both 'user' and 'hostname' are enabled!).
+    -V, --version       Prints version information
+    -w, --wm            Turn WM or DE name on.
+
+OPTIONS:
+    -C, --corners <CHARACTER>    Specify the corner character. Only used when borders are enabled.
+    -L, --logofile <FILE>        Specify the file from which to read a custom ASCII logo.
+    -m, --music <SOURCE>         Choose where to get music info. The only supported options is "mpd".
+    -p, --packages <PKG MNGR>    Turn total package count on.
+```
+
 ### Screenshots
 
 **Help**
@@ -84,9 +132,43 @@ If you already have `rust` and `cargo` setup, you can install it with `cargo ins
 
 ### Benchmarks
 
-Here's a detailed benchmark; with rsfetch versus ufetch, pfetch, Neofetch, and ScreenFetch:
+Here's a detailed benchmark; with rsfetch versus ufetch, pfetch, aurafetch, Neofetch, and ScreenFetch:
 
-![Benchmarks](Screenshots/benchmarks.png?raw=true "Benchmarks")
+```
+Benchmark #1: target/release/rsfetch -NcldkuUH@swp apt
+  Time (mean ± σ):      20.5 ms ±  20.2 ms    [User: 10.8 ms, System: 5.3 ms]
+  Range (min … max):    14.4 ms … 117.2 ms    25 runs
+ 
+  Warning: The first benchmarking run for this command was significantly slower than the rest (117.2 ms). This could be caused by (filesystem) caches that were not filled until after the first run. You should consider using the '--warmup' option to fill those caches before the actual benchmark. Alternatively, use the '--prepare' option to clear the caches before each timing run.
+ 
+Benchmark #2: ufetch
+  Time (mean ± σ):     180.4 ms ±  10.4 ms    [User: 154.4 ms, System: 24.9 ms]
+  Range (min … max):   171.4 ms … 211.9 ms    14 runs
+ 
+Benchmark #3: pfetch
+  Time (mean ± σ):     146.2 ms ±   3.7 ms    [User: 123.5 ms, System: 19.1 ms]
+  Range (min … max):   141.4 ms … 155.9 ms    19 runs
+ 
+Benchmark #4: aura -n "term"
+  Time (mean ± σ):     138.4 ms ±   3.5 ms    [User: 109.6 ms, System: 26.0 ms]
+  Range (min … max):   132.2 ms … 145.8 ms    21 runs
+ 
+Benchmark #5: neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory
+  Time (mean ± σ):     454.2 ms ±  23.6 ms    [User: 327.3 ms, System: 101.6 ms]
+  Range (min … max):   427.6 ms … 507.6 ms    10 runs
+ 
+Benchmark #6: screenfetch -d "-gtk;-res;-disk;-mem;-cpu"
+  Time (mean ± σ):     647.4 ms ±  33.1 ms    [User: 480.3 ms, System: 133.6 ms]
+  Range (min … max):   622.5 ms … 731.6 ms    10 runs
+ 
+Summary
+  'target/release/rsfetch -NcldkuUH@swp apt' ran
+    6.76 ± 6.67 times faster than 'aura -n "term"'
+    7.14 ± 7.05 times faster than 'pfetch'
+    8.81 ± 8.71 times faster than 'ufetch'
+   22.19 ± 21.93 times faster than 'neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory'
+   31.63 ± 31.25 times faster than 'screenfetch -d "-gtk;-res;-disk;-mem;-cpu"'
+```
 
 ### License
 
