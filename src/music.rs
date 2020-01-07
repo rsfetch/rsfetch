@@ -16,6 +16,9 @@ impl MusicInfo {
         let data = Command::new("mpc")
             .arg("-f")
             .arg("%artist% - (%date%) %album% - %title%")
+            .arg("|")
+            .arg("head")
+            .arg("-n1")
             .output().context(Mpc)?;
         self.data = String::from_utf8_lossy(&data.stdout)
             .into_owned();
