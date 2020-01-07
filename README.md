@@ -68,7 +68,8 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 - **GNU** Make (makefile not compatible with `bmake`!)
 
 1. Clone the repository.
-2. `cd rsfetch; make; sudo make install`
+2. `cd rsfetch`
+3. `sudo make install`, or use `make DESTDIR="/home/$USER" PREFIX=".cargo/" install` to install to `$HOME/.cargo/bin`
 
 Uninstall with `sudo make uninstall`.
 
