@@ -36,6 +36,11 @@ worthy alternative to neofetch/ufetch/screenfetch. Please, if there's anything
 that you feel is missing from this, open an issue. I would love to hear people's
 thoughts on how this is.
 
+**Another notice:** If you make a /r/unixporn post, please let [/u/Valley6660](https://www.reddit.com/user/Valley6660/) know.
+He'd absolutely love to see `rsfetch` used by someone other than himself.
+And if you share, there's a very good possibility of your screenshot being included in the README!
+(I'm totally not trying to bribe people into using it, shhhhhhh.)
+
 ### Things to Know
 
 1. If you plan to help, note that indentation is done with 4 spaces. It used to be tabs, but I have been told that spaces are the preferred indentation in the Rust community. ~~Any new changes should be recorded in [CHANGELOG.md](CHANGELOG.md).~~
