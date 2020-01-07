@@ -127,10 +127,10 @@ OPTIONS:
 
 ### Screenshots
 
-**rsfetch-style output**
+**rsfetch-style output**<br>
 ![rsfetch-style](Screenshots/rsfetch.png?raw=true "rsfetch-style")
 
-**neofetch-style output**
+**neofetch-style output**<br>
 ![neofetch-style](Screenshots/neofetch.png?raw=true "neofetch-style")
 
 ### Benchmarks
