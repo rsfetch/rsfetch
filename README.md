@@ -76,6 +76,7 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 ~~I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)~~ So it turns out that not only am I terrible at pkgbuilds, but also ebuilds. If anyone could make one for me, that would be amazing.
 
 #### Cargo
+**Note: This method is currently months outdated, please use a prebuilt binary or build from source.**<br>
 If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.
 
 ### Usage
