@@ -13,6 +13,7 @@
 * [Preface](#preface)
 * [Things to Know](#things-to-know)
 * [Installation](#installation)
+* [Usage](#usage)
 * [Screenshots](#screenshots)
 * [Benchmarks](#benchmarks)
 * [License](#license)
@@ -34,6 +35,11 @@ people helping me with this project, I would love to see this turn into a
 worthy alternative to neofetch/ufetch/screenfetch. Please, if there's anything 
 that you feel is missing from this, open an issue. I would love to hear people's
 thoughts on how this is.
+
+**Another notice:** If you make a /r/unixporn post, please let [/u/Valley6660](https://www.reddit.com/user/Valley6660/) know.
+He'd absolutely love to see `rsfetch` used by someone other than himself.
+And if you share, there's a very good possibility of your screenshot being included in the README!
+(I'm totally not trying to bribe people into using it, shhhhhhh.)
 
 ### Things to Know
 
@@ -62,7 +68,8 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 - **GNU** Make (makefile not compatible with `bmake`!)
 
 1. Clone the repository.
-2. `cd rsfetch; make; sudo make install`
+2. `cd rsfetch`
+3. `sudo make install`, or use `make DESTDIR="/home/$USER" PREFIX=".cargo/" install` to install to `$HOME/.cargo/bin`
 
 Uninstall with `sudo make uninstall`.
 
@@ -75,57 +82,103 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 ~~I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)~~ So it turns out that not only am I terrible at pkgbuilds, but also ebuilds. If anyone could make one for me, that would be amazing.
 
 #### Cargo
+**Note: This method is currently months outdated, please use a prebuilt binary or build from source.**<br>
 If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.
+
+### Usage
+
+```
+rsfetch 2.0.0
+
+An fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.
+
+All options are off by default. 
+
+Accepted values for the package manager are "pacman", "apt", "xbps", "dnf", "pkg", "eopkg", "rpm", "apk", "pip",
+"portage", and "cargo".
+
+USAGE:
+    rsfetch [FLAGS] [OPTIONS]
+
+FLAGS:
+    -P, --cpu           Turn CPU information on.
+        --credits       List of past and current contributors for this project.
+    -d, --distro        Turn distro name on.
+    -e, --editor        Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)
+        --help          Prints help information
+    -h, --host          Turn device name on.
+    -H, --hostname      Turn hostname on.
+    -i, --ip-address    Turn ip address display on.
+    -k, --kernel        Turn kernel version on.
+    -l, --logo          Turn the logo or ascii art on.
+    -r, --memory        Turn memory information on.
+    -M, --minimal       Turn minimal-style output mode on.
+    -N, --neofetch      Turn neofetch-style output mode on.
+    -b, --no-bold       Turn bold for field titles off.
+    -B, --no-borders    Turn borders off.
+    -c, --no-caps       Turn all caps off.
+    -s, --shell         Turn default shell name on.
+    -t, --terminal      Turn terminal name on.
+    -u, --uptime        Turn uptime info on.
+    -U, --user          Turn user name on.
+    -@, --userat        Turn 'user@hostname' style on (only applicable if both 'user' and 'hostname' are enabled!).
+    -V, --version       Prints version information
+    -w, --wm            Turn WM or DE name on.
+
+OPTIONS:
+    -C, --corners <CHARACTER>    Specify the corner character. Only used when borders are enabled.
+    -L, --logofile <FILE>        Specify the file from which to read a custom ASCII logo.
+    -m, --music <SOURCE>         Choose where to get music info. The only supported options is "mpd".
+    -p, --packages <PKG MNGR>    Turn total package count on.
+```
 
 ### Screenshots
 
-**Help**
-![Help](Screenshots/help.png?raw=true "Help")
+**rsfetch-style output**<br>
+![rsfetch-style](Screenshots/rsfetch.png?raw=true "rsfetch-style")
 
-**Default Fetch**
-![Default](Screenshots/default.png?raw=true "Default")
-
-**Default (Minimal Mode) Fetch**
-![Default](Screenshots/default-minimal.png?raw=true "Default")
-
-**My Preference of Options**
-![Default](Screenshots/preference.png?raw=true "Preference")
+**neofetch-style output**<br>
+![neofetch-style](Screenshots/neofetch.png?raw=true "neofetch-style")
 
 ### Benchmarks
 
-Here's a detailed benchmark, with rsfetch versus Neofetch and ScreenFetch:
-
-Note: All programs are using default options, no flags or config files were used.
-
-$ `hyperfine "\rsfetch" "pfetch" "neofetch --config none" "screenfetch"`
+Here's a detailed benchmark; with rsfetch versus ufetch, pfetch, aurafetch, Neofetch, and ScreenFetch:
 
 ```
-Benchmark #1: \rsfetch
-  Time (mean ± σ):       1.4 ms ±   0.3 ms    [User: 0.6 ms, System: 1.0 ms]
-  Range (min … max):     1.2 ms …   3.2 ms    1084 runs
+Benchmark #1: target/release/rsfetch -NcldkuUH@swp apt
+  Time (mean ± σ):      20.5 ms ±  20.2 ms    [User: 10.8 ms, System: 5.3 ms]
+  Range (min … max):    14.4 ms … 117.2 ms    25 runs
  
-Benchmark #2: pfetch
-  Time (mean ± σ):      41.4 ms ±   2.8 ms    [User: 27.2 ms, System: 18.6 ms]
-  Range (min … max):    36.3 ms …  47.4 ms    75 runs
+  Warning: The first benchmarking run for this command was significantly slower than the rest (117.2 ms). This could be caused by (filesystem) caches that were not filled until after the first run. You should consider using the '--warmup' option to fill those caches before the actual benchmark. Alternatively, use the '--prepare' option to clear the caches before each timing run.
  
-Benchmark #3: neofetch --config none
-  Time (mean ± σ):     228.1 ms ±   4.6 ms    [User: 124.7 ms, System: 114.9 ms]
-  Range (min … max):   220.7 ms … 238.7 ms    12 runs
+Benchmark #2: ufetch
+  Time (mean ± σ):     180.4 ms ±  10.4 ms    [User: 154.4 ms, System: 24.9 ms]
+  Range (min … max):   171.4 ms … 211.9 ms    14 runs
  
-Benchmark #4: screenfetch
-  Time (mean ± σ):     392.0 ms ±   8.4 ms    [User: 170.3 ms, System: 250.6 ms]
-  Range (min … max):   382.3 ms … 406.9 ms    10 runs
+Benchmark #3: pfetch
+  Time (mean ± σ):     146.2 ms ±   3.7 ms    [User: 123.5 ms, System: 19.1 ms]
+  Range (min … max):   141.4 ms … 155.9 ms    19 runs
+ 
+Benchmark #4: aura -n "term"
+  Time (mean ± σ):     138.4 ms ±   3.5 ms    [User: 109.6 ms, System: 26.0 ms]
+  Range (min … max):   132.2 ms … 145.8 ms    21 runs
+ 
+Benchmark #5: neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory
+  Time (mean ± σ):     454.2 ms ±  23.6 ms    [User: 327.3 ms, System: 101.6 ms]
+  Range (min … max):   427.6 ms … 507.6 ms    10 runs
+ 
+Benchmark #6: screenfetch -d "-gtk;-res;-disk;-mem;-cpu"
+  Time (mean ± σ):     647.4 ms ±  33.1 ms    [User: 480.3 ms, System: 133.6 ms]
+  Range (min … max):   622.5 ms … 731.6 ms    10 runs
  
 Summary
-  '\rsfetch' ran
-   28.58 ± 5.69 times faster than 'pfetch'
-  157.65 ± 29.70 times faster than 'neofetch --config none'
-  270.96 ± 51.09 times faster than 'screenfetch'
+  'target/release/rsfetch -NcldkuUH@swp apt' ran
+    6.76 ± 6.67 times faster than 'aura -n "term"'
+    7.14 ± 7.05 times faster than 'pfetch'
+    8.81 ± 8.71 times faster than 'ufetch'
+   22.19 ± 21.93 times faster than 'neofetch --disable resolution --disable theme --disable icons --disable term --disable cpu --disable memory'
+   31.63 ± 31.25 times faster than 'screenfetch -d "-gtk;-res;-disk;-mem;-cpu"'
 ```
-
-As you can see, `rsfetch` is the clear winner.  
-
-And yes, you saw right. Execution time was <1ms on average! Crazy fast.
 
 ### License
 
