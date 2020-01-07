@@ -127,8 +127,11 @@ OPTIONS:
 
 ### Screenshots
 
-**Help**
-![Help](Screenshots/help.png?raw=true "Help")
+**rsfetch-style output**
+![rsfetch-style](Screenshots/rsfetch.png?raw=true "rsfetch-style")
+
+**neofetch-style output**
+![neofetch-style](Screenshots/neofetch.png?raw=true "neofetch-style")
 
 ### Benchmarks
 
