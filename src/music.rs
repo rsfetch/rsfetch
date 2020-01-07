@@ -15,7 +15,7 @@ impl MusicInfo {
     pub fn get(&mut self) -> Result<()> {
         let data = Command::new("mpc")
             .arg("-f")
-            .arg("%artist% - (%date%) %album% - %title%")
+            .arg("%artist% - (%date%) %album% - %title%a")
             .output().context(Mpc)?;
         self.data = String::from_utf8_lossy(&data.stdout)
             .into_owned().split("\n").collect::<Vec<&str>>()[0].to_string();
