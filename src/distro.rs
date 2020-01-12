@@ -54,10 +54,35 @@ impl DistroInfo {
             Err(_) => (),
         }
 
-        // check for etc/os-release file, which handles the
-        // rest
+        // check for /etc/os-release file
         if fs::metadata("/etc/os-release").is_ok() {
             let file = fs::read_to_string("/etc/os-release")
+                .context(OsRelease)?;
+
+            for value in file.split("\n") {
+                let keyval = value.split("=").collect::<Vec<&str>>();
+                if keyval.len() < 2 {
+                    continue;
+                }
+
+                let key = keyval[0].trim();
+                let val = keyval[1].trim().trim_matches('"');
+
+                match key {
+                    "NAME"        => self.name        = val.to_string(),
+                    "ID"          => self.id          = val.to_string(),
+                    "DISTRIB_ID"  => self.distrib_id  = val.to_string(),
+                    "PRETTY_NAME" => self.pretty_name = val.to_string(),
+                    &_            => (),
+                }
+            }
+
+            return Ok(());
+        }
+        
+        // check for /usr/lib/os-release file
+        if fs::metadata("/usr/lib/os-release").is_ok() {
+            let file = fs::read_to_string("/usr/lib/os-release")
                 .context(OsRelease)?;
 
             for value in file.split("\n") {
