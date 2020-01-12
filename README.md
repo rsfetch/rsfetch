@@ -36,7 +36,7 @@ worthy alternative to neofetch/ufetch/screenfetch. Please, if there's anything
 that you feel is missing from this, open an issue. I would love to hear people's
 thoughts on how this is.
 
-**Another notice:** If you make a /r/unixporn post, please let [/u/Valley6660](https://www.reddit.com/user/Valley6660/) know.
+**Another notice:** If you show off `rsfetch` anywhere, please let [/u/Valley6660](https://www.reddit.com/user/Valley6660/) know or open up an issue here.
 He'd absolutely love to see `rsfetch` used by someone other than himself.
 And if you share, there's a very good possibility of your screenshot being included in the README!
 (I'm totally not trying to bribe people into using it, shhhhhhh.)
