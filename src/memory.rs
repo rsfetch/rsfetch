@@ -79,7 +79,9 @@ impl RAMInfo {
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
                 .for_each(|b| buffer.push(*b as char));
-            print!("buffer len: {}, '{}'\n", buffer.len(), buffer);
+
+            // remove non-integer chars from buffer
+            buffer.trim().replace("\n", "");
             total = buffer.parse::<u64>().unwrap() as f64;
 
             let pagesize: f64;
