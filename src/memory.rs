@@ -81,7 +81,7 @@ impl RAMInfo {
                 .for_each(|b| buffer.push(*b as char));
 
             // remove non-integer chars from buffer
-            buffer.trim().replace("\n", "");
+            buffer = buffer.trim().replace("\n", "");
             total = buffer.parse::<u64>().unwrap() as f64;
 
             let pagesize: f64;
