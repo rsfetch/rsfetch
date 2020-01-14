@@ -79,7 +79,7 @@ impl RAMInfo {
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
                 .for_each(|b| buffer.push(*b as char));
-            // properly format buf as float :P
+            print!("buffer len: {}, '{}'\n", buffer.len(), buffer);
             total = buffer.parse::<u64>().unwrap() as f64;
 
             let pagesize: f64;
