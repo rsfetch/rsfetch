@@ -74,7 +74,7 @@ impl RAMInfo {
             self.used  = Some(used  / 1024_f64 / 1024_f64);
             self.total = Some(total / 1024_f64 / 1024_f64);
             return Ok(());
-        } else if os == &OS::FreeBSD || os == &OS::Other {
+        } else if os == &OS::FreeBSD || os == &OS::DragonflyBSD {
             let mut buffer = String::new();
             Command::new("sysctl").arg("-n").arg("hw.physmem")
                 .output().context(RAMErr)?.stdout.iter()
