@@ -67,11 +67,23 @@ I have prebuilt binaries in the releases tab for people who don't want to build 
 - the Rust compiler toolchain
 - **GNU** Make (makefile not compatible with `bmake`!)
 
-1. Clone the repository.
+You have two methods to build from source:
+
+##### make
+(Choose either 3 or 4, but don't do both.)
+1. Clone the repository
 2. `cd rsfetch`
-3. `sudo make install`, or use `make DESTDIR="/home/$USER" PREFIX=".cargo/" install` to install to `$HOME/.cargo/bin`
+3. `sudo make install`
+4. Or use `make DESTDIR="/home/$USER" PREFIX=".cargo/" install` to install to `$HOME/.cargo/bin`
 
 Uninstall with `sudo make uninstall`.
+
+##### cargo
+1. Clone the repository
+2. `cd rsfetch`
+3. `cargo install --path .`
+
+Uninstall with `cargo uninstall rsfetch`
 
 #### AUR package
 Optionally, if you use a Arch-based distro, you can use either of the following AUR packages:
@@ -82,9 +94,8 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 ~~I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)~~ So it turns out that not only am I terrible at pkgbuilds, but also ebuilds. If anyone could make one for me, that would be amazing.
 
 #### Cargo
-**Note: This method is currently months outdated, please use a prebuilt binary or build from source.**<br>
-If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.<br>
-Workaround: `cargo install --git https://github.com/rsfetch/rsfetch.git`
+If you already have `rust` and `cargo` setup, you can install it with:<br>
+`cargo install --git https://github.com/rsfetch/rsfetch.git`
 
 
 ### Usage
