@@ -83,7 +83,9 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 
 #### Cargo
 **Note: This method is currently months outdated, please use a prebuilt binary or build from source.**<br>
-If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.
+If you already have `rust` and `cargo` setup, you can install it with `cargo install rsfetch`.<br>
+Workaround: `cargo install --git https://github.com/rsfetch/rsfetch.git`
+
 
 ### Usage
 
