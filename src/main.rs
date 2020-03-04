@@ -72,8 +72,11 @@ pub enum Error {
     Mpc { source: std::io::Error },
     #[snafu(display("Unable to retrieve CPU information: {}", source))]
     CPUErr { source: std::io::Error },
-    #[snafu(display("Unable to retrieve CPU on BSD system: {}.
-            Note: rsfetch does not currently contain proper support for *BSD.", source))]
+    #[snafu(display(
+        "Unable to retrieve CPU on BSD system: {}.
+            Note: rsfetch does not currently contain proper support for *BSD.",
+        source
+    ))]
     BSDCPUErr { source: std::io::Error },
     #[snafu(display("Unable to parse retrieved CPU information into the proper format."))]
     BSDCPUParseErr { source: std::num::ParseIntError },
@@ -90,17 +93,19 @@ pub type Result<T, E = Error> = result::Result<T, E>;
 // Default art.
 fn get_default_logo(style: &OutputType) -> String {
     if style == &OutputType::Rsfetch {
-        return " ┬─┐┌─┐┌─┐┌─┐┌┬┐┌─┐┬ ┬
+        " ┬─┐┌─┐┌─┐┌─┐┌┬┐┌─┐┬ ┬
  ├┬┘└─┐├┤ ├┤  │ │  ├─┤
- ┴└─└─┘└  └─┘ ┴ └─┘┴ ┴".to_string();
+ ┴└─└─┘└  └─┘ ┴ └─┘┴ ┴"
+            .to_string()
     } else {
-        return "    ___
+        "    ___
    (.. |
    (<> |
   / __  \\
  ( /  \\ /|
 _/\\ __)/_)
-\\/-____\\/".to_string();
+\\/-____\\/"
+            .to_string()
     }
 }
 
@@ -230,24 +235,30 @@ fn main() {
 
     if matches.is_present("credits") {
         println!();
-        println!("Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)");
-        println!("Contributor:      Ki{}d Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)",
-            std::char::from_u32(235 as u32).unwrap());
-        println!("Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
-            std::char::from_u32(539 as u32).unwrap());
+        println!(
+            "Maintainer:       valley             (Reddit: /u/Valley6660) (Github: Phate6660)"
+        );
+        println!(
+            "Contributor:      Ki{}d Llaentenn     (Reddit: /u/kiedtl)     (Github: kiedtl)",
+            std::char::from_u32(235 as u32).unwrap()
+        );
+        println!(
+            "Contributor:      Lauren{}iu Nicola                           (Github: lnicola)\n",
+            std::char::from_u32(539 as u32).unwrap()
+        );
         println!("With thanks to:   \"/r/rust\", \"/u/tablair\", \"/u/kabocha_\", \"/u/DebuggingPanda\", for their contributions, and the tool \"neofetch\" for giving the inspiration to create this.");
         println!();
         return;
     }
 
     let os = match OSInfo::get_os() {
-        Ok(o)  => o,
+        Ok(o) => o,
         Err(_) => {
             error!("unable to detect OS - results may be inaccurate.");
 
             // default to Linux
             OS::Linux
-        },
+        }
     };
 
     let bold = !matches.is_present("no-bold");
@@ -280,10 +291,10 @@ fn main() {
 
     let opts = OutputOptions {
         output_type: style.clone(),
-        caps:        caps,
-        bold:        bold,
+        caps,
+        bold,
         use_borders: borders,
-        borders:     corner,
+        borders: corner,
     };
 
     //let format;
@@ -293,7 +304,7 @@ fn main() {
     // --- OUTPUT ---
     // if there aren't any options, then no information fields
     // will be enabled, which means we may as well exit now
-    if std::env::args().collect::<Vec<String>>().len() < 2 {
+    if std::env::args().count() < 2 {
         std::process::exit(0); // get the hell outta here!
     }
 
@@ -308,7 +319,7 @@ fn main() {
         let mut logo: String = "".to_owned();
         if !logofile.is_empty() {
             match get_logo_from_file(logofile.to_owned()) {
-                Ok(l)  => logo = l,
+                Ok(l) => logo = l,
                 Err(e) => error!("{:?}", e),
             }
         } else {
@@ -340,10 +351,9 @@ fn main() {
             let mut userstr: String = "".to_owned();
             if matches.is_present("user") {
                 if bold && (style != OutputType::Rsfetch) {
-                    userstr = format!("{}[1m{}{}[0m", 27 as char,
-                                      user, 27 as char);
+                    userstr = format!("{}[1m{}{}[0m", 27 as char, user, 27 as char);
                 } else {
-                    userstr = format!("{}", user);
+                    userstr = user;
                 }
             }
 
@@ -353,8 +363,7 @@ fn main() {
                 }
 
                 if bold && (style != OutputType::Rsfetch) {
-                    userstr = format!("{}{}[1m{}{}[0m", userstr,
-                                      27 as char, host, 27 as char);
+                    userstr = format!("{}{}[1m{}{}[0m", userstr, 27 as char, host, 27 as char);
                 } else {
                     userstr = format!("{}{}", userstr, host);
                 }
@@ -412,11 +421,13 @@ fn main() {
         let mut wmde = WMDEInfo::new();
         match wmde.get() {
             Ok(()) => writer.add("WM/DE", &wmde.format()),
-            Err(e) => if wmde.format() != "" {
-                writer.add("DE", &wmde.format());
-            } else {
-                error!("{}", e)
-            },
+            Err(e) => {
+                if wmde.format() != "" {
+                    writer.add("DE", &wmde.format());
+                } else {
+                    error!("{}", e)
+                }
+            }
         }
     }
 
@@ -463,8 +474,7 @@ fn main() {
         pkgs.set_manager(packages);
 
         match pkgs.get() {
-            Ok(()) => writer.add("PACKAGES", 
-                &format!("{} ({})", pkgs.format(), packages)),
+            Ok(()) => writer.add("PACKAGES", &format!("{} ({})", pkgs.format(), packages)),
             Err(e) => error!("{}", e),
         }
     }
