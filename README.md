@@ -157,6 +157,9 @@ OPTIONS:
 **neofetch-style output**<br>
 ![neofetch-style](Screenshots/neofetch.png?raw=true "neofetch-style")
 
+**Phate6660's preference of options**<br>
+![rsfetch-valley](Screenshots/rsfetch-valley.png?raw=true "rsfetch-valley")
+
 ### Benchmarks
 
 Here's a detailed benchmark; with rsfetch versus ufetch, pfetch, aurafetch, Neofetch, and ScreenFetch:
