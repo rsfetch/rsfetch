@@ -4,6 +4,7 @@
 <p align="center">
 <img alt="crates.io version" src="https://img.shields.io/badge/crates.io-v1.9.0-blue.svg">
 <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/rsfetch/rsfetch.svg">
+<img alt="lines of code" src="https://tokei.rs/b1/github/rsfetch/rsfetch?category=code">
 <img alt="GitHub" src="https://img.shields.io/github/license/rsfetch/rsfetch.svg">
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/rsfetch/rsfetch.svg">
 <img alt="GitHub issues" src="https://img.shields.io/github/issues/rsfetch/rsfetch.svg?color=gren">
