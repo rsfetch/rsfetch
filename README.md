@@ -83,6 +83,7 @@ Uninstall with `sudo make uninstall`.
 1. Clone the repository
 2. `cd rsfetch`
 3. `cargo install --path .`
+4. `sudo cp rsfetch.1 /usr/share/man/man1/` (for optional manpage, skip if unwanted)
 
 Uninstall with `cargo uninstall rsfetch`
 
@@ -98,6 +99,8 @@ Optionally, if you use a Arch-based distro, you can use either of the following 
 If you already have `rust` and `cargo` setup, you can install it with:<br>
 `cargo install --git https://github.com/rsfetch/rsfetch.git`
 
+If you want the manpage:<br>
+`sudo curl -sSL https://raw.githubusercontent.com/rsfetch/rsfetch/master/rsfetch.1 -o /usr/share/man/man1/rsfetch.1`
 
 ### Usage
 
