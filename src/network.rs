@@ -2,7 +2,6 @@ use crate::*;
 
 pub struct NetworkInfo {
     ip_address: String,
-
     // TODO: implement
     // interface: String,
     // is_connected: bool,
@@ -13,7 +12,9 @@ pub struct NetworkInfo {
 
 impl NetworkInfo {
     pub fn new() -> NetworkInfo {
-        NetworkInfo { ip_address: String::new(), }
+        NetworkInfo {
+            ip_address: String::new(),
+        }
     }
 
     pub fn get(&mut self) -> Result<()> {
@@ -25,5 +26,7 @@ impl NetworkInfo {
     }
 
     // format it
-    pub fn format(&self) -> String { self.ip_address.clone() }
+    pub fn format(&self) -> String {
+        self.ip_address.clone()
+    }
 }

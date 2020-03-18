@@ -1,5 +1,5 @@
-use std::fs;
 use crate::*;
+use std::fs;
 use std::process::Command;
 
 pub struct Hostname {
@@ -15,15 +15,17 @@ impl Hostname {
 
     pub fn get(&mut self) -> Result<()> {
         if fs::metadata("/etc/hostname").is_ok() {
-            let f = fs::read_to_string("/etc/hostname")
-                .context(ReadHostname)?;
+            let f = fs::read_to_string("/etc/hostname").context(ReadHostname)?;
             self.name = f.trim().to_string();
         } else {
             // fallback to `hostname` command
             let mut hostname = String::new();
-            let _ = Command::new("hostname").output()
-                .context(ReadHostname)?.stdout
-                .iter().map(|b| hostname.push(*b as char))
+            Command::new("hostname")
+                .output()
+                .context(ReadHostname)?
+                .stdout
+                .iter()
+                .map(|b| hostname.push(*b as char))
                 .collect::<()>();
             self.name = hostname.trim().to_string();
         }
@@ -32,5 +34,7 @@ impl Hostname {
     }
 
     // format it
-    pub fn format(&self) -> String { self.name.clone() }
+    pub fn format(&self) -> String {
+        self.name.clone()
+    }
 }

@@ -1,6 +1,6 @@
-use std::env;
 use crate::*;
-use std::io::{ BufReader, BufRead };
+use std::env;
+use std::io::{BufRead, BufReader};
 
 pub struct WMDEInfo {
     de: String,
@@ -27,31 +27,33 @@ impl WMDEInfo {
 
         // if Err() is returned anywhere, it will be returned right
         // here.
-        let path = format!("{}/.xinitrc", dirs::home_dir()
-                           .context(HomeDir)?
-                           .to_str()
-                           .unwrap());
+        let path = format!(
+            "{}/.xinitrc",
+            dirs::home_dir().context(HomeDir)?.to_str().unwrap()
+        );
         let file = File::open(path).context(OpenXInitRc)?;
         let reader = BufReader::new(file);
-        let last_line = reader.lines().last()
+        let last_line = reader
+            .lines()
+            .last()
             .context(EmptyXInitRc)?
             .context(ReadXInitRc)?;
 
-        if let Some(wm) = last_line.split(" ").last() {
+        if let Some(wm) = last_line.split(' ').last() {
             self.wm = wm.trim().to_string();
         } else {
             self.wm = "?".to_string();
         }
-        
+
         Ok(())
     }
 
     // format it
     pub fn format(&self) -> String {
         if self.de != "" {
-            return self.de.clone()
+            self.de.clone()
         } else {
-            return self.wm.clone()
+            self.wm.clone()
         }
     }
 }

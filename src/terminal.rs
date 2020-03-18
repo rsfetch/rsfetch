@@ -1,25 +1,24 @@
 use crate::*;
-use std::fs;
-use libc::{ c_int, isatty, ttyname };
+use libc::{c_int, isatty, ttyname};
 use std::ffi::CStr;
+use std::fs;
 use std::process;
 use std::vec::Vec;
 
 fn get_ppid(id: u32) -> Option<u32> {
-    if !fs::metadata(&format!("/proc/{}/status", id)).is_ok() {
+    if fs::metadata(&format!("/proc/{}/status", id)).is_err() {
         return None;
     }
 
     let mut ppid_str = String::new();
     fs::read_to_string(&format!("/proc/{}/status", id))
         .unwrap()
-        .split("\n")
+        .split('\n')
         .for_each(|i| {
-            let info = i.split(":").collect::<Vec<&str>>();
+            let info = i.split(':').collect::<Vec<&str>>();
             if info.len() > 1 {
                 let key = info[0].trim();
-                let val = info[1].trim()
-                    .replace("\n", "");
+                let val = info[1].trim().replace("\n", "");
 
                 if key == "PPid" {
                     ppid_str = val;
@@ -29,14 +28,14 @@ fn get_ppid(id: u32) -> Option<u32> {
 
     let ppid = ppid_str.parse::<u32>();
     match ppid {
-        Ok(i)  => {
+        Ok(i) => {
             if i == 0 {
-                return None;
+                None
             } else {
-                return Some(i);
+                Some(i)
             }
-        },
-        Err(_) => return None,
+        }
+        Err(_) => None,
     }
 }
 
@@ -66,9 +65,9 @@ impl Terminal {
             let mut ppname = String::new();
             fs::read_to_string(&format!("/proc/{}/status", lastid))
                 .unwrap()
-                .split("\n")
+                .split('\n')
                 .for_each(|i| {
-                    let info = i.split(":").collect::<Vec<&str>>();
+                    let info = i.split(':').collect::<Vec<&str>>();
                     if info.len() > 1 {
                         let key = info[0].trim();
                         let val = info[1].trim().to_string();
@@ -77,7 +76,7 @@ impl Terminal {
                             ppname = val;
                         }
                     }
-            });
+                });
 
             // remove spaces/newlines
             ppname.trim().replace("\n", "").to_string();
@@ -85,18 +84,22 @@ impl Terminal {
 
             // skip mosh, ssh, and shells (e.g. bash, zsh, etc)
             // and GNU screen/tmux
-            if ppname.ends_with("sh") ||
-                ppname == "ion" || ppname == "screen" ||
-                ppname.starts_with("tmux") || ppname == "tmux" {
+            if ppname.ends_with("sh")
+                || ppname == "ion"
+                || ppname == "screen"
+                || ppname.starts_with("tmux")
+                || ppname == "tmux"
+            {
                 //print!("\t=> process is tmux, shell, or GNU screen, skipping.\n");
                 continue;
             }
 
             // if ppname is eq to `(l|L)ogin` or `init`, term
             // should be eq to output from tty command.
-            if ppname.starts_with("login") ||
-                ppname.starts_with("Login") ||
-                ppname.starts_with("init") {
+            if ppname.starts_with("login")
+                || ppname.starts_with("Login")
+                || ppname.starts_with("init")
+            {
                 //print!("\t=> process is login or init, retrieving TTY\n");
                 let mut istty = true;
                 unsafe {
@@ -108,7 +111,9 @@ impl Terminal {
                 if istty {
                     unsafe {
                         self.name = CStr::from_ptr(ttyname(0 as c_int))
-                            .to_str().unwrap().to_owned();
+                            .to_str()
+                            .unwrap()
+                            .to_owned();
                     }
                 } else {
                     self.name = "tty".to_string();
@@ -125,8 +130,7 @@ impl Terminal {
                 self.name = "urxvt".to_string();
                 break;
             } else {
-                self.name = ppname.split("/").last()
-                    .unwrap().to_string();
+                self.name = ppname.split('/').last().unwrap().to_string();
                 break;
             }
         }
