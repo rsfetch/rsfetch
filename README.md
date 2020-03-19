@@ -87,10 +87,15 @@ Uninstall with `sudo make uninstall`.
 
 Uninstall with `cargo uninstall rsfetch`
 
-#### AUR package
-Optionally, if you use a Arch-based distro, you can use either of the following AUR packages:
+#### distro repos
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rsfetch.svg)](https://repology.org/project/rsfetch/versions)
+
+If you use a Arch-based distro, you can use either of the following AUR packages:
 - [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (This requires Rust as it builds from source.)
 - [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs the latest binary from releases.)
+
+If you are on BSD, it is in Fresh Ports (thanks to whoever maintains that package, I was ecstatic to see it):
+- [rsfetch](https://www.freshports.org/sysutils/rsfetch/) (Requires Rust and pkgconf as it builds from source.)
 
 #### ebuild
 ~~I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)~~ So it turns out that not only am I terrible at pkgbuilds, but also ebuilds. If anyone could make one for me, that would be amazing.
