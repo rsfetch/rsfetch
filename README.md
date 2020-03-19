@@ -90,7 +90,7 @@ Uninstall with `cargo uninstall rsfetch`
 #### distro repos
 [![Packaging status](https://repology.org/badge/vertical-allrepos/rsfetch.svg)](https://repology.org/project/rsfetch/versions)
 
-If you use a Arch-based distro, you can use either of the following AUR packages:
+If you use an Arch-based distro, you can use either of the following AUR packages:
 - [rsfetch-git](https://aur.archlinux.org/packages/rsfetch-git/) (This requires Rust as it builds from source.)
 - [rsfetch-bin](https://aur.archlinux.org/packages/rsfetch-bin/) (This grabs the latest binary from releases.)
 
