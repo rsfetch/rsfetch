@@ -97,8 +97,10 @@ If you use an Arch-based distro, you can use either of the following AUR package
 If you are on BSD, it is in Fresh Ports (thanks to whoever maintains that package, I was ecstatic to see it):
 - [rsfetch](https://www.freshports.org/sysutils/rsfetch/) (Requires Rust and pkgconf as it builds from source.)
 
-#### ebuild
-Coming soon. Working on it now.
+If you are on Gentoo, you can install it from the overlay I co-created:
+1. Install [p6nc-overlay](https://github.com/p6nc/overlay)
+2. Make sure repos and overlays are synced: `sudo emerge --sync`
+3. `sudo emerge -atv rsfetch`
 
 #### cargo
 If you already have `rust` and `cargo` setup, you can install it with:<br>
