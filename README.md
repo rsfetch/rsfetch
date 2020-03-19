@@ -98,7 +98,7 @@ If you are on BSD, it is in Fresh Ports (thanks to whoever maintains that packag
 - [rsfetch](https://www.freshports.org/sysutils/rsfetch/) (Requires Rust and pkgconf as it builds from source.)
 
 #### ebuild
-~~I just switched over to Gentoo a few days ago, so whenever I figure out how to make (and share) ebuilds, there will be one released. :)~~ So it turns out that not only am I terrible at pkgbuilds, but also ebuilds. If anyone could make one for me, that would be amazing.
+Coming soon. Working on it now.
 
 #### Cargo
 If you already have `rust` and `cargo` setup, you can install it with:<br>
