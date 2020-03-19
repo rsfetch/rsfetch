@@ -100,9 +100,9 @@ If you are on BSD, it is in Fresh Ports (thanks to whoever maintains that packag
 #### ebuild
 Coming soon. Working on it now.
 
-#### Cargo
+#### cargo
 If you already have `rust` and `cargo` setup, you can install it with:<br>
-`cargo install --git https://github.com/rsfetch/rsfetch.git`
+`cargo install rsfetch`
 
 If you want the manpage:<br>
 `sudo curl -sSL https://raw.githubusercontent.com/rsfetch/rsfetch/master/rsfetch.1 -o /usr/share/man/man1/rsfetch.1`
