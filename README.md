@@ -168,6 +168,8 @@ OPTIONS:
 ![rsfetch-valley](Screenshots/rsfetch-valley.png?raw=true "rsfetch-valley")
 
 ### Benchmarks
+TODO: Update benchmarks. They are out of date by a lot. My latest hyperfine run for rsfetch actually resulted in 1.1ms result time, but I don't currently have the other fetch tools to compare.
+
 
 Here's a detailed benchmark; with rsfetch versus ufetch, pfetch, aurafetch, Neofetch, and ScreenFetch:
 
