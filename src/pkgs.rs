@@ -89,10 +89,9 @@ impl PkgInfo {
                     .arg("list")
                     .output()
                     .context(Pkgcount)?,
-                PkgManager::Unknown => Command::new("echo")
-                    .output()
-                    .context(Pkgcount)?,
-                //_                 => Command::new("echo -n ''"),
+                PkgManager::Unknown => Command::new("return")
+					.output()
+					.context(Pkgcount)?,
             };
 
             // count lines in stdout
