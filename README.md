@@ -1,5 +1,5 @@
 <h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/new-logo.jpg" alt="logo" height="100px"></h3>
-<p align="center">Fast (<1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
+<p align="center">Fast (~1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
 <p align="center">
 <img alt="crates.io version" src="https://img.shields.io/badge/crates.io-v2.0.0-blue.svg">
