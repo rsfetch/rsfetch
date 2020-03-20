@@ -42,11 +42,13 @@ impl PkgInfo {
         for manager in self.manager.clone() {
             let output = match manager {
                 PkgManager::Arch => Command::new("pacman")
-                    .arg("-Qq")
+                    .arg("-Q")
+					.arg("-q")
                     .output()
                     .context(Pkgcount)?,
                 PkgManager::Debian => Command::new("apt")
-                    .arg("list --installed")
+                    .arg("list")
+					.arg("--installed")
                     .output()
                     .context(Pkgcount)?,
                 PkgManager::Void => Command::new("xbps-query")
@@ -54,24 +56,40 @@ impl PkgInfo {
                     .output()
                     .context(Pkgcount)?,
                 PkgManager::Fedora => Command::new("dnf")
-                    .arg("list --installed")
+                    .arg("list")
+					.arg("installed")
                     .output()
                     .context(Pkgcount)?,
-                PkgManager::BSD => Command::new("pkg").arg("info").output().context(Pkgcount)?,
-                PkgManager::Suse => Command::new("rpm").arg("-qa").output().context(Pkgcount)?,
+                PkgManager::BSD => Command::new("pkg")
+					.arg("info")
+					.output()
+					.context(Pkgcount)?,
+                PkgManager::Suse => Command::new("rpm")
+					.arg("-q")
+					.arg("-a")
+					.output()
+					.context(Pkgcount)?,
                 PkgManager::Solus => Command::new("eopkg")
                     .arg("list-installed")
                     .output()
                     .context(Pkgcount)?,
-                PkgManager::Alpine => Command::new("apk").arg("info").output().context(Pkgcount)?,
-                PkgManager::Gentoo => Command::new("qlist").arg("-I").output().context(Pkgcount)?,
-                PkgManager::Pip => Command::new("pip").arg("list").output().context(Pkgcount)?,
+                PkgManager::Alpine => Command::new("apk")
+					.arg("info")
+					.output()
+					.context(Pkgcount)?,
+                PkgManager::Gentoo => Command::new("qlist")
+					.arg("-I")
+					.output()
+					.context(Pkgcount)?,
+                PkgManager::Pip => Command::new("pip")
+					.arg("list")
+					.output()
+					.context(Pkgcount)?,
                 PkgManager::Cargo => Command::new("cargo")
                     .arg("list")
                     .output()
                     .context(Pkgcount)?,
                 PkgManager::Unknown => Command::new("echo")
-                    .arg("-n ''") // dummy
                     .output()
                     .context(Pkgcount)?,
                 //_                 => Command::new("echo -n ''"),
