@@ -2,7 +2,7 @@
 <p align="center">Fast (~1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
 <p align="center">
-<img alt="crates.io version" src="https://img.shields.io/badge/crates.io-v2.0.0-blue.svg">
+<img alt="crates.io version" src="https://img.shields.io/crates/v/rsfetch">
 <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/rsfetch/rsfetch.svg">
 <img alt="lines of code" src="https://tokei.rs/b1/github/rsfetch/rsfetch?category=code">
 <img alt="GitHub" src="https://img.shields.io/github/license/rsfetch/rsfetch.svg">
