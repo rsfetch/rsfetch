@@ -18,8 +18,11 @@ impl NetworkInfo {
     }
 
     pub async fn get(&mut self) -> Result<()> {
-        let client = hyper::Client::new();
-        let resp = client.get(hyper::Uri::from_static("http://ipecho.net/plain"))
+        //let client = hyper::Client::new();
+	let https = hyper_tls::HttpsConnector::new();
+	let client = hyper::Client::builder()
+	    .build::<_, hyper::Body>(https);
+        let resp = client.get(hyper::Uri::from_static("https://ipecho.net/plain"))
                     .await
                     .context(Hyper)?;
         let buf = hyper::body::to_bytes(resp)
