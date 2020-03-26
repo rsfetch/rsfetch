@@ -65,7 +65,7 @@ pub enum Error {
     #[snafu(display("Unable to retrieve USER, SHELL, or EDITOR/VISUAL."))]
     EnvError { source: std::env::VarError },
     #[snafu(display("Unable to retrieve IP address: {}", source))]
-    Reqwest { source: reqwest::Error },
+    Hyper { source: hyper::Error },
     #[snafu(display("Unable to retrieve package count."))]
     Pkgcount { source: std::io::Error },
     #[snafu(display("Unable to retrive mpd information."))]
@@ -114,8 +114,8 @@ fn get_logo_from_file(path: String) -> Result<String> {
     let logo = std::fs::read_to_string(&*path).context(ReadLogo)?;
     Ok(logo)
 }
-
-fn main() {
+#[tokio::main]
+async fn main() {
     pretty_env_logger::init();
 
     // Variables
@@ -463,7 +463,7 @@ fn main() {
 
     if matches.is_present("ip-address") {
         let mut ip = NetworkInfo::new();
-        match ip.get() {
+        match ip.get().await {
             Ok(()) => writer.add("IP ADDRESS", &ip.format()),
             Err(e) => error!("{}", e),
         }

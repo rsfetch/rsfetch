@@ -17,11 +17,18 @@ impl NetworkInfo {
         }
     }
 
-    pub fn get(&mut self) -> Result<()> {
-        self.ip_address = reqwest::get("https://ipecho.net/plain")
-            .context(Reqwest)?
-            .text()
-            .context(Reqwest)?;
+    pub async fn get(&mut self) -> Result<()> {
+        //let client = hyper::Client::new();
+	let https = hyper_tls::HttpsConnector::new();
+	let client = hyper::Client::builder()
+	    .build::<_, hyper::Body>(https);
+        let resp = client.get(hyper::Uri::from_static("https://ipecho.net/plain"))
+                    .await
+                    .context(Hyper)?;
+        let buf = hyper::body::to_bytes(resp)
+                    .await
+                    .context(Hyper)?;
+        self.ip_address = std::str::from_utf8(&buf).unwrap().to_string();
         Ok(())
     }
 
