@@ -1,6 +1,3 @@
-// TODO: replace reqwest with a lighter crate :(
-// -- kiedtl
-
 use clap::{App, Arg};
 use log::error;
 use snafu::{OptionExt, ResultExt, Snafu};
