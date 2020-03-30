@@ -149,15 +149,13 @@ impl OutputHelper {
 
             let stuff = self.data.clone();
 
-            stuff
-                .iter()
-                .map(|i| {
-                    let key = &i.key;
-                    if key.len() > key_width {
-                        key_width = key.len();
-                    }
-                })
-                .collect::<()>();
+            for i in &stuff {
+                let key = &i.key;
+                if key.len() > key_width {
+                    key_width = key.len();
+                }
+            }
+
             key_width += 2;
 
             let mut printed = 0;

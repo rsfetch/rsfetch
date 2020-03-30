@@ -19,15 +19,16 @@ impl Hostname {
             self.name = f.trim().to_string();
         } else {
             // fallback to `hostname` command
-            let mut hostname = String::new();
-            Command::new("hostname")
+            let command = Command::new("hostname")
                 .output()
-                .context(ReadHostname)?
-                .stdout
-                .iter()
-                .map(|b| hostname.push(*b as char))
-                .collect::<()>();
-            self.name = hostname.trim().to_string();
+                .context(ReadHostname)?;
+
+            let hostname = String::from_utf8(command.stdout)
+                .unwrap()
+                .replace("\n", "")
+                .into();
+
+            self.name = hostname;
         }
 
         Ok(())

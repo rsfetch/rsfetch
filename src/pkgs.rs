@@ -96,16 +96,13 @@ impl PkgInfo {
 
             // count lines in stdout
             let mut count: usize = 0;
-            output
-                .stdout
-                .iter()
-                .map(|b| {
-                    if (*b as usize) == 10 {
-                        count += 1;
-                    }
-                })
-                .collect::<()>();
 
+            for i in &output.stdout {
+                if (*i as usize) == 10 {
+                    count += 1;
+                }
+            }
+            
             self.count += count;
         }
 
