@@ -25,8 +25,7 @@ impl Hostname {
 
             let hostname = String::from_utf8(command.stdout)
                 .unwrap()
-                .replace("\n", "")
-                .into();
+                .replace("\n", "");
 
             self.name = hostname;
         }
