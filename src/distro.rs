@@ -109,8 +109,7 @@ impl DistroInfo {
             match uname {
                 Ok(out) => {
                     let output = String::from_utf8(out.stdout)
-                        .unwrap()
-                        .replace("\n", "");
+                        .unwrap();
 
                     self.name = output;
                     Ok(())

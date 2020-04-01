@@ -109,7 +109,7 @@ impl OutputHelper {
             // convert self.data to table, then print
             for thing in self.data.clone() {
                 let mut key = thing.key.clone();
-                let val = thing.val.clone().replace("\n", "");
+                let val = thing.val.clone();
 
                 if !self.options.caps {
                     key = key.to_lowercase();
@@ -162,7 +162,7 @@ impl OutputHelper {
             for c in 0..stuff.len() {
                 let thing = stuff[c].clone();
                 let mut key = thing.key;
-                let val = thing.val.replace("\n", "");
+                let val = thing.val;
 
                 if !self.options.caps {
                     key = key.to_lowercase();

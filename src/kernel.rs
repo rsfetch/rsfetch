@@ -25,8 +25,7 @@ impl KernelInfo {
                 .context(KernelVersion)?;
 
             let output = std::str::from_utf8(&command.stdout)
-                .unwrap()
-                .replace("\n", "");
+                .unwrap();
 
             self.version = output.trim().into();
         }

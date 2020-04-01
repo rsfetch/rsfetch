@@ -18,10 +18,10 @@ fn get_ppid(id: u32) -> Option<u32> {
             let info = i.split(':').collect::<Vec<&str>>();
             if info.len() > 1 {
                 let key = info[0].trim();
-                let val = info[1].trim().replace("\n", "");
+                let val = info[1].trim();
 
                 if key == "PPid" {
-                    ppid_str = val;
+                    ppid_str = val.into();
                 }
             }
         });
