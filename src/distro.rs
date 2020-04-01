@@ -108,13 +108,8 @@ impl DistroInfo {
             let uname = Command::new("uname").arg("-s").output();
             match uname {
                 Ok(out) => {
-                    let mut output = "".to_owned();
-                    out.stdout
-                        .iter()
-                        .map(|b| {
-                            output.push(*b as char);
-                        })
-                        .collect::<()>();
+                    let output = String::from_utf8(out.stdout)
+                        .unwrap();
 
                     self.name = output;
                     Ok(())

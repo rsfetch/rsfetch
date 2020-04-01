@@ -19,16 +19,15 @@ impl KernelInfo {
             let f = fs::read_to_string(path).context(KernelVersion)?;
             self.version = f.trim().to_string();
         } else {
-            let mut output: String = String::new();
-            Command::new("uname")
+            let command = Command::new("uname")
                 .arg("-r")
                 .output()
-                .context(KernelVersion)?
-                .stdout
-                .iter()
-                .map(|b| output.push(*b as char))
-                .collect::<()>();
-            self.version = output.trim().to_string();
+                .context(KernelVersion)?;
+
+            let output = std::str::from_utf8(&command.stdout)
+                .unwrap();
+
+            self.version = output.trim().into();
         }
 
         Ok(())

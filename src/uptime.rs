@@ -31,16 +31,16 @@ impl UptimeInfo {
             // convert proc_uptime (a string) to usize
             seconds = proc_uptime.parse::<u64>().unwrap();
         } else {
-            let mut sysctl: String = String::new();
-            Command::new("sysctl")
+            let command = Command::new("sysctl")
                 .arg("-n")
                 .arg("kern.boottime")
                 .output()
-                .context(Uptime)?
-                .stdout
-                .iter()
-                .map(|b| sysctl.push(*b as char))
-                .collect::<()>();
+                .context(Uptime)?;
+
+            let sysctl = String::from_utf8(command.stdout)
+                .unwrap()
+                .replace("\n", "");
+
             let boottime: u64 = sysctl.split(',').collect::<Vec<&str>>()[0]
                 .split("sec =")
                 .collect::<Vec<&str>>()[1]

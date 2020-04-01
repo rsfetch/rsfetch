@@ -26,60 +26,58 @@ impl CPUInfo {
 
         // check if it's BSD first...
         if os != &OS::Linux {
-            let mut out = "".to_string();
-            Command::new("sysctl")
+            let cpu_model = Command::new("sysctl")
                 .arg("-n")
                 .arg("hw.model")
                 .output()
-                .context(BSDCPUErr)?
-                .stdout
-                .iter()
-                .map(|b| {
-                    out.push(*b as char);
-                })
-                .collect::<()>();
+                .context(BSDCPUErr)?;
+
+            let out = std::str::from_utf8(&cpu_model.stdout)
+                .unwrap()
+                .replace("\n", "");
 
             self.model = out.split('@').collect::<Vec<&str>>()[0].trim().to_string();
 
-            let mut cores: String = String::new();
-            let mut speed: String = String::new();
-
             // get core count
-            Command::new("sysctl")
+            let cpu_cores = Command::new("sysctl")
                 .arg("-n")
                 .arg("hw.ncpu")
                 .output()
-                .context(BSDCPUErr)?
-                .stdout
-                .iter()
-                .map(|b| cores.push(*b as char))
-                .collect::<()>();
+                .context(BSDCPUErr)?;
+
+            let cores = String::from_utf8(cpu_cores.stdout)
+                .unwrap()
+                .replace("\n", "")
+                .trim()
+                .to_string();
 
             // get cpu clocking
-            Command::new("sysctl")
+            let cpu_speed = Command::new("sysctl")
                 .arg("-n")
                 .arg("hw.cpuspeed")
                 .output()
-                .context(BSDCPUErr)?
-                .stdout
-                .iter()
-                .map(|b| speed.push(*b as char))
-                .collect::<()>();
+                .context(BSDCPUErr)?;
+
+            let mut speed = String::from_utf8(cpu_speed.stdout)
+                .unwrap()
+                .replace("\n", "")
+                .trim()
+                .to_string();
 
             if speed == "" {
-                Command::new("sysctl")
+                let cpu_clockrate = Command::new("sysctl")
                     .arg("-n")
                     .arg("hw.clockrate")
                     .output()
-                    .context(BSDCPUErr)?
-                    .stdout
-                    .iter()
-                    .map(|b| speed.push(*b as char))
-                    .collect::<()>();
+                    .context(BSDCPUErr)?;
+
+                speed = String::from_utf8(cpu_clockrate.stdout)
+                    .unwrap()
+                    .replace("\n", "")
+                    .trim()
+                    .to_string();
             }
 
-            cores = cores.trim().to_string();
-            speed = speed.trim().to_string();
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
             self.freq = speed.parse::<f64>().context(CPUFreqParseErr)? / 1000_f64;
             return Ok(());

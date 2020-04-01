@@ -28,13 +28,9 @@ impl EnvInfo {
                 let command = Command::new("id").arg("-un").output();
                 match command {
                     Ok(o) => {
-                        let mut user = String::new();
-                        o.stdout
-                            .iter()
-                            .map(|b| {
-                                user.push(*b as char);
-                            })
-                            .collect::<()>();
+                        let user = String::from_utf8(o.stdout)
+                            .unwrap()
+                            .replace("\n", "");
 
                         if user != "" {
                             self.user = user;

@@ -24,17 +24,17 @@ impl DeviceInfo {
             Ok(c) => self.model = c.trim().to_string(),
             Err(_) => {
                 // fallback to sysctl...
-                let mut model = String::new();
-                Command::new("sysctl")
+                let command = Command::new("sysctl")
                     .arg("-n")
                     .arg("hw.model")
                     .output()
-                    .context(DeviceName)?
-                    .stdout
-                    .iter()
-                    .map(|b| model.push(*b as char))
-                    .collect::<()>();
-                self.model = model.trim().to_string();
+                    .context(DeviceName)?;
+
+                let model = std::str::from_utf8(&command.stdout)
+                    .unwrap()
+                    .replace("\n", "");
+
+                self.model = model.trim().into();
             }
         }
 
