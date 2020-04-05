@@ -306,7 +306,7 @@ async fn main() {
     }
 
     if matches.is_present("logo") {
-        print!("\n"); // print blank line before output.
+        println!(); // print blank line before output.
     }
 
     let mut writer = OutputHelper::new(opts);

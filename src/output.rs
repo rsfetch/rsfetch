@@ -1,4 +1,3 @@
-use prettytable::{cell, format, row, Table};
 use std::vec::Vec;
 
 const E: char = 0x1B as char;
@@ -25,45 +24,19 @@ pub struct OutputOptions {
 }
 
 pub struct OutputHelper {
-    table: Table,
     ascii: String,
     options: OutputOptions,
     data: Vec<KeyValue>,
 }
 
 pub fn bold(text: &str) -> String {
-    format!("{}[1m{}{}[0m", E, text, E)
+    format!("{0}[1m{1}{0}[0m", E, text)
 }
 
 impl OutputHelper {
     // initialize new OutputHelper
     pub fn new(options: OutputOptions) -> OutputHelper {
-        let mut table = Table::new();
-        let bdr = if options.output_type == OutputType::Minimal {
-            ' '
-        } else {
-            '│'
-        };
-
-        let sep = if options.output_type == OutputType::Minimal {
-            format::LineSeparator::new(' ', ' ', options.borders, options.borders)
-        } else {
-            format::LineSeparator::new('─', '─', options.borders, options.borders)
-        };
-
-        let format = format::FormatBuilder::new()
-            .column_separator(' ')
-            .borders(bdr)
-            .separators(
-                &[format::LinePosition::Top, format::LinePosition::Bottom],
-                sep,
-            )
-            .padding(1, 1)
-            .build();
-        table.set_format(format);
-
         OutputHelper {
-            table,
             ascii: String::new(),
             options,
             data: Vec::new(),
@@ -90,43 +63,59 @@ impl OutputHelper {
                 println!("{}", thing.val.replace("\n", ""));
             }
 
-            print!("\n");
+            println!();
         } else if self.options.output_type == OutputType::Rsfetch {
-            // print logo
+            // Print logo
             println!("{}", bold(&self.ascii));
+            let mut data = self.data.clone();
 
-            // print newline, if necessary
-            let chr = self.ascii.clone().chars().last();
-            match chr {
-                Some(ch) => {
-                    if (ch as u32) != 10 {
-                        print!("\n");
-                    }
+            let mut max_len_key = 0;
+            let mut max_len_val = 0;
+            //Process data
+            for j in &mut data {
+                if self.options.bold {
+                    j.key = bold(&j.key);
                 }
-                None => print!("\n"),
-            }
-
-            // convert self.data to table, then print
-            for thing in self.data.clone() {
-                let mut key = thing.key.clone();
-                let val = thing.val.clone();
 
                 if !self.options.caps {
-                    key = key.to_lowercase();
+                    j.key = j.key.to_lowercase();
                 }
-
-                if self.options.bold {
-                    key = bold(&key);
-                    self.ascii = bold(&self.ascii.clone());
+                // Calculate length of key and value for padding
+                if j.key.len() > max_len_key {
+                    max_len_key = j.key.len();
                 }
-
-                if !self.options.use_borders {
-                    self.table.add_row(row![key, val]);
-                } else {
-                    self.table.add_row(row![key, "=", val]);
+                // If not using borders, no need to calculate padding for `values`
+                if self.options.use_borders{
+                    if j.val.len() > max_len_val {
+                        max_len_val = j.val.len();
+                    }
                 }
             }
-            self.table.printstd();
+            // Set most options for borders
+            let mut border = "";
+            let mut width = 0;
+            if self.options.use_borders {
+                border = "│";
+
+                width = if self.options.bold {
+                    max_len_key + max_len_val + 2
+                } else {
+                    max_len_key + max_len_val + 10
+                };
+                // Top border
+                println!("{0}{1:─<2$}{0}", self.options.borders, "", width);
+            }
+
+            // Print data content
+            for info in &data {
+                println!("{0} {1:<3$} = {5:2}{2:<4$} {0}", border, info.key, info.val, max_len_key + 2, max_len_val + 1, "");
+            }
+            // Bottom border
+            if self.options.use_borders {
+                println!("{0}{1:─<2$}{0}", self.options.borders, "", width);
+            } else {
+                println!();
+            }
         } else if self.options.output_type == OutputType::Neofetch {
             let mut width = 0;
             let mut key_width = 0;
