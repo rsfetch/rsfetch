@@ -119,7 +119,7 @@ async fn main() {
     //let args = load_yml!("args.yml");
     //let matches = App::from(args).get_matches();
     let matches = App::new("rsfetch")
-                    .version("2.0.0")
+                    .version("2.0.2")
                     .about("\nAn info fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.\n\nAll options are off by default. \n\nAccepted values for the package manager are \"pacman\", \"apt\", \"xbps\", \"dnf\", \"pkg\", \"eopkg\", \"rpm\", \"apk\", \"pip\", \"portage\", and \"cargo\".")
                     .arg(Arg::with_name("credits")
                         .long("credits")
@@ -306,7 +306,7 @@ async fn main() {
     }
 
     if matches.is_present("logo") {
-        print!("\n"); // print blank line before output.
+        println!(); // print blank line before output.
     }
 
     let mut writer = OutputHelper::new(opts);

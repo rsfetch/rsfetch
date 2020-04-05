@@ -1,6 +1,6 @@
 [package]
 name = "rsfetch"
-version = "2.0.1"
+version = "2.0.2"
 authors = ["Phate6660 <ValleyKnight@protonmail.com>"]
 edition = "2018"
 description = "A neofetch-esque tool written in Rust."
@@ -13,7 +13,6 @@ clap = "^2.33"
 dirs = "1.0"
 log = "0.4"
 pretty_env_logger = "0.3"
-prettytable-rs = "0.8"
 hyper = "0.13"
 hyper-tls = "0.4.1"
 tokio = { version = "0.2", default-features = false, features = ["macros"] }
