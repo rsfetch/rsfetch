@@ -21,7 +21,7 @@ impl DeviceInfo {
 
         let f = fs::read_to_string(path);
         match f {
-            Ok(c) => self.model = c.trim().to_string(),
+            Ok(c) => self.model = c.trim().trim_matches(char::from(0)).to_string(),
             Err(_) => {
                 // fallback to sysctl...
                 let command = Command::new("sysctl")
