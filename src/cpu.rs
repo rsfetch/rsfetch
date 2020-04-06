@@ -122,7 +122,6 @@ impl CPUInfo {
                 .trim_end()
                 .parse::<f64>()
                 .unwrap()/1000.0;
-            println!("TEMP: {}", temp);
             let temp_scale = if self.options.farenheit {
                 temp = (temp * (9.0 / 5.0)) + 32.0;
                 "F"
