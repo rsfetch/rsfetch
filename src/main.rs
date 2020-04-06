@@ -140,6 +140,10 @@ async fn main() {
                          .long("cpu")
                          .short("P")
                          .help("Turn CPU information on."))
+                    .arg(Arg::with_name("farenheit")
+                        .long("farenheit")
+                        .short("f")
+                        .help("Display temperature in farenheit instead of celcius."))
                     .arg(Arg::with_name("terminal")
                         .long("terminal")
                         .short("t")
@@ -292,6 +296,18 @@ async fn main() {
         bold,
         use_borders: borders,
         borders: corner,
+    };
+
+    let temp: bool;
+
+    if matches.is_present("farenheit"){
+        temp = true;
+    } else {
+        temp = false;
+    }
+
+    let cpu_opts = CPUOptions {
+        farenheit: temp
     };
 
     //let format;
@@ -451,7 +467,7 @@ async fn main() {
     }
 
     if matches.is_present("cpu") {
-        let mut cpu = CPUInfo::new();
+        let mut cpu = CPUInfo::new(cpu_opts);
         match cpu.get(&os) {
             Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
