@@ -93,24 +93,29 @@ impl CPUInfo {
                 .output()
                 .context(BSDCPUErr)?;
 
-            let mut temp = String::from_utf8(cpu_temp.stdout)
-                .unwrap()
-                .replace("\n", "")
-                .replace("C", "")
-                .trim()
-                .parse::<f64>()
-                .unwrap();
+            if !cpu_temp.stdout.is_empty() {
+                let mut temp = String::from_utf8(cpu_temp.stdout)
+                    .unwrap()
+                    .replace("\n", "")
+                    .replace("C", "")
+                    .trim()
+                    .parse::<f64>()
+                    .unwrap();
 
-            let temp_scale = if self.options.farenheit {
-                temp = (temp * (9.0 / 5.0)) + 32.0;
-                "F"
-            } else {
-                "C"
-            };
+                let temp_scale = if self.options.farenheit {
+                    temp = (temp * (9.0 / 5.0)) + 32.0;
+                    "F"
+                } else {
+                    "C"
+                };
+
+                self.temp = format!("{}°{}", temp, temp_scale);
+            }
+
 
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
             self.freq = speed.parse::<f64>().context(CPUFreqParseErr)? / 1000_f64;
-            self.temp = format!("{}°{}", temp, temp_scale);
+
             return Ok(());
         }
 
