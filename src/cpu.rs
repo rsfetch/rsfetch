@@ -4,18 +4,26 @@ use std::fs;
 use std::process::Command;
 use std::vec::Vec;
 
+pub struct CPUOptions {
+    pub farenheit: bool,
+}
+
 pub struct CPUInfo {
     pub model: String,
     pub cores: usize,
     pub freq: f64,
+    pub temp: String,
+    pub options: CPUOptions
 }
 
 impl CPUInfo {
-    pub fn new() -> CPUInfo {
+    pub fn new(options: CPUOptions) -> CPUInfo {
         CPUInfo {
             model: String::new(),
             cores: 0,
             freq: 0_f64,
+            temp: String::new(),
+            options,
         }
     }
 
@@ -23,6 +31,7 @@ impl CPUInfo {
     pub fn get(&mut self, os: &OS) -> Result<()> {
         let freq_file = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq";
         let cpu_file = "/proc/cpuinfo";
+        let temp_file = "/sys/class/thermal/thermal_zone0/temp";
 
         // check if it's BSD first...
         if os != &OS::Linux {
@@ -78,8 +87,35 @@ impl CPUInfo {
                     .to_string();
             }
 
+            let cpu_temp = Command::new("sysctl")
+                .arg("-n")
+                .arg("dev.cpu.0.temperature")
+                .output()
+                .context(BSDCPUErr)?;
+
+            if !cpu_temp.stdout.is_empty() {
+                let mut temp = String::from_utf8(cpu_temp.stdout)
+                    .unwrap()
+                    .replace("\n", "")
+                    .replace("C", "")
+                    .trim()
+                    .parse::<f64>()
+                    .unwrap();
+
+                let temp_scale = if self.options.farenheit {
+                    temp = (temp * (9.0 / 5.0)) + 32.0;
+                    "F"
+                } else {
+                    "C"
+                };
+
+                self.temp = format!("{}°{}", temp, temp_scale);
+            }
+
+
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
             self.freq = speed.parse::<f64>().context(CPUFreqParseErr)? / 1000_f64;
+
             return Ok(());
         }
 
@@ -107,6 +143,21 @@ impl CPUInfo {
             self.freq = 0_f64;
         }
 
+        if fs::metadata(temp_file).is_ok() {
+            let mut temp = fs::read_to_string(temp_file)
+                .context(CPUErr)?
+                .trim_end()
+                .parse::<f64>()
+                .unwrap()/1000.0;
+            let temp_scale = if self.options.farenheit {
+                temp = (temp * (9.0 / 5.0)) + 32.0;
+                "F"
+            } else {
+                "C"
+            };
+            self.temp = format!("{:.1}°{}", temp, temp_scale);
+        }
+
         // remove junk from CPU model
         self.model = self.model.clone().split('@').collect::<Vec<&str>>()[0]
             .replace("(TM)", "")
@@ -124,9 +175,9 @@ impl CPUInfo {
     // format it, depending on whether we were able to get the frequency
     pub fn format(&self) -> String {
         if self.freq != 0_f64 {
-            format!("{} ({}) @ {:.3}GHz", self.model, self.cores, self.freq)
+            format!("{} ({}) @ {:.3}GHz ({})", self.model, self.cores, self.freq, self.temp)
         } else {
-            format!("{} ({})", self.model, self.cores)
+            format!("{} ({}) ({})", self.model, self.cores, self.temp)
         }
     }
 }
