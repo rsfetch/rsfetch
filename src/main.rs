@@ -10,8 +10,8 @@ mod hostname;
 use crate::hostname::*;
 mod env;
 use crate::env::*;
-//mod cpu;
-//use crate::cpu::*;
+mod cpu;
+use crate::cpu::*;
 mod wmde;
 use crate::wmde::*;
 mod pkgs;
@@ -290,9 +290,9 @@ async fn main() {
         borders: corner,
     };
 
-//    let cpu_opts = CPUOptions {
-//        farenheit: temp
-//    };
+    let cpu_opts = CPUOptions {
+        farenheit: temp
+    };
 
     //let format;
     // env: variable that holds $USER, $SHELL, and $VISUAL or $EDITOR.
@@ -450,13 +450,13 @@ async fn main() {
         }
     }
 
-//    if matches.is_present("cpu") {
-//        let mut cpu = CPUInfo::new(cpu_opts);
-//        match cpu.get(){
-//            Ok(()) => writer.add("CPU", &cpu.format()),
-//            Err(e) => error!("{}", e),
-//        }
-//    }
+    if matches.is_present("cpu") {
+        let mut cpu = CPUInfo::new(cpu_opts);
+        match cpu.get(){
+            Ok(()) => writer.add("CPU", &cpu.format()),
+            Err(e) => error!("{}", e),
+        }
+    }
 
     if matches.is_present("ip-address") {
         let mut ip = NetworkInfo::new();
