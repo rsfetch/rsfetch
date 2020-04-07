@@ -266,6 +266,8 @@ async fn main() {
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
 
+    let temp = matches.is_present("farenheit");
+
     // For the options that require bools or other input.
     let corners = matches.value_of("corners").unwrap_or("■");
     let music = matches.value_of("music").unwrap_or("");
@@ -297,14 +299,6 @@ async fn main() {
         use_borders: borders,
         borders: corner,
     };
-
-    let temp: bool;
-
-    if matches.is_present("farenheit"){
-        temp = true;
-    } else {
-        temp = false;
-    }
 
     let cpu_opts = CPUOptions {
         farenheit: temp
