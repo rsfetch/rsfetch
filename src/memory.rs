@@ -20,44 +20,54 @@ impl RAMInfo {
         }
     }
 
-    pub fn get(&mut self, os: &OS) -> Result<()> {
+	#[cfg(target_os = "linux")]
+    pub fn get(&mut self) -> Result<()> {
         // temporary buffers
         let mut total = 0_f64;
         let mut used = 0_f64;
 
-        if os == &OS::Linux {
-            // read contents of /proc/meminfo,
-            // and simple split on `:` and parse into
-            // proper format.
-            fs::read_to_string("/proc/meminfo")
-                .context(RAMErr)?
-                .split('\n')
-                .for_each(|i| {
-                    let inf = i.split(':').collect::<Vec<&str>>();
-                    if inf.len() > 1 {
-                        let key = inf[0].trim();
-                        let val = inf[1]
-                            .replace("kB", "")
-                            .replace("\n", "")
-                            .trim()
-                            .parse::<f64>()
-                            .unwrap();
-
-                        match key {
-                            "MemTotal" => {
-                                used += val;
-                                total = val;
-                            }
-                            "Shmem" => used += val,
-                            "SReclaimable" | "Buffers" | "Cached" | "MemFree" => used -= val,
-                            &_ => (),
+        fs::read_to_string("/proc/meminfo")
+            .context(RAMErr)?
+            .split('\n')
+            .for_each(|i| {
+                let inf = i.split(':').collect::<Vec<&str>>();
+                if inf.len() > 1 {
+                    let key = inf[0].trim();
+                    let val = inf[1]
+                        .replace("kB", "")
+                        .replace("\n", "")
+                        .trim()
+                        .parse::<f64>()
+                        .unwrap();
+			
+                    match key {
+                        "MemTotal" => {
+                            used += val;
+                            total = val;
                         }
+                        "Shmem" => used += val,
+                        "SReclaimable" | "Buffers" | "Cached" | "MemFree" => used -= val,
+                        &_ => (),
                     }
-                });
-            self.used = Some(used / 1024_f64);
-            self.total = Some(total / 1024_f64);
-            Ok(())
-        } else if os == &OS::OpenBSD {
+                }
+            });
+        self.used = Some(used / 1024_f64);
+        self.total = Some(total / 1024_f64);
+        Ok(())
+    }
+
+	#[cfg(any (freebsd, openbsd, netbsd, dragonfly))]
+    pub fn get(&mut self) -> Result<()> {
+        // temporary buffers
+        let mut total = 0_f64;
+        let mut used = 0_f64;
+        let os = match OSInfo::get_os() {
+            Ok(o) => o,
+            Err(_) => {
+                error!("unable to detect OS - results may be inaccurate.");
+            }
+        };
+		if os == &OS::OpenBSD {
             let mut buffer = String::new();
             Command::new("sysctl")
                 .arg("-n")
