@@ -87,8 +87,30 @@ impl CPUInfo {
                     .to_string();
             }
 
+            let cpu_temp = Command::new("sysctl")
+                .arg("-n")
+                .arg("dev.cpu.0.temperature")
+                .output()
+                .context(BSDCPUErr)?;
+
+            let mut temp = String::from_utf8(cpu_temp.stdout)
+                .unwrap()
+                .replace("\n", "")
+                .replace("C", "")
+                .trim()
+                .parse::<f64>()
+                .unwrap();
+
+            let temp_scale = if self.options.farenheit {
+                temp = (temp * (9.0 / 5.0)) + 32.0;
+                "F"
+            } else {
+                "C"
+            };
+
             self.cores = cores.parse::<usize>().context(BSDCPUParseErr)?;
             self.freq = speed.parse::<f64>().context(CPUFreqParseErr)? / 1000_f64;
+            self.temp = format!("{}°{}", temp, temp_scale);
             return Ok(());
         }
 
