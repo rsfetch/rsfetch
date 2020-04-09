@@ -24,8 +24,9 @@ impl Hostname {
                 .context(ReadHostname)?;
 
             let hostname = String::from_utf8(command.stdout)
-                .unwrap();
-
+                .unwrap()
+                .replace("\n", "");
+                
             self.name = hostname;
         }
 
