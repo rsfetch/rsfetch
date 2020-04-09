@@ -27,7 +27,6 @@ impl Hostname {
                 .replace("\n", "")
                 .unwrap();
                 
-
             self.name = hostname;
         }
 
