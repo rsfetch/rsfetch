@@ -112,11 +112,11 @@ If you want the manpage:<br>
 ### Usage
 
 ```
-rsfetch 2.0.0
+rsfetch 2.0.2
 
-An fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.
+An info fetch tool for Linux. Fast (~1ms execution time) and somewhat(?) minimal.
 
-All options are off by default. 
+All options are off by default.
 
 Accepted values for the package manager are "pacman", "apt", "xbps", "dnf", "pkg", "eopkg", "rpm", "apk", "pip",
 "portage", and "cargo".
@@ -129,6 +129,7 @@ FLAGS:
         --credits       List of past and current contributors for this project.
     -d, --distro        Turn distro name on.
     -e, --editor        Turn default editor name on. (Must have $EDITOR/$VISUAL variable set.)
+    -f, --farenheit     Display temperature in farenheit instead of celcius.
         --help          Prints help information
     -h, --host          Turn device name on.
     -H, --hostname      Turn hostname on.
