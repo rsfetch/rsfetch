@@ -11,6 +11,7 @@
 </p>
 
 ### Table of Contents
+* [What is this?](#what-is-this)
 * [Preface](#preface)
 * [Things to Know](#things-to-know)
 * [Installation](#installation)
@@ -19,6 +20,14 @@
 * [Benchmarks](#benchmarks)
 * [License](#license)
 * [Changelog](#changelog)
+
+### What is this?
+
+For those that don't know, this is a tool used to gather various information
+about the system and display it in a nice looking format. Some various examples
+of info would be the distro, DE/WM, terminal, shell, and more. This tool is meant
+to be a viable alternative to other tools like neofetch, ufetch, petch, etc. Except
+that it's written in one of the best languages... Rust!
 
 ### Preface
 
