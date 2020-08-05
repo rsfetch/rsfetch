@@ -1,3 +1,7 @@
+**This is in the process of being rewritten from scratch.<br> 
+For now, the rewrite is available in [this repo](https://github.com/Phate6660/rsfetch).<br>
+When I feel like enough has been done in the rewrite, I will begin to overwrite this repo with the rewrite.**
+
 <h3 align="center"><img src="https://raw.githubusercontent.com/rsfetch/rsfetch/master/Screenshots/new-logo.jpg" alt="logo" height="100px"></h3>
 <p align="center">Fast (~1ms execution time) and somewhat(?) minimal fetch program written in Rust.</p>
 
