@@ -252,16 +252,6 @@ async fn main() {
         return;
     }
 
-    let os = match OSInfo::get_os() {
-        Ok(o) => o,
-        Err(_) => {
-            error!("unable to detect OS - results may be inaccurate.");
-
-            // default to Linux
-            OS::Linux
-        }
-    };
-
     let bold = !matches.is_present("no-bold");
     let caps = !matches.is_present("no-caps");
     let borders = !matches.is_present("no-borders");
@@ -462,7 +452,7 @@ async fn main() {
 
     if matches.is_present("cpu") {
         let mut cpu = CPUInfo::new(cpu_opts);
-        match cpu.get(&os) {
+        match cpu.get(){
             Ok(()) => writer.add("CPU", &cpu.format()),
             Err(e) => error!("{}", e),
         }
@@ -488,7 +478,7 @@ async fn main() {
 
     if matches.is_present("memory") {
         let mut mem = RAMInfo::new();
-        match mem.get(&os) {
+        match mem.get(){
             Ok(()) => writer.add("MEMORY", &mem.format()),
             Err(e) => error!("{}", e),
         }
@@ -502,6 +492,5 @@ async fn main() {
             Err(e) => error!("{}", e),
         }
     }
-
     writer.output();
 }
